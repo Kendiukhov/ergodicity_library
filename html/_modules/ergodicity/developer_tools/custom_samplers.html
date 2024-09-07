@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ergodicity.developer_tools.custom_samplers &#8212; Ergodicity Library 0.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ergodicity.developer_tools.custom_samplers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">custom_samplers Submodule Overview</span>
+
+<span class="sd">The **`custom_samplers`** submodule provides utility functions for creating custom samplers from both cumulative distribution functions (CDFs) and characteristic functions (CFs). These functions allow for generating random samples from distributions that may not have built-in samplers in standard libraries, by using numerical methods such as inverse transform sampling and Fourier inversion.</span>
+
+<span class="sd">Main Features:</span>
+
+<span class="sd">1. **create_sampler_from_cdf**:</span>
+
+<span class="sd">   - **Purpose**: Constructs a random sampler based on a given cumulative distribution function (CDF).</span>
+
+<span class="sd">   - **Method**: Utilizes numerical inverse CDF (bisection method) to generate random samples.</span>
+
+<span class="sd">   - **Parameters**:</span>
+
+<span class="sd">     - `cdf`: The cumulative distribution function of the desired distribution.</span>
+
+<span class="sd">     - `lower_bound`: The lower bound for the support of the distribution.</span>
+
+<span class="sd">     - `initial_upper_bound`: The initial upper bound for the support of the distribution.</span>
+
+<span class="sd">     - `tolerance`: Numerical tolerance for inverse CDF calculation.</span>
+
+<span class="sd">     - `max_iterations`: Maximum iterations allowed to compute the inverse CDF.</span>
+
+<span class="sd">   - **Returns**: A callable function that generates random samples from the specified distribution.</span>
+
+<span class="sd">2. **characteristic_function_to_pdf**:</span>
+
+<span class="sd">   - **Purpose**: Converts a characteristic function (CF) into a probability density function (PDF) via numerical inversion (using Fourier transform).</span>
+
+<span class="sd">   - **Parameters**:</span>
+
+<span class="sd">     - `cf`: The characteristic function of the desired distribution.</span>
+
+<span class="sd">     - `t_values`: Array of `t` values to compute the inverse Fourier transform.</span>
+
+<span class="sd">   - **Returns**: Arrays of PDF values and corresponding x-values for the distribution.</span>
+
+<span class="sd">3. **create_sampler_from_cf**:</span>
+
+<span class="sd">   - **Purpose**: Constructs a random sampler based on a given characteristic function (CF).</span>
+
+<span class="sd">   - **Method**: Uses numerical inversion of the characteristic function to obtain a PDF, then generates samples by creating the corresponding CDF and applying inverse transform sampling.</span>
+
+<span class="sd">   - **Parameters**:</span>
+
+<span class="sd">     - `cf`: The characteristic function of the desired distribution.</span>
+
+<span class="sd">     - `t_min` and `t_max`: Range of `t` values for the Fourier transform.</span>
+
+<span class="sd">     - `n_points`: Number of points for the Fourier transform.</span>
+
+<span class="sd">     - `lower_bound` and `upper_bound`: Bounds on the support of the distribution.</span>
+
+<span class="sd">   - **Returns**: A callable function that generates random samples from the distribution defined by the characteristic function.</span>
+
+<span class="sd">Use Cases:</span>
+
+<span class="sd">1. **Custom Distributions**: For distributions where standard sampling methods do not exist or are inefficient, you can provide the CDF or CF and generate samples numerically.</span>
+
+<span class="sd">2. **Distribution Simulation**: Create random samples for simulation purposes using custom distributions, such as non-standard or modified distributions in financial modeling, physics, or statistics.</span>
+
+<span class="sd">3. **Numerical Inversion**: Utilize numerical methods like inverse transform sampling and Fourier inversion for specialized distributions, especially in cases where direct analytical sampling is difficult.</span>
+
+<span class="sd">Example Usage:</span>
+
+<span class="sd">### Creating a Sampler from a CDF:</span>
+
+<span class="sd">def exponential_cdf(x, lam):</span>
+
+<span class="sd">    return 1 - np.exp(-lam * x)</span>
+
+<span class="sd"># Create a sampler for the exponential distribution with lambda = 1</span>
+
+<span class="sd">exponential_sampler = create_sampler_from_cdf(exponential_cdf, lower_bound=0, initial_upper_bound=10)</span>
+
+<span class="sd"># Generate random samples</span>
+
+<span class="sd">samples = [exponential_sampler(lam=1) for _ in range(10)]</span>
+
+<span class="sd">print(samples)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">ergodicity</span> <span class="kn">import</span> <span class="n">custom_warnings</span> <span class="k">as</span> <span class="n">cw</span>
+
+<div class="viewcode-block" id="create_sampler_from_cdf">
+<a class="viewcode-back" href="../../../ergodicity.developer_tools.html#ergodicity.developer_tools.custom_samplers.create_sampler_from_cdf">[docs]</a>
+<span class="k">def</span> <span class="nf">create_sampler_from_cdf</span><span class="p">(</span><span class="n">cdf</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">initial_upper_bound</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">max_iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">warning</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a sampler function for a given distribution using its CDF.</span>
+
+<span class="sd">    :param cdf: function: The cumulative distribution function (CDF) of the desired distribution.</span>
+<span class="sd">    :type cdf: function</span>
+<span class="sd">    :param lower_bound: float: The lower bound of the support of the distribution.</span>
+<span class="sd">    :type lower_bound: float</span>
+<span class="sd">    :param initial_upper_bound: float: The initial upper bound for the support of the distribution.</span>
+<span class="sd">    :type initial_upper_bound: float</span>
+<span class="sd">    :param tolerance: float: The tolerance level for the numerical inverse CDF calculation.</span>
+<span class="sd">    :type tolerance: float</span>
+<span class="sd">    :param max_iterations: int: The maximum number of iterations to find the upper bound if the initial upper bound is insufficient.</span>
+<span class="sd">    :type max_iterations: int</span>
+<span class="sd">    :return: function: A function that generates a random number from the given distribution using the specified parameters.</span>
+<span class="sd">    :rtype: function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">inverse_cdf</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">max_iterations</span><span class="p">,</span> <span class="n">cdf</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Numerically computes the inverse CDF using the bisection method.</span>
+
+<span class="sd">        :param u: float: The uniform random variable.</span>
+<span class="sd">        :type u: float</span>
+<span class="sd">        :param lower_bound: float: The lower bound of the support of the distribution.</span>
+<span class="sd">        :type lower_bound: float</span>
+<span class="sd">        :param upper_bound: float: The upper bound of the support of the distribution.</span>
+<span class="sd">        :type upper_bound: float</span>
+<span class="sd">        :param tolerance: float: The tolerance level for the numerical inverse CDF calculation.</span>
+<span class="sd">        :type tolerance: float</span>
+<span class="sd">        :param max_iterations: int: The maximum number of iterations to find the upper bound if the initial upper bound is insufficient.</span>
+<span class="sd">        :type max_iterations: int</span>
+<span class="sd">        :param cdf: function: The cumulative distribution function.</span>
+<span class="sd">        :type cdf: function</span>
+<span class="sd">        :param params: tuple: The parameters of the desired distribution.</span>
+<span class="sd">        :type params: tuple</span>
+<span class="sd">        :return: float: The value corresponding to the given u from the inverse CDF.</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span>
+        <span class="n">iterations</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">cdf</span><span class="p">(</span><span class="n">high</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">u</span> <span class="ow">and</span> <span class="n">iterations</span> <span class="o">&lt;</span> <span class="n">max_iterations</span><span class="p">:</span>
+            <span class="n">high</span> <span class="o">*=</span> <span class="mi">2</span>
+            <span class="n">iterations</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">iterations</span> <span class="o">&gt;=</span> <span class="n">max_iterations</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Max iterations reached. Consider increasing the initial upper bound.&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">high</span> <span class="o">-</span> <span class="n">low</span> <span class="o">&gt;</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">low</span> <span class="o">+</span> <span class="n">high</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="n">cdf</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">u</span><span class="p">:</span>
+                <span class="n">low</span> <span class="o">=</span> <span class="n">mid</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">high</span> <span class="o">=</span> <span class="n">mid</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">low</span> <span class="o">+</span> <span class="n">high</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># Get the parameter names of the CDF function</span>
+    <span class="n">cdf_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">cdf</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="n">cdf_params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Remove &#39;x&#39; from the parameters if it exists</span>
+
+    <span class="k">def</span> <span class="nf">sampler</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a random number from the given distribution with specified parameters.</span>
+
+<span class="sd">        :param kwargs: dict: The parameters of the desired distribution.</span>
+<span class="sd">        :type kwargs: dict</span>
+<span class="sd">        :return: float: A random number from the desired distribution.</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Ensure that all necessary parameters are provided</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">cdf_params</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Incorrect parameters provided. Expected parameters: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cdf_params</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+        <span class="c1"># Generate a uniform random sample</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Generate a sample from the desired distribution using the inverse CDF</span>
+        <span class="k">return</span> <span class="n">inverse_cdf</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">initial_upper_bound</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">max_iterations</span><span class="p">,</span> <span class="n">cdf</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+    <span class="k">if</span> <span class="n">warning</span><span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Make sure you input a correct cumulative distribution function (CDF). This function will not work properly if you do not provide a valid CDF but will not raise an error. Set warning=False to suppress this message.&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">sampler</span></div>
+
+
+<span class="c1"># Example Usage</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Define the CDF of the exponential distribution with lambda as a parameter</span>
+    <span class="k">def</span> <span class="nf">exponential_cdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lam</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">lam</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Create a sampler for the exponential distribution with an initial upper bound of 10</span>
+    <span class="n">exponential_sampler</span> <span class="o">=</span> <span class="n">create_sampler_from_cdf</span><span class="p">(</span><span class="n">exponential_cdf</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">initial_upper_bound</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="c1"># Generate 10 random numbers from the exponential distribution with lambda = 1</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">exponential_sampler</span><span class="p">(</span><span class="n">lam</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+<div class="viewcode-block" id="characteristic_function_to_pdf">
+<a class="viewcode-back" href="../../../ergodicity.developer_tools.html#ergodicity.developer_tools.custom_samplers.characteristic_function_to_pdf">[docs]</a>
+<span class="k">def</span> <span class="nf">characteristic_function_to_pdf</span><span class="p">(</span><span class="n">cf</span><span class="p">,</span> <span class="n">t_values</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Numerically invert the characteristic function to obtain the PDF.</span>
+
+<span class="sd">    :param cf: function: The characteristic function of the desired distribution.</span>
+<span class="sd">    :type cf: function</span>
+<span class="sd">    :param t_values: numpy.ndarray: An array of t values for the inverse Fourier transform.</span>
+<span class="sd">    :type t_values: numpy.ndarray</span>
+<span class="sd">    :return: numpy.ndarray: An array of PDF values obtained by inverting the characteristic function.</span>
+<span class="sd">    :rtype: numpy.ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">t_values</span><span class="p">)</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">t_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Compute the characteristic function values</span>
+    <span class="n">cf_values</span> <span class="o">=</span> <span class="n">cf</span><span class="p">(</span><span class="n">t_values</span><span class="p">)</span>
+
+    <span class="c1"># print(&quot;CF values: &quot;, cf_values)</span>
+    <span class="c1"># safe CF values to file</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s1">&#39;cf_values.txt&#39;</span><span class="p">,</span> <span class="n">cf_values</span><span class="p">)</span>
+
+    <span class="c1"># Perform inverse FFT to obtain the PDF</span>
+    <span class="n">pdf_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="n">cf_values</span><span class="p">))</span>
+
+    <span class="c1"># Shift the zero-frequency component to the center</span>
+    <span class="n">pdf_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">pdf_values</span><span class="p">)</span>
+
+    <span class="c1"># Correct scaling for the PDF</span>
+    <span class="n">pdf_values</span> <span class="o">*=</span> <span class="n">n</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+    <span class="c1"># Generate corresponding x values</span>
+    <span class="n">x_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+    <span class="n">x_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">x_values</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="c1"># print(&quot;X values: &quot;, x_values)</span>
+    <span class="c1"># safe x values to file</span>
+    <span class="c1"># np.savetxt(&#39;x_values.txt&#39;, x_values)</span>
+
+
+    <span class="k">return</span> <span class="n">pdf_values</span><span class="p">,</span> <span class="n">x_values</span></div>
+
+
+<div class="viewcode-block" id="create_sampler_from_cf">
+<a class="viewcode-back" href="../../../ergodicity.developer_tools.html#ergodicity.developer_tools.custom_samplers.create_sampler_from_cf">[docs]</a>
+<span class="k">def</span> <span class="nf">create_sampler_from_cf</span><span class="p">(</span><span class="n">cf</span><span class="p">,</span> <span class="n">t_min</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">t_max</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_points</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">warning</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a sampler function for a given distribution using its characteristic function.</span>
+
+<span class="sd">    :param cf: function: The characteristic function of the desired distribution.</span>
+<span class="sd">    :type cf: function</span>
+<span class="sd">    :param t_min: float: The minimum t value for the Fourier transform.</span>
+<span class="sd">    :type t_min: float</span>
+<span class="sd">    :param t_max: float: The maximum t value for the Fourier transform.</span>
+<span class="sd">    :type t_max: float</span>
+<span class="sd">    :param n_points: int: The number of points for the Fourier transform.</span>
+<span class="sd">    :type n_points: int</span>
+<span class="sd">    :param lower_bound: float: The lower bound of the support of the distribution.</span>
+<span class="sd">    :type lower_bound: float</span>
+<span class="sd">    :param upper_bound: float: The upper bound of the support of the distribution.</span>
+<span class="sd">    :type upper_bound: float</span>
+<span class="sd">    :return: function: A function that generates a random number from the given distribution.</span>
+<span class="sd">    :rtype: function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Create an array of t values for the inverse Fourier transform</span>
+    <span class="n">t_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">t_min</span><span class="p">,</span> <span class="n">t_max</span><span class="p">,</span> <span class="n">n_points</span><span class="p">)</span>
+
+    <span class="c1"># Get the PDF by inverting the characteristic function</span>
+    <span class="n">pdf_values</span><span class="p">,</span> <span class="n">x_values</span> <span class="o">=</span> <span class="n">characteristic_function_to_pdf</span><span class="p">(</span><span class="n">cf</span><span class="p">,</span> <span class="n">t_values</span><span class="p">)</span>
+
+    <span class="c1"># Restrict x_values to the given bounds</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_values</span> <span class="o">&gt;=</span> <span class="n">lower_bound</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x_values</span> <span class="o">&lt;=</span> <span class="n">upper_bound</span><span class="p">)</span>
+    <span class="n">pdf_values</span> <span class="o">=</span> <span class="n">pdf_values</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">x_values</span> <span class="o">=</span> <span class="n">x_values</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+    <span class="c1"># Normalize PDF values again to ensure total probability is 1 within bounds</span>
+    <span class="n">pdf_values</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pdf_values</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="c1"># print(&quot;PDF values: &quot;, pdf_values)</span>
+    <span class="c1"># np.savetxt(&#39;pdf_values.txt&#39;, pdf_values)</span>
+
+    <span class="c1"># Create the CDF from the PDF</span>
+    <span class="n">cdf_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">pdf_values</span><span class="p">)</span>
+    <span class="n">cdf_values</span> <span class="o">/=</span> <span class="n">cdf_values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Normalize CDF</span>
+    <span class="c1"># print(&quot;CDF values: &quot;, cdf_values)</span>
+    <span class="c1"># save cdf values to file</span>
+    <span class="c1"># np.savetxt(&#39;cdf_values.txt&#39;, cdf_values)</span>
+
+    <span class="k">def</span> <span class="nf">sampler</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a random number from the given distribution using the characteristic function.</span>
+
+<span class="sd">        :return: float: A random number from the desired distribution.</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Generate a uniform random sample</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Find the corresponding value in the CDF using linear interpolation</span>
+        <span class="n">sample_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">cdf_values</span><span class="p">,</span> <span class="n">x_values</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sample_value</span>
+
+    <span class="k">if</span> <span class="n">warning</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Make sure you input a correct characteristic function (CF). This function will not work properly if you do not provide a valid CF but will not raise an error. Set warning=False to suppress this message.&#39;</span><span class="p">)</span>
+
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Attention!&#39;</span><span class="p">,</span> <span class="n">cw</span><span class="o">.</span><span class="n">InDevelopmentWarning</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Attention!&#39;</span><span class="p">,</span> <span class="n">cw</span><span class="o">.</span><span class="n">KnowWhatYouDoWarning</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">sampler</span></div>
+
+
+
+<span class="c1"># Example Usage</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Define the characteristic function of the standard normal distribution</span>
+    <span class="k">def</span> <span class="nf">normal_cf</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">t</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+
+    <span class="c1"># Create a sampler for the normal distribution</span>
+    <span class="n">normal_sampler</span> <span class="o">=</span> <span class="n">create_sampler_from_cf</span><span class="p">(</span><span class="n">normal_cf</span><span class="p">,</span> <span class="n">t_min</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">t_max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_points</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span>
+                                            <span class="n">upper_bound</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="c1"># Generate 10 random numbers from the normal distribution</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">normal_sampler</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+
+
+
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Ergodicity Library</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Ihor Kendiukhov.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

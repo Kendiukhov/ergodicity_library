@@ -1,0 +1,93 @@
+ergodicity.tools package
+========================
+
+Submodules
+----------
+
+ergodicity.tools.automate module
+--------------------------------
+
+.. automodule:: ergodicity.tools.automate
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ergodicity.tools.compute module
+-------------------------------
+
+.. automodule:: ergodicity.tools.compute
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ergodicity.tools.evaluate module
+--------------------------------
+
+.. automodule:: ergodicity.tools.evaluate
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ergodicity.tools.fit module
+---------------------------
+
+.. automodule:: ergodicity.tools.fit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ergodicity.tools.helper module
+------------------------------
+
+.. automodule:: ergodicity.tools.helper
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ergodicity.tools.multiprocessing module
+---------------------------------------
+
+.. automodule:: ergodicity.tools.multiprocessing
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ergodicity.tools.partial\_sde module
+------------------------------------
+
+.. automodule:: ergodicity.tools.partial_sde
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ergodicity.tools.preasymptotics module
+--------------------------------------
+
+.. automodule:: ergodicity.tools.preasymptotics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ergodicity.tools.research module
+--------------------------------
+
+.. automodule:: ergodicity.tools.research
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ergodicity.tools.solve module
+-----------------------------
+
+.. automodule:: ergodicity.tools.solve
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ergodicity.tools
+   :members:
+   :undoc-members:
+   :show-inheritance:

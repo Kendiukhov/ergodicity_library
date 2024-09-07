@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ergodicity.process.lib &#8212; Ergodicity Library 0.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ergodicity.process.lib</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This submodule provides a comprehensive suite of stochastic differential equation (SDE) simulations</span>
+<span class="sd">for various financial and mathematical models. It includes custom decorators for both individual</span>
+<span class="sd">and system-wide simulations, allowing for flexible and efficient modeling of complex stochastic processes.</span>
+
+<span class="sd">Key components:</span>
+
+<span class="sd">Decorator functions:</span>
+
+<span class="sd">custom_simulate: Wraps individual simulation functions</span>
+<span class="sd">custom_simulate_system: Wraps system simulation functions</span>
+
+<span class="sd">Individual process simulations, including but not limited to:</span>
+
+<span class="sd">Ornstein-Uhlenbeck</span>
+
+<span class="sd">Generalized Diffusion</span>
+
+<span class="sd">Constant Elasticity of Variance</span>
+
+<span class="sd">Cox-Ingersoll-Ross</span>
+
+<span class="sd">Vasicek</span>
+
+<span class="sd">Lévy processes</span>
+
+<span class="sd">Geometric Brownian Motion</span>
+
+<span class="sd">Heston model</span>
+
+<span class="sd">Jump Diffusion models</span>
+
+<span class="sd">Stochastic Volatility models</span>
+
+<span class="sd">Fractional Brownian Motion</span>
+
+<span class="sd">System simulations:</span>
+
+<span class="sd">TestSystemSimulation: A system of SDEs including Ornstein-Uhlenbeck and Geometric Brownian Motion</span>
+
+<span class="sd">LotkaVolterraSimulation: Stochastic version of the Lotka-Volterra predator-prey model</span>
+
+
+<span class="sd">Each simulation function is decorated to handle time stepping, data storage, and optional plotting.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># here we will put selected processes used in finance etc.</span>
+<span class="kn">import</span> <span class="nn">ergodicity.process.definitions</span> <span class="k">as</span> <span class="nn">definitions</span>
+<span class="kn">from</span> <span class="nn">ergodicity.process.increments</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ergodicity.process.increments</span> <span class="kn">import</span> <span class="n">dL_1</span>
+<span class="kn">from</span> <span class="nn">ergodicity.process.default_values</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ergodicity.configurations</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ergodicity.process.definitions</span> <span class="kn">import</span> <span class="n">simulation_decorator</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">ergodicity.tools.helper</span> <span class="kn">import</span> <span class="n">plot</span>
+<span class="kn">from</span> <span class="nn">ergodicity.tools.helper</span> <span class="kn">import</span> <span class="n">plot_system</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;timestep&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s1">&#39;num_instances&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;save&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+<div class="viewcode-block" id="custom_simulate">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.custom_simulate">[docs]</a>
+<span class="k">def</span> <span class="nf">custom_simulate</span><span class="p">(</span><span class="n">simulate_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator for individual simulation functions. Handles time stepping, data storage, and optional plotting.</span>
+
+<span class="sd">    :param simulate_func: Simulation function to be wrapped</span>
+<span class="sd">    :type simulate_func: Callable</span>
+<span class="sd">    :return: Wrapper function for simulation</span>
+<span class="sd">    :rtype: Callable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wrapper function for simulation. Handles time stepping, data storage, and optional plotting.</span>
+
+<span class="sd">        :param verbose: Print simulation progress if True</span>
+<span class="sd">        :type verbose: bool</span>
+<span class="sd">        :param kwargs: Custom parameters for simulation</span>
+<span class="sd">        :return: Simulation data</span>
+<span class="sd">        :rtype: Any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Use custom values if provided, otherwise use defaults from params</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">])</span>
+        <span class="n">timestep</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;timestep&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
+        <span class="n">num_instances</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;num_instances&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_instances&#39;</span><span class="p">])</span>
+
+        <span class="n">num_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_instances</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">))</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">timestep</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_instances</span><span class="p">):</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_steps</span><span class="p">):</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">step</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span>
+                <span class="n">dX</span> <span class="o">=</span> <span class="n">simulate_func</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># Ensure X is not in **params</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">+</span> <span class="n">dX</span>
+                <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">%</span> <span class="mi">1000000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulating instance </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, X = </span><span class="si">{</span><span class="n">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">times</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">data</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;save&#39;</span><span class="p">],</span> <span class="n">plot</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<div class="viewcode-block" id="custom_simulate_system">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.custom_simulate_system">[docs]</a>
+<span class="k">def</span> <span class="nf">custom_simulate_system</span><span class="p">(</span><span class="n">simulate_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator for system simulation functions. Handles time stepping, data storage, and optional plotting.</span>
+
+<span class="sd">    :param simulate_func: Simulation function to be wrapped</span>
+<span class="sd">    :type simulate_func: Callable</span>
+<span class="sd">    :return: Wrapper function for system simulation</span>
+<span class="sd">    :rtype: Callable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wrapper function for system simulation. Handles time stepping, data storage, and optional plotting.</span>
+
+<span class="sd">        :param verbose: Print simulation progress if True</span>
+<span class="sd">        :type verbose: bool</span>
+<span class="sd">        :param kwargs: Custom parameters for simulation</span>
+<span class="sd">        :return: Simulation data</span>
+<span class="sd">        :rtype: Any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Use custom values if provided, otherwise use defaults from params</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">])</span>
+        <span class="n">timestep</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;timestep&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">])</span>
+        <span class="n">num_instances</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;num_instances&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_instances&#39;</span><span class="p">])</span>
+
+        <span class="n">num_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">)</span>
+
+        <span class="n">initial_X</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initial_X&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">num_equations</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">initial_X</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_instances</span><span class="p">,</span> <span class="n">num_equations</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_instances</span><span class="p">):</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">initial_X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_steps</span><span class="p">):</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="n">step</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span>
+                <span class="n">dX</span> <span class="o">=</span> <span class="n">simulate_func</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">+</span> <span class="n">dX</span>
+                <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">%</span> <span class="mi">100000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulating instance </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, X = </span><span class="si">{</span><span class="n">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Reshape data to include time as the first row</span>
+        <span class="n">data_with_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">times</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_steps</span><span class="p">)))</span>
+
+        <span class="n">plot_system</span><span class="p">(</span><span class="n">data_with_time</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">,</span> <span class="n">num_equations</span><span class="p">,</span>
+                    <span class="n">save</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;save&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;save&#39;</span><span class="p">]),</span>
+                    <span class="n">plot</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;plot&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="n">data_with_time</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<div class="viewcode-block" id="TestSystemSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.TestSystemSimulation">[docs]</a>
+<span class="nd">@custom_simulate_system</span>
+<span class="k">def</span> <span class="nf">TestSystemSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    System of SDEs for testing purposes. Can be customized as needed.</span>
+
+<span class="sd">    :param X: Process variables</span>
+<span class="sd">    :type X: np.ndarray</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param kwargs: Custom parameters for simulation</span>
+<span class="sd">    :type kwargs: dict</span>
+<span class="sd">    :return: Increments for system of SDEs</span>
+<span class="sd">    :rtype: np.ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Example system of SDEs (can be customized as needed)</span>
+
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="c1"># SDE 1: Ornstein-Uhlenbeck process</span>
+    <span class="n">dX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;theta&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">dW</span>
+
+    <span class="c1"># SDE 2: Geometric Brownian Motion</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mu&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sigma_gbm&#39;</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dW</span>
+
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;theta&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dW</span>
+
+    <span class="c1"># Add more equations as needed</span>
+
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="LotkaVolterraSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.LotkaVolterraSimulation">[docs]</a>
+<span class="nd">@custom_simulate_system</span>
+<span class="k">def</span> <span class="nf">LotkaVolterraSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stochastic version of the Lotka-Volterra predator-prey model.</span>
+
+<span class="sd">    :param X: Process variables for prey and predator populations</span>
+<span class="sd">    :type X: np.ndarray</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param kwargs: Custom parameters for simulation</span>
+<span class="sd">    :return: Increments for prey and predator populations</span>
+<span class="sd">    :rtype: np.ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prey</span><span class="p">,</span> <span class="n">predator</span> <span class="o">=</span> <span class="n">X</span>
+
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="c1"># Extract parameters</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># Prey growth rate</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># Predation rate</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>  <span class="c1"># Predator death rate</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="mf">0.075</span><span class="p">)</span>  <span class="c1"># Predator growth rate due to predation</span>
+    <span class="n">sigma1</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sigma1&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># Noise intensity for prey</span>
+    <span class="n">sigma2</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sigma2&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># Noise intensity for predator</span>
+
+    <span class="c1"># Deterministic terms</span>
+    <span class="n">d_prey</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">prey</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">-</span> <span class="n">b</span> <span class="o">*</span> <span class="n">prey</span> <span class="o">*</span> <span class="n">predator</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma1</span> <span class="o">*</span> <span class="n">prey</span> <span class="o">*</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">d_predator</span> <span class="o">=</span> <span class="o">-</span><span class="n">c</span> <span class="o">*</span> <span class="n">predator</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">d</span> <span class="o">*</span> <span class="n">prey</span> <span class="o">*</span> <span class="n">predator</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma2</span> <span class="o">*</span> <span class="n">predator</span> <span class="o">*</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+
+    <span class="n">dX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">d_prey</span>
+    <span class="n">dX</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">d_predator</span>
+
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="OrnsteinUhlenbeckSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.OrnsteinUhlenbeckSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">OrnsteinUhlenbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates an Ornstein-Uhlenbeck process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for Ornstein-Uhlenbeck process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="GeneralizedDiffusionSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.GeneralizedDiffusionSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">GeneralizedDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a generalized diffusion process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :param gamma: Diffusion parameter</span>
+<span class="sd">    :type gamma: float</span>
+<span class="sd">    :return: Increment for generalized diffusion process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">X</span> <span class="o">**</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="ConstantElasticityOfVarianceSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.ConstantElasticityOfVarianceSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">ConstantElasticityOfVarianceSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a constant elasticity of variance process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :param gamma: Diffusion parameter</span>
+<span class="sd">    :type gamma: float</span>
+<span class="sd">    :return: Increment for constant elasticity of variance process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">-</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">X</span> <span class="o">**</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="CoxIngersollRossSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.CoxIngersollRossSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">CoxIngersollRossSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">X_mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a Cox-Ingersoll-Ross process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param X_mean: Mean of X</span>
+<span class="sd">    :type X_mean: float</span>
+<span class="sd">    :param i: Current iteration</span>
+<span class="sd">    :type i: int</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for Cox-Ingersoll-Ross process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span>
+    <span class="n">X_mean</span> <span class="o">=</span> <span class="n">X_mean</span> <span class="o">*</span> <span class="p">((</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="n">X</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">k</span><span class="p">)</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">X_mean</span> <span class="o">**</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="VasicekSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.VasicekSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">VasicekSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a Vasicek process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for Vasicek process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="CauchyOrnsteinUlehnbeckSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.CauchyOrnsteinUlehnbeckSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">CauchyOrnsteinUlehnbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a Cauchy Ornstein-Uhlenbeck process. This is a version of the Ornstein-Uhlenbeck process with Cauchy noise.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for Cauchy Ornstein-Uhlenbeck process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dL</span> <span class="o">=</span> <span class="n">LPC</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">dL</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="LevyStableOrnsteinUlehnbeckSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.LevyStableOrnsteinUlehnbeckSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">LevyStableOrnsteinUlehnbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a Levy-stable Ornstein-Uhlenbeck process. This is a version of the Ornstein-Uhlenbeck process with Levy-stable noise.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for Levy-stable Ornstein-Uhlenbeck process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dL</span> <span class="o">=</span> <span class="n">LPL</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">dL</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="Levy05OrnsteinUlehnbeckSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.Levy05OrnsteinUlehnbeckSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">Levy05OrnsteinUlehnbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a Levy 0.5 Ornstein-Uhlenbeck process. This is a version of the Ornstein-Uhlenbeck process with Levy 0.5 noise.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for Levy 0.5 Ornstein-Uhlenbeck process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dL</span> <span class="o">=</span> <span class="n">LP05</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">dL</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="Levy15OrnsteinUlehnbeckSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.Levy15OrnsteinUlehnbeckSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">Levy15OrnsteinUlehnbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a Levy 1.5 Ornstein-Uhlenbeck process. This is a version of the Ornstein-Uhlenbeck process with Levy 1.5 noise.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for Levy 1.5 Ornstein-Uhlenbeck process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dL</span> <span class="o">=</span> <span class="n">LP15</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">dL</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="GeometricBrownianMotionSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.GeometricBrownianMotionSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">GeometricBrownianMotionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a geometric Brownian motion process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for geometric Brownian motion process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="HestonSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.HestonSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">HestonSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">v0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">kappa</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">xi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.7</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a Heston model.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param v0: Initial variance</span>
+<span class="sd">    :type v0: float</span>
+<span class="sd">    :param kappa: Mean reversion parameter</span>
+<span class="sd">    :type kappa: float</span>
+<span class="sd">    :param theta: Long-term variance</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param xi: Volatility parameter</span>
+<span class="sd">    :type xi: float</span>
+<span class="sd">    :param rho: Correlation parameter</span>
+<span class="sd">    :type rho: float</span>
+<span class="sd">    :return: Increment for Heston model</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dW2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dV</span> <span class="o">=</span> <span class="n">kappa</span> <span class="o">*</span> <span class="p">(</span><span class="n">theta</span> <span class="o">-</span> <span class="n">v0</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">xi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">v0</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">rho</span> <span class="o">*</span> <span class="n">dW1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rho</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dW2</span><span class="p">)</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">v0</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dW1</span>
+    <span class="n">v0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">v0</span> <span class="o">+</span> <span class="n">dV</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="JumpDiffusionSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.JumpDiffusionSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">JumpDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">jump_intensity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">jump_mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">jump_std</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a jump diffusion process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :param jump_intensity: Jump intensity</span>
+<span class="sd">    :type jump_intensity: float</span>
+<span class="sd">    :param jump_mean: Jump mean</span>
+<span class="sd">    :type jump_mean: float</span>
+<span class="sd">    :param jump_std: Jump standard deviation</span>
+<span class="sd">    :type jump_std: float</span>
+<span class="sd">    :return: Increment for jump diffusion process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">jump</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">jump_intensity</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">jump_mean</span><span class="p">,</span> <span class="n">jump_std</span><span class="p">)</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dW</span> <span class="o">+</span> <span class="n">jump</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="MeanRevertingSquareRootDiffusionSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.MeanRevertingSquareRootDiffusionSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">MeanRevertingSquareRootDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a mean-reverting square root diffusion process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter\</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for mean-reverting square root diffusion process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="StochasticVolatilityModelSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.StochasticVolatilityModelSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">StochasticVolatilityModelSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">v0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">kappa</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">xi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.7</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a stochastic volatility model.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :param v0: Initial variance</span>
+<span class="sd">    :type v0: float</span>
+<span class="sd">    :param kappa: Mean reversion parameter</span>
+<span class="sd">    :type kappa: float</span>
+<span class="sd">    :param theta: Long-term variance</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param xi: Volatility parameter</span>
+<span class="sd">    :type xi: float</span>
+<span class="sd">    :param rho: Correlation parameter</span>
+<span class="sd">    :type rho: float</span>
+<span class="sd">    :return: Increment for stochastic volatility model</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dW2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dV</span> <span class="o">=</span> <span class="n">kappa</span> <span class="o">*</span> <span class="p">(</span><span class="n">theta</span> <span class="o">-</span> <span class="n">v0</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">xi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">v0</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">rho</span> <span class="o">*</span> <span class="n">dW1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rho</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dW2</span><span class="p">)</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">v0</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dW1</span>
+    <span class="n">v0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">v0</span> <span class="o">+</span> <span class="n">dV</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="GeometricOrnsteinUhlenbeckSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.GeometricOrnsteinUhlenbeckSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">GeometricOrnsteinUhlenbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a geometric (multiplicative) Ornstein-Uhlenbeck process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for geometric Ornstein-Uhlenbeck process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">X</span><span class="p">))</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="HullWhiteSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.HullWhiteSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">HullWhiteSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a Hull-White process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for Hull-White process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="VarianceGammaSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.VarianceGammaSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">VarianceGammaSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a variance gamma process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param theta: Mean reversion parameter</span>
+<span class="sd">    :type theta: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :param nu: Jump intensity parameter</span>
+<span class="sd">    :type nu: float</span>
+<span class="sd">    :return: Increment for variance gamma process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dG</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">dt</span><span class="o">/</span><span class="n">nu</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">nu</span><span class="p">)</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">dG</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="KouJumpDiffusionSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.KouJumpDiffusionSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">KouJumpDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">lambda_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">lambda_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">eta1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">eta2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a Kou jump diffusion process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :param lambda_p: Jump intensity parameter for positive jumps</span>
+<span class="sd">    :type lambda_p: float</span>
+<span class="sd">    :param lambda_m: Jump intensity parameter for negative jumps</span>
+<span class="sd">    :type lambda_m: float</span>
+<span class="sd">    :param p: Probability of positive jump</span>
+<span class="sd">    :type p: float</span>
+<span class="sd">    :param eta1: Mean of positive jump</span>
+<span class="sd">    :type eta1: float</span>
+<span class="sd">    :param eta2: Mean of negative jump</span>
+<span class="sd">    :type eta2: float</span>
+<span class="sd">    :return: Increment for Kou jump diffusion process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">((</span><span class="n">lambda_p</span> <span class="o">+</span> <span class="n">lambda_m</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">eta1</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">eta2</span><span class="p">)],</span> <span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">]))</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dW</span> <span class="o">+</span> <span class="n">Y</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="DoubleExponentialJumpDiffusionSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.DoubleExponentialJumpDiffusionSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">DoubleExponentialJumpDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">lambda_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">lambda_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">eta1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">eta2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a double exponential jump diffusion process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :param lambda_p: Jump intensity parameter for positive jumps</span>
+<span class="sd">    :type lambda_p: float</span>
+<span class="sd">    :param lambda_m: Jump intensity parameter for negative jumps</span>
+<span class="sd">    :type lambda_m: float</span>
+<span class="sd">    :param p: Probability of positive jump</span>
+<span class="sd">    :type p: float</span>
+<span class="sd">    :param eta1: Mean of positive jump</span>
+<span class="sd">    :type eta1: float</span>
+<span class="sd">    :param eta2: Mean of negative jump</span>
+<span class="sd">    :type eta2: float</span>
+<span class="sd">    :return: Increment for double exponential jump diffusion process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">((</span><span class="n">lambda_p</span> <span class="o">+</span> <span class="n">lambda_m</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">eta1</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">eta2</span><span class="p">)],</span> <span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">]))</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dW</span> <span class="o">+</span> <span class="n">Y</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="SubordinatorSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.SubordinatorSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">SubordinatorSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a subordinator process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param alpha: Controls the heaviness of the tails of the distribution (alpha)</span>
+<span class="sd">    :type alpha: float</span>
+<span class="sd">    :param beta: Drift component of the process (beta)</span>
+<span class="sd">    :type beta: float</span>
+<span class="sd">    :param gamma: Scaling parameter for the size of jumps in the process (gamma)</span>
+<span class="sd">    :type gamma: float</span>
+<span class="sd">    :return: Increment for subordinator process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="n">gamma</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">alpha</span><span class="p">)</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="p">(</span><span class="n">beta</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">gamma</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dL</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="StochasticAlphaBetaRhoSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.StochasticAlphaBetaRhoSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">StochasticAlphaBetaRhoSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a stochastic alpha beta rho process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param alpha: Drift parameter</span>
+<span class="sd">    :type alpha: float</span>
+<span class="sd">    :param beta: Volatility parameter</span>
+<span class="sd">    :type beta: float</span>
+<span class="sd">    :param rho: Correlation parameter</span>
+<span class="sd">    :type rho: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :return: Increment for stochastic alpha beta rho process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">dW</span> <span class="o">+</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">dB</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="MertonJumpDiffusionSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.MertonJumpDiffusionSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">MertonJumpDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a Merton jump diffusion process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param mu: Drift parameter</span>
+<span class="sd">    :type mu: float</span>
+<span class="sd">    :param sigma: Volatility parameter</span>
+<span class="sd">    :type sigma: float</span>
+<span class="sd">    :param lambda_: Jump intensity parameter</span>
+<span class="sd">    :type lambda_: float</span>
+<span class="sd">    :param m: Mean of jump</span>
+<span class="sd">    :type m: float</span>
+<span class="sd">    :param s: Standard deviation of jump</span>
+<span class="sd">    :type s: float</span>
+<span class="sd">    :return: Increment for Merton jump diffusion process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">))</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">lambda_</span> <span class="o">*</span> <span class="n">dt</span><span class="p">)</span>
+    <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dW</span> <span class="o">+</span> <span class="n">J</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<span class="kn">from</span> <span class="nn">ergodicity.process.basic</span> <span class="kn">import</span> <span class="n">StandardFractionalBrownianMotion</span>
+
+<div class="viewcode-block" id="FractionalBrownianMotionSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.FractionalBrownianMotionSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">FractionalBrownianMotionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">hurst</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a fractional Brownian motion process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time step</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param mean: Mean of the process</span>
+<span class="sd">    :type mean: float</span>
+<span class="sd">    :param hurst: Hurst parameter</span>
+<span class="sd">    :type hurst: float</span>
+<span class="sd">    :return: Increment for fractional Brownian motion process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">FBM</span> <span class="o">=</span> <span class="n">StandardFractionalBrownianMotion</span><span class="p">(</span><span class="n">hurst</span><span class="o">=</span><span class="n">hurst</span><span class="p">)</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">FBM</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">mean</span><span class="o">*</span><span class="n">dt</span> <span class="o">+</span> <span class="n">dt</span><span class="o">**</span><span class="n">hurst</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="GeometricFractionalBrownianMotionSimulation">
+<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.GeometricFractionalBrownianMotionSimulation">[docs]</a>
+<span class="nd">@custom_simulate</span>
+<span class="k">def</span> <span class="nf">GeometricFractionalBrownianMotionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">hurst</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simulates a geometric (multiplicative) fractional Brownian motion process.</span>
+
+<span class="sd">    :param X: Process variable</span>
+<span class="sd">    :type X: float</span>
+<span class="sd">    :param dt: Time stzep</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :param mean: Mean of the process</span>
+<span class="sd">    :type mean: float</span>
+<span class="sd">    :param hurst: Hurst parameter</span>
+<span class="sd">    :type hurst: float</span>
+<span class="sd">    :return: Increment for geometric fractional Brownian motion process</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">FBM</span> <span class="o">=</span> <span class="n">StandardFractionalBrownianMotion</span><span class="p">(</span><span class="n">hurst</span><span class="o">=</span><span class="n">hurst</span><span class="p">)</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">FBM</span><span class="o">.</span><span class="n">increment</span><span class="p">()</span>
+    <span class="n">dX</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">dt</span><span class="o">**</span><span class="n">hurst</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dW</span>
+    <span class="k">return</span> <span class="n">dX</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Ergodicity Library</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Ihor Kendiukhov.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

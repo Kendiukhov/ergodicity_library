@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ergodicity.tools.solve &#8212; Ergodicity Library 0.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ergodicity.tools.solve</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">solve Submodule</span>
+
+<span class="sd">The `solve` submodule is designed to tackle stochastic differential equations (SDEs) and related topics in stochastic calculus, particularly through symbolic computation. The submodule provides tools for applying Ito&#39;s Lemma, integrating SDEs, performing transformations for ergodicity, and solving Fokker-Planck equations. It also offers methods to analyze convergence rates and ergodic behavior in stochastic systems.</span>
+
+<span class="sd">Key Features:</span>
+
+<span class="sd">1. **Ito Calculus**:</span>
+
+<span class="sd">   - `ito_differential`: Applies Ito&#39;s Lemma to a given function `f(x, t)` where `x` follows a stochastic differential equation (SDE).</span>
+
+<span class="sd">   - `ito_integrate`: Performs Ito integration of drift and diffusion terms over time and Wiener processes.</span>
+
+<span class="sd">2. **Solving SDEs**:</span>
+
+<span class="sd">   - `solve`: Solves stochastic differential equations analytically where possible, by leveraging substitution techniques and Ito&#39;s Lemma.</span>
+
+<span class="sd">   - `integration_check`: Validates the solution of an SDE by verifying consistency between the initial SDE and the solution found through integration.</span>
+
+<span class="sd">3. **Ergodicity**:</span>
+
+<span class="sd">   - `ergodicity_transform`: Checks the consistency condition for ergodicity and computes the transformation if the condition is met.</span>
+
+<span class="sd">   - `calculate_time_average_dynamics`: Computes the time-average dynamics of a stochastic process using the ergodicity transform.</span>
+
+<span class="sd">   - `compare_averages`: Compares the time and ensemble averages to determine long-term behavior.</span>
+
+<span class="sd">4. **Convergence Analysis**:</span>
+
+<span class="sd">   - `functions_convergence_rate`: Computes the convergence rate of a function to its asymptotic behavior.</span>
+
+<span class="sd">   - `mean_convergence_rate_alpha_stable`: Calculates the convergence rate for processes in the domain of attraction of stable distributions.</span>
+
+<span class="sd">   - `mad_convergence_rate_alpha_stable`: Determines the rate of convergence of the Mean Absolute Deviation (MAD) for alpha-stable processes.</span>
+
+<span class="sd">5. **Fokker-Planck Equation**:</span>
+
+<span class="sd">   - `solve_fokker_planck`: Symbolically solves the Fokker-Planck equation for a given drift and diffusion term under specified initial and boundary conditions.</span>
+
+<span class="sd">6. **Advanced Theorems**:</span>
+
+<span class="sd">   - `apply_girsanov`: Applies Girsanov’s theorem to change the drift of an SDE under a new probability measure, ensuring Novikov&#39;s condition holds.</span>
+
+<span class="sd">   - `check_novikov_condition`: Validates the applicability of Girsanov&#39;s theorem by checking if Novikov&#39;s condition is satisfied.</span>
+
+<span class="sd">7. **Utilities**:</span>
+
+<span class="sd">   - `find_inverse`: Attempts to symbolically invert a function.</span>
+
+<span class="sd">   - `asymptotic_approximation`: Finds the leading term in an expression as time tends to infinity, providing insights into the long-term behavior of a process.</span>
+
+<span class="sd">   - `ensemble_average` and `time_average`: Calculate the ensemble and time averages of a stochastic process.</span>
+
+<span class="sd">Applications:</span>
+
+<span class="sd">- **Financial Mathematics**: Solve SDEs related to asset prices, option pricing, and portfolio optimization.</span>
+
+<span class="sd">- **Physics**: Model diffusion processes, Brownian motion, and ergodic behavior in physical systems.</span>
+
+<span class="sd">- **Engineering**: Analyze control systems and noise in dynamic environments.</span>
+
+<span class="sd">- **Mathematical Research**: Study convergence rates, stochastic calculus, and the behavior of complex stochastic systems.</span>
+
+<span class="sd">This submodule is a powerful toolkit for anyone involved in the analysis of stochastic processes, offering symbolic solutions and insights into the dynamics of complex systems.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Compute the speed of convergence</span>
+
+<span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">sympy.stats</span> <span class="kn">import</span> <span class="n">Normal</span><span class="p">,</span> <span class="n">E</span>
+
+<div class="viewcode-block" id="ito_differential">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.ito_differential">[docs]</a>
+<span class="k">def</span> <span class="nf">ito_differential</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply Ito&#39;s Lemma to a function f(x,t) where x follows the SDE:</span>
+<span class="sd">    dx = mu(x,t)dt + sigma(x,t)dW</span>
+
+<span class="sd">    :param f: The function f(x,t) to which Ito&#39;s Lemma is applied</span>
+<span class="sd">    :type f: sympy expression</span>
+<span class="sd">    :param mu: The drift term mu(x,t) in the SDE</span>
+<span class="sd">    :type mu: sympy expression</span>
+<span class="sd">    :param sigma: The diffusion term sigma(x,t) in the SDE</span>
+<span class="sd">    :type sigma: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :return: The resulting df(x,t) according to Ito&#39;s Lemma</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Compute partial derivatives</span>
+    <span class="n">df_dx</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">df_dt</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+    <span class="n">d2f_dx2</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Apply Ito&#39;s Lemma</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_dt</span> <span class="o">+</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">df_dx</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">d2f_dx2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;dt&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">df_dx</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;dW(t)&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Expand the expression</span>
+    <span class="n">expanded</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="c1"># Separate dt and dW(t) terms</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;dt&#39;</span><span class="p">)</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;dW(t)&#39;</span><span class="p">)</span>
+    <span class="n">dt_coeff</span> <span class="o">=</span> <span class="n">expanded</span><span class="o">.</span><span class="n">coeff</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+    <span class="n">dW_coeff</span> <span class="o">=</span> <span class="n">expanded</span><span class="o">.</span><span class="n">coeff</span><span class="p">(</span><span class="n">dW</span><span class="p">)</span>
+
+    <span class="c1"># Simplify dt coefficient</span>
+    <span class="n">dt_coeff</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">dt_coeff</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">dt_coeff</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="n">dt_coeff</span><span class="p">)</span>
+
+    <span class="c1"># Simplify dW coefficient</span>
+    <span class="n">dW_coeff</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">dW_coeff</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">dW_coeff</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="n">dW_coeff</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">dt_coeff</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">dW_coeff</span> <span class="o">*</span> <span class="n">dW</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="extract_ito_terms">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.extract_ito_terms">[docs]</a>
+<span class="k">def</span> <span class="nf">extract_ito_terms</span><span class="p">(</span><span class="n">differential</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract the mu(x,t) and sigma(x,t) terms from a differential expression</span>
+<span class="sd">    of the form: mu(x,t)dt + sigma(x,t)dW(t)</span>
+
+<span class="sd">    :param differential: The differential expression, typically the result of applying Ito&#39;s Lemma</span>
+<span class="sd">    :type differential: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :return: A tuple of sympy expressions (mu(x,t), sigma(x,t))</span>
+<span class="sd">    :rtype: tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;differential:&#39;</span><span class="p">,</span> <span class="n">differential</span><span class="p">)</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;dt&#39;</span><span class="p">)</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;dW(t)&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Expand the differential</span>
+    <span class="n">expanded_diff</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">differential</span><span class="p">)</span>
+
+    <span class="c1"># Collect terms with respect to dt and dW</span>
+    <span class="n">collected</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">expanded_diff</span><span class="p">,</span> <span class="p">[</span><span class="n">dt</span><span class="p">,</span> <span class="n">dW</span><span class="p">],</span> <span class="n">evaluate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Extract mu(x,t) and sigma(x,t)</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">collected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">collected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dW</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span></div>
+
+
+
+
+<div class="viewcode-block" id="ito_integrate">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.ito_integrate">[docs]</a>
+<span class="k">def</span> <span class="nf">ito_integrate</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Integrate terms by dt and dW(t) from 0 to t.</span>
+<span class="sd">    The dt term is integrated as a Riemann integral.</span>
+<span class="sd">    The dW(t) term is integrated using Ito isometry.</span>
+
+<span class="sd">    :param mu: The coefficient of dt (drift term)</span>
+<span class="sd">    :type mu: sympy expression</span>
+<span class="sd">    :param sigma: The coefficient of dW(t) (diffusion term)</span>
+<span class="sd">    :type sigma: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :param x0: The initial value of x at t=0, defaults to 1</span>
+<span class="sd">    :type x0: int, optional</span>
+<span class="sd">    :return: The Ito integral expression</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if mu and sigma depend only on t</span>
+    <span class="k">if</span> <span class="n">mu</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sigma</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mu and sigma must depend only on t, not on x&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Integrate mu dt (Riemann integral)</span>
+    <span class="n">integral_mu</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+
+    <span class="c1"># Integrate sigma dW(t) using Ito isometry</span>
+    <span class="c1"># E[(∫sigma dW)^2] = ∫sigma^2 dt</span>
+    <span class="n">integral_sigma_squared</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+
+    <span class="n">W</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;W(t)&#39;</span><span class="p">)</span>
+
+    <span class="n">integral_sigma</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">integral_sigma_squared</span> <span class="o">/</span> <span class="n">t</span><span class="p">)</span>
+
+    <span class="n">ito_integral</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">integral_mu</span> <span class="o">+</span> <span class="n">integral_sigma</span><span class="o">*</span><span class="n">W</span>
+
+    <span class="k">return</span> <span class="n">ito_integral</span></div>
+
+
+<div class="viewcode-block" id="find_inverse">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.find_inverse">[docs]</a>
+<span class="k">def</span> <span class="nf">find_inverse</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Attempt to find the inverse of f(x,t) with respect to x.</span>
+
+<span class="sd">    :param f: The function f(x,t) to invert</span>
+<span class="sd">    :type f: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param y: The symbol to represent f(x,t) in the inverse function</span>
+<span class="sd">    :type y: sympy symbol</span>
+<span class="sd">    :return: The inverse function if found, None otherwise</span>
+<span class="sd">    :rtype: sympy expression or None</span>
+<span class="sd">    :exception: Returns None if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Attempt to solve f(x,t) = y for x</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">Eq</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">solution</span><span class="p">:</span>
+            <span class="c1"># Return the first solution if multiple exist</span>
+            <span class="k">return</span> <span class="n">solution</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No inverse function found.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in finding inverse: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="integrate_with_substitution">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.integrate_with_substitution">[docs]</a>
+<span class="k">def</span> <span class="nf">integrate_with_substitution</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform Ito integration with substitution.</span>
+
+<span class="sd">    :param f: The function f(x,t) for substitution</span>
+<span class="sd">    :type f: sympy expression</span>
+<span class="sd">    :param mu: The drift term mu(x,t)</span>
+<span class="sd">    :type mu: sympy expression</span>
+<span class="sd">    :param sigma: The diffusion term sigma(x,t)</span>
+<span class="sd">    :type sigma: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :param x0: The initial value of x at t=0, defaults to 1</span>
+<span class="sd">    :type x0: int, optional</span>
+<span class="sd">    :return: The result of the integration after substitution</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :exception: Returns None if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># 1. Find Ito differential df(x,t)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">ito_differential</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ito differential df(x,t): </span><span class="si">{</span><span class="n">df</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 2. Extract Ito terms</span>
+        <span class="n">mu_f</span><span class="p">,</span> <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">extract_ito_terms</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracted mu_f: </span><span class="si">{</span><span class="n">mu_f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracted sigma_f: </span><span class="si">{</span><span class="n">sigma_f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># f0 = f(x0, 0)</span>
+        <span class="n">f0</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">x</span><span class="p">:</span> <span class="n">x0</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;f0&#39;</span><span class="p">,</span> <span class="n">f0</span><span class="p">)</span>
+
+        <span class="c1"># 3. Ito integrate</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># New function y(t) to represent f(x,t)</span>
+        <span class="n">integral_result</span> <span class="o">=</span> <span class="n">ito_integrate</span><span class="p">(</span><span class="n">mu_f</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">sigma_f</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">f0</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ito integral result: </span><span class="si">{</span><span class="n">integral_result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 4. Find the reverse function of f</span>
+        <span class="n">y_symbol</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+        <span class="n">inverse_f</span> <span class="o">=</span> <span class="n">find_inverse</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">y_symbol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">inverse_f</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unable to find inverse of f(x,t)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inverse of f(x,t): x = </span><span class="si">{</span><span class="n">inverse_f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 5. Substitute back to get x(t)</span>
+        <span class="n">final_result</span> <span class="o">=</span> <span class="n">inverse_f</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">y_symbol</span><span class="p">,</span> <span class="n">integral_result</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final result: </span><span class="si">{</span><span class="n">final_result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">final_result</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in integration with substitution: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="find_dx">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.find_dx">[docs]</a>
+<span class="k">def</span> <span class="nf">find_dx</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find dX(X,t,W(t)) for a given X(t,W(t)) using Ito calculus rules,</span>
+<span class="sd">    and attempt to simplify the result in terms of X where possible.</span>
+
+<span class="sd">    :param x: The stochastic process X(t,W(t))</span>
+<span class="sd">    :type x: sympy expression</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :param W: The Wiener process W(t)</span>
+<span class="sd">    :type W: sympy function</span>
+<span class="sd">    :return: The SDE in the form dX = ... dt + ... dW, with X substituted where possible</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :exception: Returns None if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Calculate partial derivatives</span>
+        <span class="n">dX_dt</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+        <span class="n">dX_dW</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+        <span class="n">d2X_dW2</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;x expression&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Apply Ito&#39;s Lemma</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;dt&#39;</span><span class="p">)</span>
+        <span class="n">dW</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;dW(t)&#39;</span><span class="p">)</span>
+
+        <span class="n">dX</span> <span class="o">=</span> <span class="p">(</span><span class="n">dX_dt</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">d2X_dW2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">dX_dW</span> <span class="o">*</span> <span class="n">dW</span>
+
+        <span class="c1"># Simplify and collect terms</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">dX</span><span class="p">),</span> <span class="p">[</span><span class="n">dt</span><span class="p">,</span> <span class="n">dW</span><span class="p">])</span>
+
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">dX</span><span class="p">)</span>
+
+        <span class="c1"># Attempt to substitute X back into the expression</span>
+        <span class="n">X_symbol</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">dX</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">X_symbol</span><span class="p">)</span>
+
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">dX</span><span class="p">,</span> <span class="p">[</span><span class="n">dt</span><span class="p">,</span> <span class="n">dW</span><span class="p">])</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;dX:&#39;</span><span class="p">,</span> <span class="n">dX</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dX</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in finding SDE: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="integration_check">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.integration_check">[docs]</a>
+<span class="k">def</span> <span class="nf">integration_check</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the integration of a function f(x,t) with drift mu(x,t) and diffusion sigma(x,t).</span>
+
+<span class="sd">    :param f: The function f(x,t) to integrate</span>
+<span class="sd">    :type f: sympy expression</span>
+<span class="sd">    :param mu: The drift term mu(x,t)</span>
+<span class="sd">    :type mu: sympy expression</span>
+<span class="sd">    :param sigma: The diffusion term sigma(x,t)</span>
+<span class="sd">    :type sigma: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :param x0: The initial value of x at t=0, defaults to 1</span>
+<span class="sd">    :type x0: int, optional</span>
+<span class="sd">    :return: The result of the integration if successful</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">integration_result</span> <span class="o">=</span> <span class="n">integrate_with_substitution</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
+    <span class="n">differential_result</span> <span class="o">=</span> <span class="n">find_dx</span><span class="p">(</span><span class="n">integration_result</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;W(t)&#39;</span><span class="p">))</span>
+    <span class="n">mu_new</span><span class="p">,</span> <span class="n">sigma_new</span> <span class="o">=</span> <span class="n">extract_ito_terms</span><span class="p">(</span><span class="n">differential_result</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mu_new</span> <span class="o">==</span> <span class="n">mu</span> <span class="ow">and</span> <span class="n">sigma_new</span> <span class="o">==</span> <span class="n">sigma</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Integration successful.&quot;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Integration failed.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected mu: </span><span class="si">{</span><span class="n">mu</span><span class="si">}</span><span class="s2">, sigma: </span><span class="si">{</span><span class="n">sigma</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Actual mu: </span><span class="si">{</span><span class="n">mu_new</span><span class="si">}</span><span class="s2">, sigma: </span><span class="si">{</span><span class="n">sigma_new</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">integration_result</span></div>
+
+
+<div class="viewcode-block" id="replace_integration_constants">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.replace_integration_constants">[docs]</a>
+<span class="k">def</span> <span class="nf">replace_integration_constants</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if a given expression contains integration constants (C1, C2, etc. or numbers)</span>
+<span class="sd">    and substitute them with 1.</span>
+
+<span class="sd">    :param expr: The expression to check and modify</span>
+<span class="sd">    :type expr: sympy expression</span>
+<span class="sd">    :return: The modified expression with integration constants replaced by 1</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Function to check if a term is a standalone constant</span>
+    <span class="k">def</span> <span class="nf">is_standalone_constant</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">)</span> <span class="ow">and</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;C\d+&#39;</span><span class="p">,</span> <span class="n">term</span><span class="o">.</span><span class="n">name</span><span class="p">))</span> <span class="ow">or</span> \
+               <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Number</span><span class="p">)</span> <span class="ow">and</span> <span class="n">term</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Function to replace constants in a term</span>
+    <span class="k">def</span> <span class="nf">replace_constant</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Mul</span><span class="p">):</span>
+            <span class="n">factors</span> <span class="o">=</span> <span class="n">term</span><span class="o">.</span><span class="n">args</span>
+            <span class="n">new_factors</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">is_standalone_constant</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">else</span> <span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">Mul</span><span class="p">(</span><span class="o">*</span><span class="n">new_factors</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">is_standalone_constant</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">term</span>
+
+    <span class="c1"># Apply the replacement recursively</span>
+    <span class="k">return</span> <span class="n">expr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="n">replace_constant</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="find_substitution">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.find_substitution">[docs]</a>
+<span class="k">def</span> <span class="nf">find_substitution</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find a suitable substitution for solving a stochastic differential equation analytically.</span>
+
+<span class="sd">    :param mu: The drift term mu(x,t)</span>
+<span class="sd">    :type mu: sympy expression</span>
+<span class="sd">    :param sigma: The diffusion term sigma(x,t)</span>
+<span class="sd">    :type sigma: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :return: The substitution function f(t,x) if found, None otherwise</span>
+<span class="sd">    :rtype: sympy expression or None</span>
+<span class="sd">    :exception: Returns None if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Step 1: Find sigma_t and sigma_xx</span>
+        <span class="n">sigma_t</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+        <span class="n">sigma_xx</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Step 2: Check the condition</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">sigma_t</span> <span class="o">-</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">mu</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">sigma_xx</span><span class="p">)</span>
+        <span class="n">condition_derivative</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Condition: </span><span class="si">{</span><span class="n">condition</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">condition_derivative</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Analytical solution does not exist for this differential.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Step 3: Find sigma_new</span>
+        <span class="n">sigma_new</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="s1">&#39;sigma_new&#39;</span><span class="p">)(</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">diff_eq</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Eq</span><span class="p">(</span><span class="n">sigma_new</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma_new</span><span class="p">,</span> <span class="n">condition</span><span class="p">)</span>
+        <span class="n">sigma_new_sol</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">dsolve</span><span class="p">(</span><span class="n">diff_eq</span><span class="p">,</span> <span class="n">sigma_new</span><span class="p">)</span>
+
+        <span class="n">sigma_new_sol</span> <span class="o">=</span> <span class="n">sigma_new_sol</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;C1&#39;</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># sigma_new_sol = replace_integration_constants(sigma_new_sol)</span>
+
+        <span class="c1"># Extract the general solution (without constants)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sigma_new_sol</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Eq</span><span class="p">):</span>
+            <span class="n">sigma_new</span> <span class="o">=</span> <span class="n">sigma_new_sol</span><span class="o">.</span><span class="n">rhs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sigma_new</span> <span class="o">=</span> <span class="n">sigma_new_sol</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sigma_new: </span><span class="si">{</span><span class="n">sigma_new_sol</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Step 4: Find f</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">sigma_new</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Substitution found:&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">f</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in finding substitution: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="solve">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.solve">[docs]</a>
+<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve the stochastic differential equation dx = mu dt + sigma dW(t) for x(t) analytically.</span>
+
+<span class="sd">    :param mu: The drift term mu(x,t)</span>
+<span class="sd">    :type mu: sympy expression</span>
+<span class="sd">    :param sigma: The diffusion term sigma(x,t)</span>
+<span class="sd">    :type sigma: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :param x0: The initial value of x at t=0, defaults to 1</span>
+<span class="sd">    :type x0: int, optional</span>
+<span class="sd">    :return: The solution x(t) if found</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">substitution</span> <span class="o">=</span> <span class="n">find_substitution</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+    <span class="n">integration_result</span> <span class="o">=</span> <span class="n">integration_check</span><span class="p">(</span><span class="n">substitution</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">integration_result</span></div>
+
+
+
+<div class="viewcode-block" id="ergodicity_transform">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.ergodicity_transform">[docs]</a>
+<span class="k">def</span> <span class="nf">ergodicity_transform</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the consistency condition for ergodicity and find the ergodicity transform if consistent.</span>
+<span class="sd">    b_u from the ergodicity economics book (page 57) is set to 1.Then, a_u = c.</span>
+<span class="sd">    The function is implemented only for the case when mu ang sigma are only functions of x.</span>
+
+<span class="sd">    :param mu: The drift term mu(x,t)</span>
+<span class="sd">    :type mu: sympy expression</span>
+<span class="sd">    :param sigma: The diffusion term sigma(x,t)</span>
+<span class="sd">    :type sigma: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :return: A tuple (is_consistent, u(t,x), a_u, b_u) where u(t,x) is the ergodicity transform</span>
+<span class="sd">    :rtype: tuple</span>
+<span class="sd">    :exception: Returns (False, None, None) if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Step 1: Check consistency</span>
+        <span class="n">sigma_x</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">)</span>
+        <span class="n">consistency_condition</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">sigma_x</span>
+
+        <span class="c1"># Solve for c</span>
+        <span class="n">c_equation</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Eq</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">consistency_condition</span><span class="p">)</span>
+        <span class="n">c_solution</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">c_equation</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+        <span class="n">is_consistent</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">c_solution</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Consistency check: mu = </span><span class="si">{</span><span class="n">mu</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Consistency check: c*sigma + 1/2 * sigma * sigma_x = </span><span class="si">{</span><span class="n">consistency_condition</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Is consistent: </span><span class="si">{</span><span class="n">is_consistent</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_consistent</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: The given mu and sigma do not satisfy the ergodicity consistency condition for any c.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># If multiple solutions, take the simplest one (usually the first)</span>
+        <span class="n">c_value</span> <span class="o">=</span> <span class="n">c_solution</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c_solution</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">c_solution</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Consistent for c = </span><span class="si">{</span><span class="n">c_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Step 2: Find u(t,x)</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="n">a_u</span> <span class="o">=</span> <span class="n">c_value</span>
+        <span class="n">b_u</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ergodicity transform u(t,x) = </span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">a_u</span><span class="p">,</span> <span class="n">b_u</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in ergodicity transform calculation: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="dynamic_from_utility">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.dynamic_from_utility">[docs]</a>
+<span class="k">def</span> <span class="nf">dynamic_from_utility</span><span class="p">(</span><span class="n">u_function</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mu_u</span><span class="p">,</span> <span class="n">sigma_u</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the dynamics of the ergodicity transform u(t,x) using Ito calculus.</span>
+
+<span class="sd">    :param u_function: The ergodicity transform u(t,x)</span>
+<span class="sd">    :type u_function: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param mu_u: The drift term mu_u(x,t)</span>
+<span class="sd">    :type mu_u: sympy expression</span>
+<span class="sd">    :param sigma_u: The diffusion term sigma_u(x,t)</span>
+<span class="sd">    :type sigma_u: sympy expression</span>
+<span class="sd">    :return: The stochastic dynamic corresponding to the ergodicity transform u(t,x)</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;u&#39;</span><span class="p">)</span>
+    <span class="n">u_inverse</span> <span class="o">=</span> <span class="n">find_inverse</span><span class="p">(</span><span class="n">u_function</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">ito_differential</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="n">u_inverse</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">mu_u</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma_u</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u_function</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dx</span></div>
+
+
+<div class="viewcode-block" id="calculate_time_average_dynamics">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.calculate_time_average_dynamics">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_time_average_dynamics</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">a_u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the time average dynamics using the ergodicity transform.</span>
+
+<span class="sd">    :param u: The ergodicity transform u(t,x)</span>
+<span class="sd">    :type u: sympy expression</span>
+<span class="sd">    :param a_u: The transformed drift term</span>
+<span class="sd">    :type a_u: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :return: The time average dynamics expression</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :exception: Returns None if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Step 1: Invert the ergodicity transform u</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>  <span class="c1"># Temporary symbol for inversion</span>
+        <span class="n">u_inv</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">Eq</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">u_inv</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Could not invert the ergodicity transform u&quot;</span><span class="p">)</span>
+
+        <span class="n">u_inv</span> <span class="o">=</span> <span class="n">u_inv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Take the first solution if multiple exist</span>
+
+        <span class="c1"># Step 2: Apply the inverse to a_u to get the time average dynamics</span>
+        <span class="n">time_avg_dynamics</span> <span class="o">=</span> <span class="n">u_inv</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">a_u</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inverse of ergodicity transform: x = </span><span class="si">{</span><span class="n">u_inv</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time average dynamics: x(t) = </span><span class="si">{</span><span class="n">time_avg_dynamics</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">time_avg_dynamics</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in calculating time average dynamics: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ergodicity_transform_differential">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.ergodicity_transform_differential">[docs]</a>
+<span class="k">def</span> <span class="nf">ergodicity_transform_differential</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">a_u</span><span class="p">,</span> <span class="n">b_u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the differential form of the ergodicity transform.</span>
+<span class="sd">    The function is implemented only for the case when mu ang sigma are only functions of x.</span>
+
+<span class="sd">    :param u: The ergodicity transform u(t,x)</span>
+<span class="sd">    :type u: sympy expression</span>
+<span class="sd">    :param a_u: The transformed drift term a_u</span>
+<span class="sd">    :type a_u: sympy expression</span>
+<span class="sd">    :param b_u: The transformed diffusion term b_u</span>
+<span class="sd">    :type b_u: sympy expression</span>
+<span class="sd">    :param x: The symbol representing the stochastic variable x</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :return: The transformed differential df(x,t) = a_u dt + b_u dW(t)</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :exception: Returns None if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;dt&#39;</span><span class="p">)</span>
+        <span class="n">dW</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="s1">&#39;dW&#39;</span><span class="p">)(</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">a_u</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="n">b_u</span> <span class="o">*</span> <span class="n">dW</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transformed drift term a_u = </span><span class="si">{</span><span class="n">a_u</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transformed diffusion term b_u = </span><span class="si">{</span><span class="n">b_u</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transformed differential df = </span><span class="si">{</span><span class="n">df</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in ergodicity transform differential calculation: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ensemble_average">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.ensemble_average">[docs]</a>
+<span class="k">def</span> <span class="nf">ensemble_average</span><span class="p">(</span><span class="n">x_expr</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the expected value of a stochastic process x(t, W(t))</span>
+<span class="sd">    by replacing W(t) with a standard normal distribution N(0,1).</span>
+
+<span class="sd">    :param x_expr: The stochastic process x(t, W(t))</span>
+<span class="sd">    :type x_expr: sympy expression</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :param W: The Wiener process W(t)</span>
+<span class="sd">    :type W: sympy function</span>
+<span class="sd">    :return: The expected value of x(t, W(t))</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :exception: Returns None if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Create a standard normal random variable</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Replace W(t) with z in the expression</span>
+        <span class="n">x_normal</span> <span class="o">=</span> <span class="n">x_expr</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">z</span><span class="o">*</span><span class="n">sp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+
+        <span class="c1"># Calculate the expected value</span>
+        <span class="n">expected_value</span> <span class="o">=</span> <span class="n">E</span><span class="p">(</span><span class="n">x_normal</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected value: </span><span class="si">{</span><span class="n">expected_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">expected_value</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in expected value calculation: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="time_average">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.time_average">[docs]</a>
+<span class="k">def</span> <span class="nf">time_average</span><span class="p">(</span><span class="n">x_expr</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the time average of a stochastic process x(t, W(t))</span>
+<span class="sd">    by expressing W(t) as sqrt(t) * N(0,1) and finding the limit of x/t as t -&gt; infinity.</span>
+
+<span class="sd">    :param x_expr: The stochastic process x(t, W(t))</span>
+<span class="sd">    :type x_expr: sympy expression</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :param W: The Wiener process W(t)</span>
+<span class="sd">    :type W: sympy function</span>
+<span class="sd">    :return: The time average of x(t, W(t))</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :exception: Returns None if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Create a standard normal random variable</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Replace W(t) with sqrt(t) * z in the expression</span>
+        <span class="n">x_normal</span> <span class="o">=</span> <span class="n">x_expr</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
+
+        <span class="c1"># Divide by t</span>
+        <span class="n">x_over_t</span> <span class="o">=</span> <span class="n">x_normal</span> <span class="o">/</span> <span class="n">t</span>
+
+        <span class="c1"># Calculate the limit as t approaches infinity</span>
+        <span class="n">time_avg</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">x_over_t</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">oo</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time average (limit as t -&gt; inf): </span><span class="si">{</span><span class="n">time_avg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">time_avg</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in time average calculation: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="compare_growth">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.compare_growth">[docs]</a>
+<span class="k">def</span> <span class="nf">compare_growth</span><span class="p">(</span><span class="n">term1</span><span class="p">,</span> <span class="n">term2</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compare the growth rates of two terms as t approaches infinity.</span>
+<span class="sd">    A helper function for asymptotic approximation.</span>
+
+<span class="sd">    :param term1: The first term to compare</span>
+<span class="sd">    :type term1: sympy expression</span>
+<span class="sd">    :param term2: The second term to compare</span>
+<span class="sd">    :type term2: sympy expression</span>
+<span class="sd">    :param t: The symbol representing the variable approaching infinity</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :return: 1 if term1 grows faster, -1 if term2 grows faster, 0 if equal</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">term1</span> <span class="o">==</span> <span class="n">term2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="c1"># Extract the power of t in each term</span>
+    <span class="k">def</span> <span class="nf">extract_t_power</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">term</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">([</span><span class="n">degree</span> <span class="k">for</span> <span class="n">base</span><span class="p">,</span> <span class="n">degree</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">as_powers_dict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">base</span> <span class="o">==</span> <span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">power1</span> <span class="o">=</span> <span class="n">extract_t_power</span><span class="p">(</span><span class="n">term1</span><span class="p">)</span>
+    <span class="n">power2</span> <span class="o">=</span> <span class="n">extract_t_power</span><span class="p">(</span><span class="n">term2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">power1</span> <span class="o">&gt;</span> <span class="n">power2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">elif</span> <span class="n">power1</span> <span class="o">&lt;</span> <span class="n">power2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If powers are equal, compare the coefficients</span>
+        <span class="n">coeff1</span> <span class="o">=</span> <span class="n">term1</span><span class="o">.</span><span class="n">coeff</span><span class="p">(</span><span class="n">t</span> <span class="o">**</span> <span class="n">power1</span><span class="p">)</span>
+        <span class="n">coeff2</span> <span class="o">=</span> <span class="n">term2</span><span class="o">.</span><span class="n">coeff</span><span class="p">(</span><span class="n">t</span> <span class="o">**</span> <span class="n">power2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">coeff1</span> <span class="o">==</span> <span class="n">coeff2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="n">limit</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">Abs</span><span class="p">(</span><span class="n">coeff1</span> <span class="o">/</span> <span class="n">coeff2</span><span class="p">),</span> <span class="n">t</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">oo</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">limit</span> <span class="o">==</span> <span class="n">sp</span><span class="o">.</span><span class="n">oo</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">limit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span></div>
+
+
+
+<div class="viewcode-block" id="asymptotic_approximation">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.asymptotic_approximation">[docs]</a>
+<span class="k">def</span> <span class="nf">asymptotic_approximation</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">),</span> <span class="n">W</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;W(t)&#39;</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the asymptotic approximation of an expression as t approaches infinity.</span>
+<span class="sd">    This basiscally allows to calculate time average behavior of the expression.</span>
+
+<span class="sd">    :param expr: The expression to approximate</span>
+<span class="sd">    :type expr: sympy expression</span>
+<span class="sd">    :param t: The symbol representing the variable approaching infinity</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :param W: The Wiener process W(t)</span>
+<span class="sd">    :type W: sympy function</span>
+<span class="sd">    :returns: The leading term in the expression as t -&gt; infinity</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :exception: Returns None if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+
+        <span class="n">z</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">)</span>
+
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">z</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+
+        <span class="n">terms</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">as_ordered_terms</span><span class="p">()</span> <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">is_Add</span> <span class="k">else</span> <span class="p">[</span><span class="n">expr</span><span class="p">]</span>
+
+        <span class="n">dominant_term</span> <span class="o">=</span> <span class="n">terms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">terms</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">comparison</span> <span class="o">=</span> <span class="n">compare_growth</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">dominant_term</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">comparison</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">dominant_term</span> <span class="o">=</span> <span class="n">term</span>
+            <span class="k">elif</span> <span class="n">comparison</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">dominant_term</span> <span class="o">+=</span> <span class="n">term</span>
+
+        <span class="c1"># Special handling for exponential functions</span>
+        <span class="k">if</span> <span class="n">dominant_term</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">exp</span><span class="p">):</span>
+            <span class="n">exponents</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">dominant_term</span><span class="o">.</span><span class="n">atoms</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">exp</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">exponents</span><span class="p">:</span>
+                <span class="n">max_exponent</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">exponents</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">asymptotic_approximation</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+                <span class="n">dominant_term</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">asymptotic_approximation</span><span class="p">(</span><span class="n">max_exponent</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+
+        <span class="c1"># Simplify the dominant term</span>
+        <span class="n">dominant_term</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">dominant_term</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Original expression: </span><span class="si">{</span><span class="n">expr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Asymptotic approximation: </span><span class="si">{</span><span class="n">dominant_term</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dominant_term</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in asymptotic approximation: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="compare_averages">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.compare_averages">[docs]</a>
+<span class="k">def</span> <span class="nf">compare_averages</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">),</span> <span class="n">W</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;W(t)&#39;</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compare the time average and ensemble average of a stochastic process.</span>
+
+<span class="sd">    :param expr: The stochastic process x(t, W(t))</span>
+<span class="sd">    :type expr: sympy expression</span>
+<span class="sd">    :param t: The symbol representing time t</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :param W: The Wiener process W(t)</span>
+<span class="sd">    :type W: sympy function</span>
+<span class="sd">    :return: The ratio of time average to ensemble average</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Calculate time average</span>
+    <span class="n">time_avg</span> <span class="o">=</span> <span class="n">asymptotic_approximation</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+
+    <span class="c1"># Calculate ensemble average</span>
+    <span class="n">ensemble_avg</span> <span class="o">=</span> <span class="n">ensemble_average</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the ratio</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">time_avg</span> <span class="o">/</span> <span class="n">ensemble_avg</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time to ensemble average ratio: </span><span class="si">{</span><span class="n">ratio</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ratio</span></div>
+
+
+<div class="viewcode-block" id="functions_convergence_rate">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.functions_convergence_rate">[docs]</a>
+<span class="k">def</span> <span class="nf">functions_convergence_rate</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the rate of convergence of f(t) to its asymptotic approximation g(t).</span>
+
+<span class="sd">    :param f: The original function</span>
+<span class="sd">    :type f: sympy expression</span>
+<span class="sd">    :param g: The asymptotic approximation</span>
+<span class="sd">    :type g: sympy expression</span>
+<span class="sd">    :param t: The symbol representing the variable approaching infinity</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :return: The order of convergence</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :exception: Returns None if an error occurs during the calculation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Calculate the relative error</span>
+        <span class="n">relative_error</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Abs</span><span class="p">((</span><span class="n">f</span> <span class="o">-</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="n">g</span><span class="p">)</span>
+
+        <span class="c1"># Try to find the limit of t^n * relative_error for increasing n</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">t</span> <span class="o">**</span> <span class="n">n</span> <span class="o">*</span> <span class="n">relative_error</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">oo</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">limit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">sp</span><span class="o">.</span><span class="n">oo</span> <span class="ow">in</span> <span class="p">[</span><span class="n">limit</span><span class="p">,</span> <span class="o">-</span><span class="n">limit</span><span class="p">]:</span>
+                <span class="n">n</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;O(1/t^</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;Convergence rate not found&quot;</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in calculating convergence rate: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="mean_convergence_rate_alpha_stable">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.mean_convergence_rate_alpha_stable">[docs]</a>
+<span class="k">def</span> <span class="nf">mean_convergence_rate_alpha_stable</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the convergence rate for a distribution with infinite variance (alpha-stable).</span>
+
+<span class="sd">    :param alpha: The stability parameter of the alpha-stable distribution (0 &lt; alpha &lt; 2)</span>
+<span class="sd">    :type alpha: float</span>
+<span class="sd">    :param n: The symbol representing the sample size</span>
+<span class="sd">    :type n: sympy symbol</span>
+<span class="sd">    :return: The rate of convergence</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :raises: ValueError if alpha is not in the range (0, 2)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">alpha</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Alpha must be between 0 and 2 exclusively&quot;</span><span class="p">)</span>
+
+    <span class="n">rate</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">O</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">alpha</span><span class="p">)))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;For a distribution in the domain of attraction of a stable law with index </span><span class="si">{</span><span class="n">alpha</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rate of convergence: </span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rate</span></div>
+
+
+<div class="viewcode-block" id="mad_convergence_rate_alpha_stable">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.mad_convergence_rate_alpha_stable">[docs]</a>
+<span class="k">def</span> <span class="nf">mad_convergence_rate_alpha_stable</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the convergence rate of Mean Absolute Deviation for alpha-stable processes.</span>
+
+<span class="sd">    :param alpha: The stability parameter of the alpha-stable distribution (1 &lt; alpha &lt; 2)</span>
+<span class="sd">    :type alpha: float</span>
+<span class="sd">    :param n: The symbol representing the sample size</span>
+<span class="sd">    :type n: sympy symbol</span>
+<span class="sd">    :return: The rate of convergence of the sample MAD</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :raises: ValueError if alpha is not in the range (1, 2)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">alpha</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Alpha must be between 1 and 2 exclusively for finite MAD&quot;</span><span class="p">)</span>
+
+    <span class="n">rate</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">O</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">alpha</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;For an alpha-stable process with alpha = </span><span class="si">{</span><span class="n">alpha</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rate of convergence of sample MAD: </span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Compared to normal rate (1/sqrt(n)): O(1/n^</span><span class="si">{</span><span class="mi">1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rate</span></div>
+
+
+<span class="c1"># Function to check Novikov&#39;s condition for applicability of Girsanov&#39;s theorem</span>
+<div class="viewcode-block" id="check_novikov_condition">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.check_novikov_condition">[docs]</a>
+<span class="k">def</span> <span class="nf">check_novikov_condition</span><span class="p">(</span><span class="n">theta_t</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks Novikov&#39;s condition for the applicability of Girsanov&#39;s theorem.</span>
+<span class="sd">    Novikov&#39;s condition requires that:</span>
+<span class="sd">    E[exp(1/2 * integral(theta_t^2 dt))] &lt; infinity.</span>
+
+<span class="sd">    :param theta_t: The adjustment to the drift (Radon-Nikodym derivative)</span>
+<span class="sd">    :type theta_t: sympy expression</span>
+<span class="sd">    :param t: The time variable</span>
+<span class="sd">    :type t: sympy symbol</span>
+<span class="sd">    :return: Whether Novikov&#39;s condition holds</span>
+<span class="sd">    :rtype: sympy boolean</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check the expectation of the exponential of theta_t^2 over time</span>
+    <span class="n">novikov_integral</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">theta_t</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+    <span class="n">expectation_novikov</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">novikov_integral</span><span class="p">)</span>
+
+    <span class="c1"># If expectation is finite, Novikov&#39;s condition holds</span>
+    <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">expectation_novikov</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">oo</span></div>
+
+
+<span class="c1"># Function to apply Girsanov&#39;s theorem and return the transformed drift</span>
+<div class="viewcode-block" id="apply_girsanov">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.apply_girsanov">[docs]</a>
+<span class="k">def</span> <span class="nf">apply_girsanov</span><span class="p">(</span><span class="n">initial_drift</span><span class="p">,</span> <span class="n">new_drift</span><span class="p">,</span> <span class="n">diffusion</span><span class="p">,</span> <span class="n">time_horizon</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies Girsanov&#39;s theorem to an Itô process to change the drift of the process.</span>
+
+<span class="sd">    :param initial_drift: The initial drift function mu_initial(X_t, t)</span>
+<span class="sd">    :type initial_drift: sympy expression</span>
+<span class="sd">    :param new_drift: The new drift function mu_new(X_t, t)</span>
+<span class="sd">    :type new_drift: sympy expression</span>
+<span class="sd">    :param diffusion: The diffusion term sigma(X_t, t)</span>
+<span class="sd">    :type diffusion: sympy expression</span>
+<span class="sd">    :param time_horizon: The time horizon T for the process</span>
+<span class="sd">    :type time_horizon: float</span>
+<span class="sd">    :return: The transformed drift and the new process</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    :raises ValueError: If Novikov&#39;s condition is not satisfied</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">W_t</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;W_t&#39;</span><span class="p">)</span>
+    <span class="c1"># Define the Radon-Nikodym derivative (theta_t is the change in drift)</span>
+    <span class="n">theta_t</span> <span class="o">=</span> <span class="p">(</span><span class="n">new_drift</span> <span class="o">-</span> <span class="n">initial_drift</span><span class="p">)</span> <span class="o">/</span> <span class="n">diffusion</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
+    <span class="n">novikov_condition</span> <span class="o">=</span> <span class="n">check_novikov_condition</span><span class="p">(</span><span class="n">theta_t</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">novikov_condition</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Novikov&#39;s condition is not satisfied. Girsanov&#39;s theorem cannot be applied.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Initial PDF under P (assuming W_t is N(0, t))</span>
+    <span class="n">initial_pdf</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">sp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">time_horizon</span><span class="p">))</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">W_t</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">time_horizon</span><span class="p">))</span>
+
+    <span class="c1"># Girsanov transformation: New measure requires reweighting the original PDF</span>
+    <span class="n">radon_nikodym_derivative</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">theta_t</span> <span class="o">*</span> <span class="n">W_t</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">theta_t</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time_horizon</span><span class="p">)))</span>
+
+    <span class="c1"># New PDF under the new measure</span>
+    <span class="n">new_pdf</span> <span class="o">=</span> <span class="n">initial_pdf</span> <span class="o">*</span> <span class="n">radon_nikodym_derivative</span>
+
+    <span class="c1"># Return the new PDF (simplified)</span>
+    <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">new_pdf</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calculate_moment">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.calculate_moment">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_moment</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the n-th moment of a probability density function (PDF).</span>
+
+<span class="sd">    :param pdf: The probability density function (PDF)</span>
+<span class="sd">    :type pdf: sympy expression</span>
+<span class="sd">    :param x: The random variable in the PDF</span>
+<span class="sd">    :type x: sympy symbol</span>
+<span class="sd">    :param n: The order of the moment to calculate (e.g., 1 for mean, 2 for variance)</span>
+<span class="sd">    :type n: int</span>
+<span class="sd">    :return: The n-th moment of the PDF</span>
+<span class="sd">    :rtype: sympy expression</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Define the n-th moment: integral of x^n * f(x) dx</span>
+    <span class="n">moment_n</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="n">n</span> <span class="o">*</span> <span class="n">pdf</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="n">sp</span><span class="o">.</span><span class="n">oo</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">oo</span><span class="p">))</span>
+
+    <span class="c1"># Simplify the result</span>
+    <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">moment_n</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="solve_fokker_planck">
+<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.solve.solve_fokker_planck">[docs]</a>
+<span class="k">def</span> <span class="nf">solve_fokker_planck</span><span class="p">(</span><span class="n">mu_expr</span><span class="p">,</span> <span class="n">sigma_expr</span><span class="p">,</span> <span class="n">initial_condition</span><span class="p">,</span> <span class="n">boundary_conditions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve the Fokker-Planck equation symbolically with initial and boundary conditions.</span>
+
+<span class="sd">    :param mu_expr: The drift term as a SymPy expression of x and t (e.g., x + t).</span>
+<span class="sd">    :type mu_expr: sympy expression</span>
+<span class="sd">    :param sigma_expr: The diffusion term as a SymPy expression of x and t (e.g., x**2 + t).</span>
+<span class="sd">    :type sigma_expr: sympy expression</span>
+<span class="sd">    :param initial_condition: A tuple (x0, P0_expr) where P(x0, 0) = P0_expr defines the initial condition.</span>
+<span class="sd">    :type initial_condition: tuple</span>
+<span class="sd">    :param boundary_conditions: A list of tuples specifying boundary conditions in the form:</span>
+<span class="sd">                                [(x_val1, P_expr1), (x_val2, P_expr2), ...] for Dirichlet conditions.</span>
+<span class="sd">    :type boundary_conditions: list</span>
+<span class="sd">    :return: The symbolic solution of the Fokker-Planck equation with the given conditions if solvable.</span>
+<span class="sd">    :rtype: sympy expression or str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Define variables</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x t&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Define the probability density function P(x, t)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+    <span class="c1"># Define the Fokker-Planck equation</span>
+    <span class="n">fokker_planck_eq</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Eq</span><span class="p">(</span>
+        <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">t</span><span class="p">),</span>
+        <span class="o">-</span><span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">mu_expr</span> <span class="o">*</span> <span class="n">P</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">sigma_expr</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">P</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="n">x</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extract initial condition</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">P0_expr</span> <span class="o">=</span> <span class="n">initial_condition</span>
+
+    <span class="c1"># Add boundary conditions to a list</span>
+    <span class="n">boundary_conditions_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="n">boundary_conditions</span><span class="p">:</span>
+        <span class="n">x_val</span><span class="p">,</span> <span class="n">P_expr</span> <span class="o">=</span> <span class="n">bc</span>
+        <span class="n">boundary_conditions_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x_val</span><span class="p">)</span> <span class="o">-</span> <span class="n">P_expr</span><span class="p">)</span>
+
+    <span class="c1"># Try to solve the Fokker-Planck equation with initial and boundary conditions</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">dsolve</span><span class="p">(</span><span class="n">fokker_planck_eq</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">ics</span><span class="o">=</span><span class="p">{</span><span class="n">P</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="n">P0_expr</span><span class="p">})</span>
+
+        <span class="c1"># Apply boundary conditions manually if necessary</span>
+        <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="n">boundary_conditions_list</span><span class="p">:</span>
+            <span class="n">solution</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">solution</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">bc</span><span class="o">.</span><span class="n">lhs</span><span class="p">,</span> <span class="n">bc</span><span class="o">.</span><span class="n">rhs</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">solution</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Could not solve the equation: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="c1"># Example usage with drift and diffusion terms, initial and boundary conditions</span>
+
+    <span class="c1"># Define drift and diffusion terms</span>
+    <span class="n">mu_expr</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">t</span>  <span class="c1"># Example drift term: linear in x and t</span>
+    <span class="n">sigma_expr</span> <span class="o">=</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">t</span>  <span class="c1"># Example diffusion term: quadratic in x, linear in t</span>
+
+    <span class="c1"># Define initial condition: P(x, 0) = exp(-x**2)</span>
+    <span class="n">initial_condition</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="c1"># Define boundary conditions: P(-inf, t) = 0 and P(inf, t) = 0 (at the boundaries)</span>
+    <span class="n">boundary_conditions</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="n">sp</span><span class="o">.</span><span class="n">oo</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">oo</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>  <span class="c1"># Dirichlet conditions at infinity</span>
+
+    <span class="c1"># Solve the Fokker-Planck equation symbolically</span>
+    <span class="n">solution</span> <span class="o">=</span> <span class="n">solve_fokker_planck</span><span class="p">(</span><span class="n">mu_expr</span><span class="p">,</span> <span class="n">sigma_expr</span><span class="p">,</span> <span class="n">initial_condition</span><span class="p">,</span> <span class="n">boundary_conditions</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
+
+
+
+
+
+
+
+
+
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Ergodicity Library</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Ihor Kendiukhov.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
