@@ -75,7 +75,6 @@ ufi.fit_utility_functions(dataset, choices)
 ufi.plot_utility_functions()
 """
 from tensorflow.python.framework.ops import strip_name_scope
-
 from ergodicity.agents.sml import *
 from ergodicity.tools.helper import ProcessEncoder
 import numpy as np
@@ -91,6 +90,7 @@ import pandas as pd
 import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+from ergodicity.tools.compute import *
 
 class UtilityFunction:
     """
@@ -216,7 +216,7 @@ class UtilityFunctionInference:
     economics, decision theory, and reinforcement learning, where understanding the underlying
     utility functions driving agent behavior is crucial.
     """
-    def __init__(self, model_path: str, param_ranges: Dict[str, Dict[str, Tuple[float, float]]]):
+    def __init__(self, model_path: str, param_ranges: Dict[str, Dict[str, Tuple[float, float]]], model=None):
         """
         Initialize the UtilityFunctionInference class with a trained model and parameter ranges.
 
@@ -224,8 +224,13 @@ class UtilityFunctionInference:
         :type model_path: str
         :param param_ranges: Dictionary of process types and their parameter ranges
         :type param_ranges: Dict[str, Dict[str, Tuple[float, float]]]
+        :param model: Optional Keras model instance to use instead of loading from file. If None, the model is loaded from the file.
+        :type model: tf.keras.Model or None
         """
-        self.model = self.load_model_safely(model_path)
+        if model is not None:
+            self.model = model
+        else:
+            self.model = self.load_model(model_path)
         self.agent = NeuralNetworkAgent(self.model)
         self.process_encoder = ProcessEncoder()
         self.utility_functions = []
@@ -233,8 +238,10 @@ class UtilityFunctionInference:
         self.mcmc_samples = {}
         self.regression_model = None
         self.regression_history = None
+        self.dataset = None
+        self.choices = None
 
-    def load_model_safely(self, model_path: str):
+    def load_model(self, model_path: str):
         """
         Load a Keras model from a file, handling potential compatibility issues.
 
@@ -292,68 +299,84 @@ class UtilityFunctionInference:
         """
         self.utility_functions.append(utility_function)
 
-    def generate_dataset(self, n_processes: int) -> List[np.ndarray]:
+    def generate_dataset(self, n_processes: int, n_options: int = 2, simulate_method=True) -> List[List[np.ndarray]]:
         """
         Generate a dataset of stochastic processes for analysis.
 
-        :param n_processes: Number of processes to generate
+        :param n_processes: Number of datasets to generate (i.e., number of decision instances)
         :type n_processes: int
-        :return:  List of datasets, each containing process trajectories
-        :rtype: List[np.ndarray]
+        :param n_options: Number of process options per decision instance
+        :type n_options: int
+        :return:  List of datasets, each containing process options
+        :rtype: List[List[np.ndarray]]
         """
         dataset = []
         process_types = list(self.param_ranges.keys())
 
         for _ in range(n_processes):
-            process_type = np.random.choice(process_types)
-            process_type_code = process_types.index(process_type) + 1  # 1-indexed
+            process_options = []
+            for _ in range(n_options):
+                process_type = np.random.choice(process_types)
+                process_type_code = process_types.index(process_type) + 1  # 1-indexed
 
-            params = {param: np.random.uniform(low, high)
-                      for param, (low, high) in self.param_ranges[process_type].items()}
+                params = {param: np.random.uniform(low, high)
+                          for param, (low, high) in self.param_ranges[process_type].items()}
 
-            # Create a process instance
-            # print(process_type)
-            process_type = globals()[process_type]
-            process = process_type(**params)
+                # Create a process instance
+                process_class = globals()[process_type]
+                process = process_class(**params)
 
-            # Simulate the process
-            trajectory = process.simulate_until(timestep=0.1, num_instances=1, condition=lambda X: X >= 2, X0=1,
-                                                plot=False)
+                # Simulate the process
+                if simulate_method:
+                    trajectory = process.simulate(
+                        t=1, timestep=0.1, num_instances=1000, plot=False)
+                else:
+                    trajectory = process.simulate_until(
+                        timestep=0.1, num_instances=1000, condition=lambda X: X >= 2, X0=1, plot=False)
 
-            # Prepare data: [time, process_type_code, param1, param2, ..., trajectory_value]
-            times = np.arange(trajectory.shape[0]) * 0.1
-            param_values = list(params.values())
-            data = np.column_stack((times[:, np.newaxis],
-                                    np.full((trajectory.shape[0], 1), process_type_code),
-                                    np.tile(param_values, (trajectory.shape[0], 1)),
-                                    trajectory))
+                # Prepare data: trajectory values
+                # Assuming trajectory is of shape (num_time_steps, num_instances)
+                # We take the final values for each instance
+                final_values = trajectory[-1, :]
 
-            dataset.append(data)
+                process_data = np.column_stack((
+                    np.full(final_values.shape, process_type_code),
+                    np.tile(list(params.values()), (final_values.shape[0], 1)),
+                    final_values.reshape(-1, 1)
+                ))
+
+                process_options.append(process_data)
+
+            dataset.append(process_options)
 
         return dataset
 
-    def get_agent_choices(self, dataset: List[np.ndarray]) -> List[int]:
+    def get_agent_choices(self, data: List[np.ndarray]) -> int:
         """
-        Get the agent's choices based on the dataset of processes.
+        Get the agent's choice based on a dataset of process options.
 
-        :param dataset: List of datasets, each containing process trajectories
-        :type dataset: List[np.ndarray]
-        :return: List of agent choices
-        :rtype: List[int]
+        :param data: A list of process options, each containing process data (np.ndarray)
+        :type data: List[np.ndarray]
+        :return: The index of the agent's choice
+        :rtype: int
         """
         all_encoded_processes = []
-        for data in dataset:
+        for process_data in data:
             try:
-                process_type = self.get_process_type(data[0, 1])
-                params = {k: v for k, v in zip(self.param_ranges[process_type].keys(),
-                                               data[0, 2:2 + len(self.param_ranges[process_type])])}
-                process_type = globals()[process_type]
-                process = process_type(**params)
+                # Extract process_type_code and parameters from the first row
+                first_row = process_data[0]
+                process_type_code = first_row[0]
+                process_type = self.get_process_type(process_type_code)
+                num_params = len(self.param_ranges[process_type])
+                params_values = first_row[1:1 + num_params]
+                params = {k: v for k, v in zip(self.param_ranges[process_type].keys(), params_values)}
+                process_class = globals()[process_type]
+                process = process_class(**params)
                 encoded_process = self.process_encoder.encode_process_with_time(process, 1.0)
                 all_encoded_processes.append(encoded_process)
             except ValueError as e:
                 print(f"Error processing data point: {e}")
-                # Skip this data point
+                # Skip this process option
                 continue
 
         if not all_encoded_processes:
@@ -364,7 +387,7 @@ class UtilityFunctionInference:
         choice = self.agent.select_process(all_encoded_processes)
 
         print(f"Agent's choice: {choice}")
-        return [choice]  # Return as a list to maintain consistency with previous implementation
+        return choice  # Return the index of the chosen process
 
     def get_process_type(self, type_code) -> str:
         """
@@ -386,43 +409,80 @@ class UtilityFunctionInference:
         else:
             raise ValueError(f"Invalid type_code: {type_code}. Valid codes are {list(type_mapping.keys())}")
 
-    def negative_log_likelihood(self, params: List[float], utility_func: Callable, dataset: List[np.ndarray],
+    def generate_choices(self, n_options: int = 2, n_choices: int = 100):
+        """
+        Generate agent choices among stochastic processes for testing utility functions with the corresponding dataset of processes to choose from.
+
+        :param n_options: Number of process options per decision instance
+        :param n_choices: Number of choices to generate (number of decision instances)
+        :return dataset: A list of datasets, each containing process options
+        :rtype dataset: List[List[np.ndarray]]
+        :return: A list of choices where each choice is an index of the selected process
+        :rtype: List[int]
+        """
+        choices = []
+        dataset = []
+        for i in range(n_choices):
+            data = self.generate_dataset(n_processes=1, n_options=n_options)
+            data = data[0]  # Since generate_dataset returns a list of datasets
+            choice = self.get_agent_choices(data)
+            choices.append(choice)
+            dataset.append(data)
+
+        return dataset, choices
+
+    def negative_log_likelihood(self, params: List[float], utility_func: Callable, dataset: List[List[np.ndarray]],
                                 choices: List[int]) -> float:
         """
-        Calculate the negative log-likelihood of the utility function given the dataset and choices.
-        It is needed for maximum likelihood estimation (MLE) optimization.
+        Calculate the negative log-likelihood of the utility function given the dataset and choices,
+        assuming the agent maximizes expected utility.
 
         :param params: Utility function parameters
         :type params: List[float]
         :param utility_func: Utility function to evaluate
         :type utility_func: Callable
-        :param dataset: List of datasets, each containing process trajectories
-        :type dataset: List[np.ndarray]
+        :param dataset: List of datasets, each containing lists of process trajectories
+        :type dataset: List[List[np.ndarray]]
         :param choices: List of agent choices
         :type choices: List[int]
         :return: Negative log-likelihood value
         :rtype: float
         """
-        utility_values = np.array(
-            [utility_func(data[0, 2], *params) for data in dataset])  # Use first parameter as input
-        probs = utility_values / np.sum(utility_values)
-        return -np.sum(np.log(probs[choices]))
+        total_nll = 0
+        for data, choice in zip(dataset, choices):
+            expected_utilities = []
+            for process_data in data:
+                final_values = process_data[:, -1]  # Final values of trajectories
+                utilities = utility_func(final_values, *params)
+                expected_utility = np.mean(utilities)
+                expected_utilities.append(expected_utility)
+            expected_utilities = np.array(expected_utilities)
+            # Softmax over expected utilities
+            exp_utilities = np.exp(expected_utilities - np.max(expected_utilities))
+            probs = exp_utilities / np.sum(exp_utilities)
+            total_nll -= np.log(probs[choice])
+        return total_nll
 
-    def fit_utility_functions(self, dataset: List[np.ndarray], choices: List[int]):
+    def fit_utility_functions(self, dataset: List[List[np.ndarray]], choices: List[int]):
         """
-        Fit the utility functions to the observed choices using maximum likelihood estimation (MLE).
+        Fit the utility functions to the observed choices using maximum likelihood estimation (MLE),
+        assuming the agent maximizes expected utility.
 
-        :param dataset: List of datasets, each containing process trajectories
-        :type dataset: List[np.ndarray]
+        :param dataset: List of datasets, each containing lists of process trajectories
+        :type dataset: List[List[np.ndarray]]
         :param choices: List of agent choices
         :type choices: List[int]
         :return: None
         :rtype: None
         """
         for utility_function in self.utility_functions:
-            res = minimize(self.negative_log_likelihood, x0=utility_function.initial_params,
-                           args=(utility_function.func, dataset, choices),
-                           method='Nelder-Mead', options={'maxiter': 1000})
+            res = minimize(
+                self.negative_log_likelihood,
+                x0=utility_function.initial_params,
+                args=(utility_function.func, dataset, choices),
+                method='Nelder-Mead',
+                options={'maxiter': 1000}
+            )
             utility_function.fitted_params = res.x
             utility_function.nll = res.fun
 
@@ -453,22 +513,22 @@ class UtilityFunctionInference:
         for utility_function in self.utility_functions:
             y = [utility_function(xi) for xi in x]
             plt.plot(x, y, label=utility_function.name)
-        plt.xlabel('First Parameter (e.g., μ for Brownian Motion)')
+        plt.xlabel('Process value')
         plt.ylabel('Utility')
         plt.title('Fitted Utility Functions')
         plt.legend()
         plt.grid(True)
         plt.show()
 
-    def bayesian_fit_utility_functions(self, dataset: List[np.ndarray], choices: List[int],
+    def bayesian_fit_utility_functions(self, dataset: List[List[np.ndarray]], choices: List[int],
                                        n_samples: int = 10000, burn_in: int = 1000):
         """
         Perform Bayesian inference on utility functions using Metropolis-Hastings sampling.
         It generates samples from the posterior distribution of the utility function parameters.
-        In the result, it provides a distribution of parameter values instead of a single point estimate.
+        Provides a distribution of parameter values instead of a single point estimate.
 
-        :param dataset: List of datasets, each containing process trajectories
-        :type dataset: List[np.ndarray]
+        :param dataset: List of datasets, each containing lists of process trajectories
+        :type dataset: List[List[np.ndarray]]
         :param choices: List of agent choices
         :type choices: List[int]
         :param n_samples: Number of MCMC samples to generate
@@ -478,21 +538,24 @@ class UtilityFunctionInference:
         :return: None
         :rtype: None
         """
+        # Store dataset and choices as instance variables
+        self.dataset = dataset
+        self.choices = choices
+
         for utility_function in self.utility_functions:
             samples = self.metropolis_hastings(utility_function, dataset, choices, n_samples, burn_in)
             self.mcmc_samples[utility_function.name] = samples
 
-    def metropolis_hastings(self, utility_function, dataset: List[np.ndarray], choices: List[int],
+    def metropolis_hastings(self, utility_function, dataset: List[List[np.ndarray]], choices: List[int],
                             n_samples: int, burn_in: int) -> np.ndarray:
         """
         Perform Metropolis-Hastings sampling for Bayesian inference on utility functions.
-        It generates samples from the posterior distribution of the utility function parameters.
-        It returns an array of MCMC samples for the utility function parameters.
+        Generates samples from the posterior distribution of the utility function parameters.
 
         :param utility_function: Utility function to fit
         :type utility_function: UtilityFunction
-        :param dataset: List of datasets, each containing process trajectories
-        :type dataset: List[np.ndarray]
+        :param dataset: List of datasets, each containing lists of process trajectories
+        :type dataset: List[List[np.ndarray]]
         :param choices: List of agent choices
         :type choices: List[int]
         :param n_samples: Number of samples to generate
@@ -510,14 +573,18 @@ class UtilityFunctionInference:
             # Propose new parameters
             proposal_params = current_params + norm.rvs(scale=0.1, size=n_params)
 
-            # Calculate log likelihood ratio
-            current_ll = -self.negative_log_likelihood(current_params, utility_function.func, dataset, choices)
-            proposal_ll = -self.negative_log_likelihood(proposal_params, utility_function.func, dataset, choices)
+            # Calculate log likelihoods
+            current_nll = self.negative_log_likelihood(current_params, utility_function.func, dataset, choices)
+            proposal_nll = self.negative_log_likelihood(proposal_params, utility_function.func, dataset, choices)
 
-            # Accept or reject
-            if np.log(np.random.random()) < proposal_ll - current_ll:
+            # Calculate acceptance probability
+            acceptance_prob = np.exp(-(proposal_nll - current_nll))
+
+            # Accept or reject the new parameters
+            if np.random.rand() < acceptance_prob:
                 current_params = proposal_params
 
+            # Store the sample after burn-in period
             if i >= burn_in:
                 samples[i - burn_in] = current_params
 
@@ -537,15 +604,25 @@ class UtilityFunctionInference:
                 print(f"  Parameter {i + 1}: Mean = {mean:.4f}, Std = {std:.4f}")
             print()
 
-    def plot_bayesian_results(self, x_range: Tuple[float, float] = (0, 0.5)):
+    def plot_bayesian_results(self, x_range: Tuple[float, float] = None):
         """
         Plot the fitted utility functions based on Bayesian inference.
 
-        :param x_range: Range of x values to plot
-        :type x_range: Tuple[float, float]
+        :param x_range: Range of x values to plot. If None, it will be determined based on the data.
+        :type x_range: Tuple[float, float] or None
         :return: None
         :rtype: None
         """
+        if x_range is None:
+            # Determine x_range based on the final values in the dataset
+            all_final_values = []
+            for data in self.dataset:
+                for process_data in data:
+                    final_values = process_data[:, -1]
+                    all_final_values.extend(final_values)
+            x_min, x_max = np.min(all_final_values), np.max(all_final_values)
+            x_range = (x_min, x_max)
+
         x = np.linspace(x_range[0], x_range[1], 100)
         plt.figure(figsize=(12, 8))
 
@@ -563,7 +640,7 @@ class UtilityFunctionInference:
             y_95 = np.percentile(y_samples, 95, axis=0)
             plt.fill_between(x, y_5, y_95, alpha=0.3)
 
-        plt.xlabel('First Parameter (e.g., μ for Brownian Motion)')
+        plt.xlabel('Process Value')
         plt.ylabel('Utility')
         plt.title('Fitted Utility Functions (Bayesian Inference)')
         plt.legend()
@@ -592,14 +669,17 @@ class UtilityFunctionInference:
         plt.tight_layout()
         plt.show()
 
-    def regression_fit(self, n_processes: int = 10000, test_size: float = 0.2, epochs: int = 100,
+    def regression_fit(self, n_processes: int = 10000, n_options: int = 2, test_size: float = 0.2, epochs: int = 100,
                        batch_size: int = 32):
         """
         Train a regression model to predict agent preferences based on process parameters.
-        The model is trained using a dataset of stochastic processes and agent choices.
+        The model is trained using a dataset of stochastic processes and agent choices,
+        assuming the agent maximizes expected utility.
 
-        :param n_processes: Number of processes to generate for training
+        :param n_processes: Number of decision instances to generate for training
         :type n_processes: int
+        :param n_options: Number of process options per decision instance
+        :type n_options: int
         :param test_size: Fraction of data to use for testing
         :type test_size: float
         :param epochs: Number of training epochs
@@ -610,30 +690,48 @@ class UtilityFunctionInference:
         :return: None
         :rtype: None
         """
-        if test_size <= 0 or test_size >= 1:
+        # Input Validation
+        if not (0 < test_size < 1):
             raise ValueError("test_size must be between 0 and 1")
         if epochs <= 0:
             raise ValueError("epochs must be a positive integer")
         if batch_size <= 0:
             raise ValueError("batch_size must be a positive integer")
 
-        # Generate dataset and get agent choice
-        dataset = self.generate_dataset(n_processes)
-        choice = self.get_agent_choices(dataset)[0]  # Get the single choice
+        # Generate dataset and get agent choices
+        dataset, choices = self.generate_choices(n_options=n_options, n_choices=n_processes)
+
+        # Assign dataset and choices to instance variables for potential use in plotting
+        self.dataset = dataset
+        self.choices = choices
 
         # Prepare input data (process type code and parameters) and output data (choice)
         X = []
-        for data in dataset:
-            process_type_code = data[0, 1]
-            params = data[0, 2:2 + len(list(self.param_ranges.values())[0])]
-            X.append(np.concatenate(([process_type_code], params)))
+        y = []
+        for data, choice in zip(dataset, choices):
+            for idx, process_data in enumerate(data):
+                # Extract process_type_code and parameters from the first row
+                first_row = process_data[0]
+                process_type_code = first_row[0]
+                process_type = self.get_process_type(process_type_code)
+                num_params = len(self.param_ranges[process_type])
+                params_values = first_row[1:1 + num_params]
+                process_params = list(params_values)
+
+                # Create feature vector: [process_type_code, param1, param2, ...]
+                feature_vector = np.concatenate(([process_type_code], params_values))
+                X.append(feature_vector)
+
+                # Create label: 1 if this process option is the chosen one, else 0
+                label = 1 if idx == choice else 0
+                y.append(label)
+
         X = np.array(X)
-        y = np.zeros(len(X))
-        y[choice] = 1  # Set the chosen process to 1, all others to 0
+        y = np.array(y)
 
         # Print shapes for debugging
-        print(f"X shape: {X.shape}")
-        print(f"y shape: {y.shape}")
+        print(f"X shape: {X.shape}")  # Should be (n_processes * n_options, num_features)
+        print(f"y shape: {y.shape}")  # Should be (n_processes * n_options,)
 
         # Split data into training and testing sets
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
@@ -641,16 +739,18 @@ class UtilityFunctionInference:
         # Print final shapes for debugging
         print(f"X_train shape: {X_train.shape}")
         print(f"X_test shape: {X_test.shape}")
+        print(f"y_train shape: {y_train.shape}")
+        print(f"y_test shape: {y_test.shape}")
 
-        # Create and compile the model
+        # Create and compile the regression model
         self.regression_model = keras.Sequential([
             keras.layers.Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
             keras.layers.Dense(32, activation='relu'),
-            keras.layers.Dense(1, activation='sigmoid')
+            keras.layers.Dense(1, activation='sigmoid')  # Binary classification
         ])
         self.regression_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-        # Train the model
+        # Train the regression model
         self.regression_history = self.regression_model.fit(
             X_train, y_train,
             epochs=epochs,
@@ -882,39 +982,68 @@ class UtilityFunctionInference:
         plt.tight_layout()
         plt.show()
 
-    def perform_irl(self, n_processes=1000):
+    def perform_irl(self, n_processes=1000, n_options=2):
         """
         Perform Inverse Reinforcement Learning (IRL) to infer the reward function from agent choices.
         It uses the MaxEntIRL algorithm to learn the reward weights based on agent behavior.
         It is designed to understand the underlying reward structure that drives the agent's decisions.
 
-        :param n_processes: Number of processes to generate for IRL
+        :param n_processes: Number of decision instances to generate for IRL
         :type n_processes: int
+        :param n_options: Number of process options per decision instance
+        :type n_options: int
         :return: Inferred reward weights
         :rtype: np.ndarray
         """
 
-        dataset = self.generate_dataset(n_processes)
-        choices = self.get_agent_choices(dataset)
+        # Generate dataset and agent choices
+        dataset, choices = self.generate_choices(n_options=n_options, n_choices=n_processes)
+
+        # Assign dataset and choices to instance variables for potential use in plotting
+        self.dataset = dataset
+        self.choices = choices
 
         # Prepare trajectories for IRL
         trajectories = []
         for data, choice in zip(dataset, choices):
-            state = np.concatenate(([data[0, 1]], data[0, 2:2 + len(list(self.param_ranges.values())[0])]))
-            trajectories.append([(state, choice)])
+            trajectory = []
+            for idx, process_data in enumerate(data):
+                # Extract process features from the first trajectory (all trajectories have the same features)
+                first_row = process_data[0]
+                process_type_code = first_row[0]
+                process_type = self.get_process_type(process_type_code)
+                num_params = len(self.param_ranges[process_type])
+                params_values = first_row[1:1 + num_params]
+                state = np.concatenate(([process_type_code], params_values))
+
+                # Define action: 1 if chosen, 0 otherwise
+                action = 1 if idx == choice else 0
+
+                # Append the (state, action) pair to the trajectory
+                trajectory.append((state, action))
+            trajectories.append(trajectory)
 
         # Initialize and fit IRL model
-        n_features = len(state)
-        n_actions = len(set(choices))
+        # Number of features corresponds to the length of the state vector
+        n_features = len(trajectories[0][0][0])
+        # Number of actions: binary (chosen or not chosen)
+        n_actions = 2
+
+        # Initialize MaxEntIRL model
         irl_model = MaxEntIRL(n_features, n_actions)
+
+        # Fit the IRL model using the prepared trajectories
         reward_weights = irl_model.fit(trajectories)
 
         # Print and plot results
         print("Inferred Reward Weights:")
-        feature_names = ['Process Type'] + list(self.param_ranges[list(self.param_ranges.keys())[0]].keys())
+        # Feature names: ['Process Type', 'Param1', 'Param2', ...]
+        process_types = list(self.param_ranges.keys())
+        feature_names = ['Process Type'] + list(self.param_ranges[process_types[0]].keys())
         for name, weight in zip(feature_names, reward_weights):
             print(f"{name}: {weight:.4f}")
 
+        # Plot the inferred reward weights
         plt.figure(figsize=(10, 6))
         plt.bar(feature_names, reward_weights)
         plt.title("Inferred Reward Weights")
@@ -1488,7 +1617,7 @@ class UtilityFunctionTester:
 
         return results
 
-    def run_tests(self, n_processes: int, n_steps: int, n_jobs: int = -1):
+    def run_tests(self, n_processes: int, n_steps: int, n_jobs: int = 1):
         """
         Run tests for multiple processes in parallel.
 
@@ -1603,3 +1732,170 @@ if __name__=='__main__':
     tester.run_tests(n_processes=1000, n_steps=1000)
     tester.analyze_results()
     tester.plot_optimal_utility_vs_process_params()
+
+
+# Utility functions as functions of x without parameters
+def utility_power(x):
+    return x  # Equivalent to x ** 0.5
+
+def utility_exp(x):
+    return x**2  # Equivalent to alpha = 1.0
+
+def utility_log(x):
+    return np.log(x + 1e-8)  # Small constant to avoid log(0)
+
+# Updated utility_functions list
+utility_functions = [
+    {'name': 'Power', 'function': utility_power},
+    {'name': 'Exponential', 'function': utility_exp},
+    {'name': 'Logarithmic', 'function': utility_log},
+]
+
+# Define the agent class
+class AgentEvaluation:
+    """
+    AgentEvaluation Class
+    """
+    def __init__(self, model):
+        """
+        Initialize the AgentEvaluation with the given model.
+
+        :param model: Trained model for selecting processes
+        :type model: Model
+        """
+        self.model = model
+
+    def select_process(self, encoded_processes, select_max=True):
+        """
+        Select a process based on the model's predictions.
+
+        :param encoded_processes: Encoded processes to choose from
+        :param select_max: Whether to select the process with the maximum score
+        :return: Index of the selected process
+        """
+        # Compute scores for each process
+        scores = self.model.predict(encoded_processes)
+        if select_max:
+            choice = np.argmax(scores)
+        else:
+            choice = np.argmin(scores)
+        return choice
+
+# Main function
+def evaluate_utility_functions(utility_functions, agent, processes, param_ranges, n_process_batches=100, n_options=2, num_instances=1000, select_max=True):
+    """
+    Evaluate utility functions based on agent choices.
+    The utility functions are estimated according to the maximum likelihood of the agent's choices.
+
+    :param utility_functions: List of utility functions to evaluate
+    :rtype: List[Dict[str, float]]
+    :param agent: An instance of the AgentEvaluation class
+    :rtype agent: AgentEvaluation
+    :param processes: A list of process types
+    :rtype processes: List[Dict[str, str]]
+    :param param_ranges: A dictionary of parameter ranges for each process type
+    :rtype param_ranges: Dict[str, Dict[str, Tuple[float, float]]]
+    :param n_process_batches: Number of process batches to evaluate
+    :rtype n_process_batches: int
+    :param n_options: Number of process options per batch
+    :rtype n_options: int
+    :param num_instances: Number of instances used in the expected utility calculation
+    :rtype num_instances: int
+    :param select_max: Whether to select the process with the maximum expected utility or with the minimum
+    :rtype select_max: bool
+    :return: Dictionary of likelihood scores for each utility function
+    :rtype: Dict[str, float]
+    """
+    # Define the process encoder
+    process_encoder = ProcessEncoder()
+
+    # Initialize counters for utility functions
+    utility_counts = {uf['name']: 0 for uf in utility_functions}
+
+    # Total number of batches
+    total_batches = n_process_batches
+
+    for batch_index in range(n_process_batches):
+        # For each batch, generate n_options processes
+        process_options = []
+        for option_index in range(n_options):
+            # Randomly select a process type
+            process_info = np.random.choice(processes)
+            process_type = process_info['type']
+            process_class = globals()[process_type]
+            # Randomly select parameters within specified ranges
+            params = {}
+            for param_name, (low, high) in param_ranges[process_type].items():
+                params[param_name] = np.random.uniform(low, high)
+            # Create process instance
+            process = process_class(**params)
+            # Simulate the process to get final values x
+            x = process.simulate(t=1.0, num_instances=num_instances)
+            times, x = separate(x)
+            # Get final values
+            x = x[:, -1]
+            # x = np.maximum(x, 0.001)  # Ensure x is positive
+            # Store the process data
+            process_data = {
+                'process': process,
+                'x': x
+            }
+            process_options.append(process_data)
+
+        # Encode the processes using ProcessEncoder
+        encoded_processes = []
+        for process_data in process_options:
+            process = process_data['process']
+            encoded_process = process_encoder.encode_process_with_time(process, time=1.0)
+            encoded_processes.append(encoded_process)
+        encoded_processes = np.array(encoded_processes)
+
+        # The agent makes its choice
+        agent_choice = agent.select_process(encoded_processes, select_max=select_max)
+
+        # For each utility function, compute expected utilities and determine the process with the highest expected utility
+        for uf in utility_functions:
+            expected_utilities = []
+            for p_data in process_options:
+                x = p_data['x']
+                u_x = uf['function'](x)
+                expected_u = np.mean(u_x)
+                expected_utilities.append(expected_u)
+            # Determine the process with the maximum expected utility
+            if select_max:
+                utility_choice = np.argmax(expected_utilities)
+            else:
+                utility_choice = np.argmin(expected_utilities)
+            # Compare with agent's choice
+            if utility_choice == agent_choice:
+                utility_counts[uf['name']] += 1
+
+    # After all batches, calculate likelihood scores
+    likelihood_scores = {}
+    for uf in utility_functions:
+        count = utility_counts[uf['name']]
+        likelihood = count / total_batches
+        likelihood_scores[uf['name']] = likelihood
+
+    # Return the likelihood scores
+    return likelihood_scores
+
+# Example usage
+if __name__ == "__main__":
+    # Instantiate the agent
+    agent = AgentEvaluation()
+
+    # Evaluate utility functions
+    likelihood_scores = evaluate_utility_functions(
+        utility_functions=utility_functions,
+        agent=agent,
+        n_process_batches=100,
+        n_options=2,
+        num_instances=1000,
+        select_max=True
+    )
+
+    # Print the likelihood scores
+    print("Likelihood scores for each utility function:")
+    for name, score in likelihood_scores.items():
+        print(f"{name}: {score:.4f}")

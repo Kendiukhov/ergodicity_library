@@ -80,8 +80,8 @@ ufi.fit_utility_functions(dataset, choices)
 
 ufi.plot_utility_functions()
 """
-
 import tensorflow as tf
+from sympy.physics.control import step_response_plot
 from sympy.physics.units import length
 from tensorflow import keras
 import numpy as np
@@ -95,7 +95,8 @@ from datetime import datetime
 from ergodicity.configurations import *
 from ergodicity.process.default_values import *
 from ergodicity.tools.helper import ProcessEncoder
-
+import sympy as sp
+import matplotlib.pyplot as plt
 
 def create_model(hidden_layers, output_shape):
     """
@@ -203,7 +204,7 @@ def worker(args):
     return results
 
 def generate_dataset(processes: List[Dict[str, Any]], param_ranges: Dict[str, Dict[str, tuple]], num_instances: int,
-                     n_simulations: int, output_dir: str = 'output_general', save: bool = False) -> List[np.ndarray]:
+                     n_simulations: int, output_dir: str = 'output_general', save: bool = False, simulate_method=False) -> List[np.ndarray]:
     """
     Generate a dataset of simulated processes with random parameters.
 
@@ -213,50 +214,63 @@ def generate_dataset(processes: List[Dict[str, Any]], param_ranges: Dict[str, Di
     :type param_ranges: Dict[str, Dict[str, tuple]]
     :param num_instances: Number of instances to simulate for each process.
     :type num_instances: int
-    :param n_simulations: Number of simulations to run for each process.
+    :param n_simulations: Number of simulations to run for each process. It sets how many process objects will be created within the specified parameter ranges.
     :type n_simulations: int
     :param output_dir: Output directory to save the results.
     :type output_dir: str
     :param save: Boolean indicating whether to save the results to files.
     :type save: bool
+    :param simulate_method: Boolean indicating whether to use the simulation method or the simulate_until method.
+    :type simulate_method: bool
     :return: List of arrays containing the simulated process data.
     :rtype: List[np.ndarray]
     """
-    os.makedirs(output_dir, exist_ok=True)
+    if simulate_method:
+        dataset = []
+        for process in processes:
+            process_type = process['type']
+            params = {k: np.mean(v) for k, v in param_ranges[process_type].items()}  # Use mean of parameter ranges
+            process_instance = globals()[process_type](**params)
+            data = process_instance.simulate(t=1, timestep=timestep_default, num_instances=1)
+            dataset.append(data)
+        return dataset
 
-    with ProcessPoolExecutor() as executor:
-        args = [(process['type'], param_ranges[process['type']], num_instances, n_simulations) for process in processes]
-        all_results = list(executor.map(worker, args))
+    else:
+        os.makedirs(output_dir, exist_ok=True)
 
-    # Flatten the list of lists
-    flat_results = [item for sublist in all_results for item in sublist]
+        with ProcessPoolExecutor() as executor:
+            args = [(process['type'], param_ranges[process['type']], num_instances, n_simulations) for process in processes]
+            all_results = list(executor.map(worker, args))
 
-    # Save results to files and prepare return data
-    return_data = []
-    for result, process_type, params, sim in flat_results:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{process_type}_{sim}_{timestamp}.csv"
-        filepath = os.path.join(output_dir, filename)
+        # Flatten the list of lists
+        flat_results = [item for sublist in all_results for item in sublist]
 
-        if save:
-            with open(filepath, 'w', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow(['process_type'] + list(params.keys()) + ['instance', 'time'] + [f'value_{i}' for i in
-                                                                                                 range(result.shape[2])])
-                for inst in range(num_instances):
-                    for t in range(result.shape[1]):
-                        row = [process_type] + list(params.values()) + [inst, t * 0.01] + list(result[inst, t])
-                        writer.writerow(row)
+        # Save results to files and prepare return data
+        return_data = []
+        for result, process_type, params, sim in flat_results:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"{process_type}_{sim}_{timestamp}.csv"
+            filepath = os.path.join(output_dir, filename)
 
-        # print(f"Saved simulation to {filepath}")
+            if save:
+                with open(filepath, 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(['process_type'] + list(params.keys()) + ['instance', 'time'] + [f'value_{i}' for i in
+                                                                                                     range(result.shape[2])])
+                    for inst in range(num_instances):
+                        for t in range(result.shape[1]):
+                            row = [process_type] + list(params.values()) + [inst, t * 0.01] + list(result[inst, t])
+                            writer.writerow(row)
 
-        # Prepare data for return, including parameter values
-        times = np.arange(result.shape[1]) * 0.01
-        param_values = np.array(list(params.values()))
-        return_data.append(
-            np.column_stack((times[:, np.newaxis], np.tile(param_values, (result.shape[1], 1)), result[0])))
+            # print(f"Saved simulation to {filepath}")
 
-    return return_data
+            # Prepare data for return, including parameter values
+            times = np.arange(result.shape[1]) * 0.01
+            param_values = np.array(list(params.values()))
+            return_data.append(
+                np.column_stack((times[:, np.newaxis], np.tile(param_values, (result.shape[1], 1)), result[0])))
+
+        return return_data
 
 class NeuralNetworkAgent:
     """
@@ -353,29 +367,6 @@ class NeuralNetworkAgent:
         self.wealth = 1.0
         self.performance_history = []
 
-def ranked_array(arr):
-    """
-    Rank the elements of an array in descending order.
-
-    :param arr: Input array.
-    :type arr: np.ndarray
-    :return: Array with elements and their corresponding ranks.
-    :rtype: np.ndarray
-    """
-
-    # Step 1: Get the sorted indices (argsort sorts in ascending order, so we reverse it for descending order)
-
-    sorted_indices = np.argsort(-arr)
-
-    # Step 2: Create a rank array where the rank corresponds to the original index
-    ranks = np.empty_like(sorted_indices)
-    ranks[sorted_indices] = np.arange(len(arr))
-
-    # Step 3: Combine the original array with its corresponding ranks
-    result = np.column_stack((arr, ranks))
-
-    return result
-
 def save_model(model, filepath):
     """
     Save the full model (architecture + weights) to a file.
@@ -394,21 +385,6 @@ def save_model(model, filepath):
     model.save(filepath)
     print(f"Full model saved to {filepath}")
 
-def save_model(model, filepath):
-    """
-    Save the full model (architecture + weights) to a file.
-
-    :param model: Keras model to save.
-    :type model: tf.keras.Model
-    :param filepath: Path to save the model file.
-    :type filepath: str
-    :return: None
-    :rtype: None
-    """
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    model.save(filepath)
-    print(f"Full model saved to {filepath}")
-
 def ranked_array(arr):
     """
     Rank the elements of an array in descending order.
@@ -424,7 +400,7 @@ def ranked_array(arr):
     result = np.column_stack((arr, ranks))
     return result
 
-def train_agent(agent: NeuralNetworkAgent,
+def train_agent_time(agent: NeuralNetworkAgent,
                 processes: List[Dict[str, Any]],
                 param_ranges: Dict[str, Dict[str, tuple]],
                 n_episodes: int,
@@ -511,6 +487,19 @@ def train_agent(agent: NeuralNetworkAgent,
             predictions = agent.model.predict(encoded_processes).flatten()
             min_time_index = np.argmin(predictions)
             min_time = actual_times[min_time_index]
+
+            # Get the corresponding process type and parameters
+            process_type = processes[min_time_index % len(processes)]['type']
+            params = {k: dataset[min_time_index][0, i + 1] for i, k in enumerate(param_ranges[process_type].keys())}
+
+            # Create and simulate the process instance
+            process_instance = globals()[process_type](**params)
+            simulated_data = process_instance.simulate(t=1, timestep=timestep_default, num_instances=1)
+
+            # Update agent's wealth
+            agent.update_wealth(simulated_data[1, -1])
+
+            step_wealth_history.append(agent.wealth)
 
             actual_min_time = np.min(actual_times)
 
@@ -605,6 +594,116 @@ def visualize_results(episode_wealth_history, episode_performance_history, min_t
 
     print(f"Visualization results saved in {output_dir}")
 
+def train_agent_value(agent: NeuralNetworkAgent,
+                      processes: List[Dict[str, Any]],
+                      param_ranges: Dict[str, Dict[str, tuple]],
+                      n_episodes: int,
+                      n_steps: int,
+                      output_dir: str = 'output_general',
+                      ergodicity_transform: bool = False,
+                      early_stopping_patience: int = 10,
+                      early_stopping_min_delta: float = 1e-4):
+    """
+    Train the agent to predict and select stochastic processes based on their values.
 
+    :param agent: NeuralNetworkAgent object to train.
+    :param processes: List of process dictionaries to simulate.
+    :param param_ranges: Dictionary of parameter ranges for each process type.
+    :param n_episodes: Number of episodes to train the agent.
+    :param n_steps: Number of steps per episode.
+    :param output_dir: Output directory to save the results.
+    :param ergodicity_transform: Whether to use ergodicity transform of process values.
+    :param early_stopping_patience: Number of episodes with no improvement after which training will be stopped.
+    :param early_stopping_min_delta: Minimum change in MSE to qualify as an improvement.
+    :return: Tuple of agent, episode performance history, and best MSE.
+    """
+    process_encoder = ProcessEncoder()
+    episode_performance_history = []
+    best_mse = float('inf')
+    patience_counter = 0
 
+    for episode in range(n_episodes):
+        episode_mse = 0
+
+        for step in range(n_steps):
+            # Generate a batch of processes
+            encoded_processes = []
+            actual_values = []
+
+            for process in processes:
+                process_type = process['type']
+                params = {k: np.random.uniform(v[0], v[1]) for k, v in param_ranges[process_type].items()}
+                process_instance = globals()[process_type](**params)
+
+                encoded_process = process_encoder.encode_process_with_time(process_instance, t_default)
+                encoded_processes.append(encoded_process)
+
+                # Simulate the process
+                print(f"Simulating {process_type} with parameters: {params}")
+                simulated_data = process_instance.simulate(t=1, timestep=timestep_default, num_instances=1)
+                print(f"Simulation completed. Shape of simulated data: {simulated_data.shape}")
+
+                if simulated_data.shape[1] > 2:  # Ensure we have at least two time points
+                    process_value = simulated_data[1, -1]  # Last value of the process (excluding time)
+                else:
+                    print(f"Warning: Insufficient data points in simulation. Using initial value.")
+                    process_value = simulated_data[1, 0]  # Use the initial value
+
+                print(f"Process value: {process_value}")
+
+                if ergodicity_transform:
+                    # Apply ergodicity transform
+                    istrue, transform_expr, a_u, b_u = process_instance.ergodicity_transform()
+                    transform_func = sp.lambdify('x', transform_expr, 'numpy')
+                    process_value = transform_func(process_value)
+                    print(f"Transformed process value: {process_value}")
+
+                actual_values.append(process_value)
+
+            encoded_processes = np.array(encoded_processes)
+            actual_values = np.array(actual_values)
+
+            print(f"Shape of encoded_processes: {encoded_processes.shape}")
+            print(f"Shape of actual_values: {actual_values.shape}")
+
+            # Predict process values
+            predicted_values = agent.model.predict(encoded_processes).flatten()
+
+            print(f"Shape of predicted_values: {predicted_values.shape}")
+
+            # Train the model
+            agent.model.fit(encoded_processes, actual_values, epochs=1, verbose=0)
+
+            # Calculate MSE
+            mse = np.mean((predicted_values - actual_values) ** 2)
+            episode_mse += mse
+
+            # Select process with highest predicted value
+            selected_process_index = np.argmax(predicted_values)
+            selected_process_value = actual_values[selected_process_index]
+
+            # Update agent's wealth
+            agent.update_wealth(selected_process_value)
+
+        # Calculate average MSE for the episode
+        avg_episode_mse = episode_mse / n_steps
+        episode_performance_history.append(avg_episode_mse)
+
+        print(f"Episode {episode + 1}/{n_episodes}: MSE = {avg_episode_mse:.4f}, Wealth = {agent.wealth:.2f}")
+
+        # Early stopping check
+        if avg_episode_mse < best_mse - early_stopping_min_delta:
+            best_mse = avg_episode_mse
+            patience_counter = 0
+            # Save the best model
+            save_model(agent.model,
+                       os.path.join(output_dir, f'best_model_{datetime.now().strftime("%Y%m%d_%H%M%S")}.h5'))
+        else:
+            patience_counter += 1
+
+        if patience_counter >= early_stopping_patience:
+            print(f"Early stopping triggered after {episode + 1} episodes.")
+            break
+
+    return agent, episode_performance_history, best_mse
 

@@ -57,8 +57,10 @@ from statsmodels.tsa.stattools import adfuller
 from scipy.stats import linregress
 import pywt
 import scipy.stats as stats
+from ergodicity.tools.helper import *
+from ergodicity.tools.compute import relative_increments as ri
 
-def test_ergodicity_increments(data):
+def test_ergodicity_increments(data, relative_increments=False):
     """
     Test the ergodicity of a stochastic process based on its increments.
 
@@ -69,13 +71,16 @@ def test_ergodicity_increments(data):
     :return: Dictionary containing test results and metrics
     :rtype: dict
     """
-    times = data[0]
-    process_data = data[1:]
+    times, process_data = separate(data)
+    if not relative_increments:
+        increments = np.diff(process_data, axis=1)
+
+    else:
+        increments = ri(data)
+        times, increments = separate(increments)
+
     num_instances, num_time_steps = process_data.shape
     dt = len(times) / (num_time_steps - 1)
-
-    # Calculate increments
-    increments = np.diff(process_data, axis=1)
 
     results = {}
 
@@ -85,6 +90,8 @@ def test_ergodicity_increments(data):
     results['increments_stationary'] = np.mean(results['stationarity_p_values']) < 0.05
 
     # 2. Calculate time averages
+    if relative_increments:
+        process_data = np.log(process_data)
     time_averages = (process_data[:, -1] - process_data[:, 0]) / (num_time_steps - 1)
     time_averages_per_unit = time_averages / dt
 
@@ -182,61 +189,53 @@ if __name__ == "__main__":
     # Plot results
     plot_ergodicity_results(data, results)
 
-def hurst_exponent(time_series):
+
+def detrended_fluctuation_analysis(time_series):
     """
-    Estimate the Hurst exponent using the rescaled range (R/S) method.
+    Estimate the Hurst exponent using Detrended Fluctuation Analysis (DFA).
 
     :param time_series: The time series to analyze
     :type time_series: array_like
     :return: Estimated Hurst exponent
     :rtype: float
     """
+    N = len(time_series)
+    # Cumulative sum of deviations from the mean
+    Y = np.cumsum(time_series - np.mean(time_series))
 
-    def rs(ts):
-        """Calculate rescaled range."""
-        mean = np.mean(ts)
-        std = np.std(ts)
-        z = np.cumsum(ts - mean)
-        r = np.max(z) - np.min(z)
-        return r / std if std > 0 else np.nan
+    # Define scales (window sizes)
+    scales = np.floor(np.logspace(np.log10(10), np.log10(N // 4), num=20)).astype(int)
+    scales = np.unique(scales)
 
-    n = len(time_series)
-    taus = [10, 100, 1000]  # Different time scales
-    taus = [tau for tau in taus if tau <= n // 2]
+    flucts = []
+    for scale in scales:
+        if scale < 2:
+            continue
+        # Number of non-overlapping windows
+        n_windows = N // scale
+        if n_windows < 2:
+            continue
+        F_nu = []
+        for i in range(n_windows):
+            segment = Y[i * scale:(i + 1) * scale]
+            # Fit a polynomial of order 1 (linear detrending)
+            coeffs = np.polyfit(range(scale), segment, 1)
+            fit = np.polyval(coeffs, range(scale))
+            # Calculate the fluctuation (standard deviation) after detrending
+            F_nu.append(np.sqrt(np.mean((segment - fit) ** 2)))
+        # Average fluctuation over all segments of this scale
+        F = np.mean(F_nu)
+        flucts.append((scale, F))
 
-    if len(taus) < 2:
+    if len(flucts) < 2:
         return np.nan
 
-    rs_values = [np.mean([rs(time_series[i:i + tau]) for i in range(0, n - tau, tau)])
-                 for tau in taus]
-
-    hurst, _, _, _, _ = linregress(np.log(taus), np.log(rs_values))
+    scales, Fs = zip(*flucts)
+    log_scales = np.log(scales)
+    log_Fs = np.log(Fs)
+    slope, intercept, r_value, p_value, std_err = linregress(log_scales, log_Fs)
+    hurst = slope-1
     return hurst
-
-
-def aggregate_variance(time_series):
-    """
-    Estimate the scaling parameter using the aggregate variance method.
-
-    :param time_series: The time series to analyze
-    :type time_series: array_like
-    :return: Estimated scaling parameter
-    :rtype: float
-    """
-    n = len(time_series)
-    max_m = n // 4  # Maximum aggregation level
-
-    m_values = np.logspace(0, np.log10(max_m), num=20, dtype=int)
-    var_values = []
-
-    for m in m_values:
-        if m == 0:
-            continue
-        aggregated = np.mean(time_series.reshape(-1, m), axis=1)
-        var_values.append(np.var(aggregated))
-
-    slope, _, _, _, _ = linregress(np.log(m_values), np.log(var_values))
-    return -slope / 2  # The slope is -2H, so H = -slope/2
 
 
 def test_self_similarity(time_series):
@@ -245,16 +244,13 @@ def test_self_similarity(time_series):
 
     :param time_series: The time series to analyze
     :type time_series: array_like
-    :return: Dictionary containing the estimated Hurst exponent and scaling parameter
+    :return: Dictionary containing the estimated Hurst exponents
     :rtype: dict
     """
-    hurst = hurst_exponent(time_series)
-    scaling_param = aggregate_variance(time_series)
+    hurst_dfa = detrended_fluctuation_analysis(time_series)
 
     results = {
-        "Hurst Exponent": hurst,
-        "Scaling Parameter (Aggregate Variance)": scaling_param,
-        "Estimated Alpha": 1 / scaling_param if scaling_param > 0 else np.nan
+        "Hurst Exponent (DFA)": hurst_dfa,
     }
 
     return results
@@ -326,7 +322,7 @@ def wavelet_estimation(time_series, wavelet='db4', max_level=None):
     slope, intercept, r_value, p_value, std_err = linregress(np.log2(scales), np.log2(variances))
 
     # The Hurst exponent is related to the slope
-    H = (slope + 1) / 2
+    H = -(slope + 1) / 2
 
     return H
 
@@ -377,7 +373,7 @@ def plot_wavelet_analysis(time_series, wavelet='db4', max_level=None):
     scales = [2 ** i for i in range(1, len(variances) + 1)]
 
     slope, intercept, r_value, p_value, std_err = linregress(np.log2(scales), np.log2(variances))
-    H = (slope + 1) / 2
+    H = -(slope + 1) / 2
 
     plt.figure(figsize=(12, 6))
     plt.loglog(scales, variances, 'bo-')

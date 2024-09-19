@@ -95,7 +95,6 @@ best_agent = max(population, key=lambda agent: agent.accumulated_wealth)
 
 print(f"Best agent accumulated wealth: {best_agent.accumulated_wealth}")
 """
-
 from typing import List, Callable, Type, Union, Dict, Any, Tuple
 import torch.nn as nn
 import numpy as np
@@ -803,12 +802,12 @@ class EvolutionaryNeuralNetworkTrainer:
     """
     def __init__(self,
                  population_size: int,
-                 input_size: int,
                  hidden_sizes: List[int],
-                 output_size: int,
                  processes: List[Union[dict, object]],
                  process_encoder: ProcessEncoder,
                  process_times: List[float],
+                 input_size: int = 11,
+                 output_size: int = 1,
                  mutation_rate: float = 0.1,
                  mutation_scale: float = 0.1,
                  with_exchange: bool = False,
@@ -943,6 +942,7 @@ class EvolutionaryNeuralNetworkTrainer:
             plt.grid(True)
             plt.tight_layout()
             plt.savefig(os.path.join(self.output_dir, filename))
+            plt.show()
             plt.close()
 
         # Create and save average wealth graph
@@ -963,7 +963,7 @@ class EvolutionaryNeuralNetworkTrainer:
 
         self.log("Performance visualization graphs have been created and saved.")
 
-    def visualize_neural_network_evolution(self, output_video_path, output_csv_path):
+    def visualize_neural_network_evolution(self, output_video_path='neural_network_evolution.mp4', output_csv_path='best_agent_params.csv'):
         """
         Create a video visualization of the neural network evolution and save best agent parameters to CSV.
 
@@ -1445,37 +1445,39 @@ class ReinforcementEvolutionaryTrainer:
         mutation_rate: float = 0.1,
         mutation_scale: float = 0.1,
         rl_interval: int = 10,
-        elite_percentage: float = 0.2
+        elite_percentage: float = 0.2,
+        output_dir: str = 'output_nn'
     ):
         """
         Initialize the ReinforcementEvolutionaryTrainer.
 
-        :param population_size:     Number of agents in the population
+        :param population_size: Number of agents in the population
         :type population_size: int
-        :param input_size:      Size of the input layer
+        :param input_size: Size of the input layer
         :type input_size: int
-        :param hidden_sizes:    List of hidden layer sizes
+        :param hidden_sizes: List of hidden layer sizes
         :type hidden_sizes: List[int]
-        :param output_size:     Size of the output layer
+        :param output_size: Size of the output layer
         :type output_size: int
-        :param processes:       List of stochastic processes
+        :param processes: List of stochastic processes
         :type processes: List[Union[dict, object]]
-        :param process_encoder:     ProcessEncoder instance
+        :param process_encoder: ProcessEncoder instance
         :type process_encoder: ProcessEncoder
-        :param process_times:   List of time values for process encoding
+        :param process_times: List of time values for process encoding
         :type process_times: List[float]
-        :param learning_rate:   Learning rate for the neural networks
+        :param learning_rate: Learning rate for the neural networks
         :type learning_rate: float
-        :param mutation_rate:   Probability of mutating each parameter
+        :param mutation_rate: Probability of mutating each parameter
         :type mutation_rate: float
-        :param mutation_scale:  Scale of the mutation (standard deviation of the Gaussian noise)
+        :param mutation_scale: Scale of the mutation (standard deviation of the Gaussian noise)
         :type mutation_scale: float
-        :param rl_interval:     Interval for reinforcement learning updates
+        :param rl_interval: Interval for reinforcement learning updates
         :type rl_interval: int
-        :param elite_percentage:    Percentage of elite agents to keep in each generation
+        :param elite_percentage: Percentage of elite agents to keep in each generation
         :type elite_percentage: float
+        :param output_dir: Directory for saving output files
+        :type output_dir: str
         """
-
         self.population_size = population_size
         self.input_size = input_size
         self.hidden_sizes = hidden_sizes
@@ -1491,6 +1493,153 @@ class ReinforcementEvolutionaryTrainer:
 
         self.population = self.initialize_population()
         self.optimizers = [optim.Adam(agent.network.parameters(), lr=self.learning_rate) for agent in self.population]
+
+        self.history = []
+        self.performance_history = []
+        self.output_dir = output_dir
+        os.makedirs(self.output_dir, exist_ok=True)
+
+        self.log_file = os.path.join(self.output_dir, 'training_log.txt')
+        self.performance_file = os.path.join(self.output_dir, 'performance_metrics.csv')
+        self.best_weights_file = os.path.join(self.output_dir, 'best_weights.pth')
+
+    def log(self, message: str):
+        """
+        Log a message to the log file.
+
+        :param message: Message to log
+        :type message: str
+        """
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(self.log_file, 'a') as f:
+            f.write(f"{timestamp} - {message}\n")
+
+    def save_performance_metrics(self):
+        """
+        Save performance metrics to a CSV file.
+        """
+        if not self.performance_history:
+            return
+        with open(self.performance_file, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=self.performance_history[0].keys())
+            writer.writeheader()
+            writer.writerows(self.performance_history)
+
+    def save_best_weights(self, best_agent: NeuralNetworkAgent):
+        """
+        Save the weights of the best-performing agent.
+
+        :param best_agent: Best-performing agent
+        :type best_agent: NeuralNetworkAgent
+        """
+        torch.save(best_agent.network.state_dict(), self.best_weights_file)
+
+    def visualize_performance(self):
+        """
+        Create visualizations for average and maximum fitness during training.
+        """
+        steps = [metric['step'] for metric in self.performance_history]
+        avg_fitness = [metric['avg_fitness'] for metric in self.performance_history]
+        max_fitness = [metric['max_fitness'] for metric in self.performance_history]
+
+        # Function to create and save a single graph
+        def create_fitness_graph(fitness_data, ylabel, title, filename):
+            plt.figure(figsize=(12, 6))
+            plt.plot(steps, fitness_data)
+            plt.xlabel('Step')
+            plt.ylabel(ylabel)
+            plt.title(title)
+            plt.grid(True)
+            plt.tight_layout()
+            plt.savefig(os.path.join(self.output_dir, filename))
+            plt.show()
+            plt.close()
+
+        # Create and save average fitness graph
+        create_fitness_graph(
+            avg_fitness,
+            'Average Fitness',
+            'Average Fitness Evolution During Training',
+            'average_fitness_evolution.png'
+        )
+
+        # Create and save maximum fitness graph
+        create_fitness_graph(
+            max_fitness,
+            'Maximum Fitness',
+            'Maximum Fitness Evolution During Training',
+            'max_fitness_evolution.png'
+        )
+
+        self.log("Performance visualization graphs have been created and saved.")
+
+    def visualize_neural_network_evolution(self, output_video_path='neural_network_evolution.mp4',
+                                           output_csv_path='best_agent_params.csv'):
+        """
+        Create a video visualization of the neural network evolution and save best agent parameters to CSV.
+
+        :param output_video_path: Path to save the output video
+        :type output_video_path: str
+        :param output_csv_path: Path to save the CSV file with best agent parameters
+        :type output_csv_path: str
+        """
+        # Extract data from history
+        steps = [entry['step'] for entry in self.history]
+        best_params_history = [entry['best_params'] for entry in self.history]
+
+        if not best_params_history:
+            self.log("No history data available for visualization.")
+            return
+
+        # Prepare data for visualization
+        param_names = list(best_params_history[0].keys())
+        param_values = {name: [params[name].cpu().numpy().flatten() for params in best_params_history] for name in
+                        param_names}
+
+        # Create figure and axes for animation
+        num_params = len(param_names)
+        fig, axes = plt.subplots(num_params, 1, figsize=(12, 4 * num_params))
+        if num_params == 1:
+            axes = [axes]
+
+        # Initialize plots
+        plots = []
+        for ax, name in zip(axes, param_names):
+            plot, = ax.plot([], [], 'b-')
+            ax.set_xlim(0, len(param_values[name][0]))
+            all_values = np.concatenate(param_values[name])
+            ax.set_ylim(np.min(all_values), np.max(all_values))
+            ax.set_title(f'Evolution of {name}')
+            ax.set_xlabel('Parameter Index')
+            ax.set_ylabel('Parameter Value')
+            plots.append(plot)
+
+        # Animation update function
+        def update(frame):
+            for plot, name in zip(plots, param_names):
+                plot.set_data(range(len(param_values[name][frame])), param_values[name][frame])
+            return plots
+
+        # Create animation
+        anim = animation.FuncAnimation(fig, update, frames=len(steps), interval=200, blit=True)
+
+        # Save animation as video
+        writer = animation.FFMpegWriter(fps=5, metadata=dict(artist='ReinforcementEvolutionaryTrainer'), bitrate=1800)
+        anim.save(os.path.join(self.output_dir, output_video_path), writer=writer)
+
+        # Save best agent parameters to CSV
+        best_agent_params = best_params_history[-1]
+        param_dict = {name: best_agent_params[name].cpu().numpy().flatten() for name in param_names}
+        max_length = max(len(arr) for arr in param_dict.values())
+        param_dict = {name: np.pad(arr, (0, max_length - len(arr)), 'constant', constant_values=np.nan)
+                      for name, arr in param_dict.items()}
+        df = pd.DataFrame(param_dict)
+        df.to_csv(os.path.join(self.output_dir, output_csv_path), index=False)
+
+        plt.close(fig)
+
+        self.log(f"Neural network evolution video saved to {output_video_path}")
+        self.log(f"Best agent parameters saved to {output_csv_path}")
 
     def initialize_population(self) -> List[NeuralNetworkAgent]:
         """

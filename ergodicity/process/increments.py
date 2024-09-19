@@ -124,6 +124,7 @@ FBM08 = StandardFractionalBrownianMotion(hurst=0.8)
 
 dFBM08 = FBM08.increment()
 """
+from dataclasses import dataclass
 
 from .basic import WienerProcess
 from .basic import LevyStableProcess
@@ -135,31 +136,34 @@ WP._increment_process = True
 dW = WP.increment()
 
 # # Levy Stable Process increment for alpha = 1.5
-LP15 = LevyStableProcess(alpha=1.5)
+LP15 = LevyStableProcess(alpha=1.5, comments=False)
 dL_15 = LP15.increment()
 
 # Cauchy increment
-LPC = LevyStableProcess(alpha=1)
+LPC = LevyStableProcess(alpha=1, comments=False)
 dL_1 = LPC.increment()
 dCauchy = dL_1
 
 # Levy Process increment
-LPL = LevyStableProcess(alpha=0.5, beta=1)
+LPL = LevyStableProcess(alpha=0.5, beta=1, comments=False)
 dLP = LPL.increment()
 
 # Levy Stable Process increment for alpha = 0.5
 LP05 = LevyStableProcess(alpha=0.5)
 dL_05 = LP05.increment()
 
-# Fractional Brownian Motion increment
-FBM = StandardFractionalBrownianMotion(hurst=0.5)
-dFBM = FBM.increment()
+def dependent_increments():
+    # Fractional Brownian Motion increment
+    FBM = StandardFractionalBrownianMotion(hurst=0.5)
+    dFBM = FBM.increment()
 
-FBM02 = StandardFractionalBrownianMotion(hurst=0.2)
-dFBM02 = FBM.increment()
+    FBM02 = StandardFractionalBrownianMotion(hurst=0.2)
+    dFBM02 = FBM02.increment()
 
-FBM08 = StandardFractionalBrownianMotion(hurst=0.8)
-dFBM08 = FBM.increment()
+    FBM08 = StandardFractionalBrownianMotion(hurst=0.8)
+    dFBM08 = FBM08.increment()
+
+    return dFBM, dFBM02, dFBM08
 
 # Add increments for all possible probability distributions. Provide increments in such form that they have variance 1.
 # Check that timesteps in increments are equal to the timesteps in the process.

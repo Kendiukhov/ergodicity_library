@@ -326,23 +326,29 @@ class AgentPool:
         ax1.set_ylabel('Frequency')
 
         # Log-log scale histogram
-        wealth_range = np.logspace(np.log10(min(final_wealth)), np.log10(max(final_wealth)), num=50)
-        hist, bins = np.histogram(final_wealth, bins=wealth_range)
+        final_wealth_nonzero = final_wealth[final_wealth > 0]
+        wealth_range = np.logspace(np.log10(min(final_wealth_nonzero)), np.log10(max(final_wealth_nonzero)), num=50)
+        hist, bins = np.histogram(final_wealth_nonzero, bins=wealth_range)
         center = (bins[:-1] + bins[1:]) / 2
 
+        # Remove zero counts for log-log fit
+        nonzero = hist > 0
+        log_center = np.log10(center[nonzero])
+        log_hist = np.log10(hist[nonzero])
+
+        # Linear regression in log-log space
+        fit = stats.linregress(log_center, log_hist)
+
+        # Compute the fitted power-law line
+        x_fit = np.logspace(np.log10(min(center[nonzero])), np.log10(max(center[nonzero])), 100)
+        y_fit = 10 ** (fit.intercept + fit.slope * np.log10(x_fit))
+
+        # Plotting
         ax2.loglog(center, hist, 'k.', markersize=10)
+        # ax2.plot(x_fit, y_fit, 'r-', label=f'Power Law Fit (α ≈ {fit.slope:.2f})')
         ax2.set_title('Wealth Distribution (Log-Log Scale)')
         ax2.set_xlabel('Wealth (log scale)')
         ax2.set_ylabel('Frequency (log scale)')
-
-        # Filter out zero values for log-log fit
-        nonzero_wealth = final_wealth[final_wealth > 0]
-        fit = stats.linregress(np.log10(nonzero_wealth), np.log10(np.arange(1, len(nonzero_wealth) + 1)[::-1]))
-
-        x_fit = np.logspace(np.log10(min(nonzero_wealth)), np.log10(max(nonzero_wealth)), 100)
-        y_fit = 10 ** (fit.intercept + fit.slope * np.log10(x_fit))
-
-        ax2.plot(x_fit, y_fit, 'r-', label=f'Power Law Fit (α ≈ {-fit.slope:.2f})')
         ax2.legend()
 
         plt.tight_layout()
@@ -353,9 +359,14 @@ class AgentPool:
         print(f"Wealth distribution plot saved to {filename_prefix}_wealth_distribution.png")
 
 
+import numpy as np
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+
+
 def plot_wealth_3d(process, w, time, simulation_timestep, timestep, s_range, n_range, save_html=False):
     """
-    Plot a 3D graph of total wealth as a function of sharing rate s and number of agents n.
+    Plot a 3D graph of average wealth as a function of sharing rate s and number of agents n.
 
     :param process: The stochastic process to use (e.g., GeometricBrownianMotion instance)
     :type process: StochasticProcess
@@ -377,24 +388,24 @@ def plot_wealth_3d(process, w, time, simulation_timestep, timestep, s_range, n_r
     :rtype: None
     """
     s_values, n_values = np.meshgrid(s_range, n_range)
-    total_wealth = np.zeros_like(s_values, dtype=float)
+    average_wealth = np.zeros_like(s_values, dtype=float)
 
     for i, n in enumerate(n_range):
         for j, s in enumerate(s_range):
             pool = AgentPool(process, n, w, s, time, simulation_timestep, timestep)
             pool.simulate(dynamic_s=False)
-            total_wealth[i, j] = np.sum(pool.wealth)
+            average_wealth[i, j] = np.mean(pool.wealth)
 
     # Create static 3D plot using Matplotlib
     fig = plt.figure(figsize=(12, 8))
     ax = fig.add_subplot(111, projection='3d')
 
-    surf = ax.plot_surface(s_values, n_values, total_wealth, cmap='viridis')
+    surf = ax.plot_surface(s_values, n_values, average_wealth, cmap='viridis')
 
     ax.set_xlabel('Sharing Rate (s)')
     ax.set_ylabel('Number of Agents (n)')
-    ax.set_zlabel('Total Wealth')
-    ax.set_title('Total Wealth as a Function of Sharing Rate and Number of Agents')
+    ax.set_zlabel('Average Wealth')
+    ax.set_title('Average Wealth as a Function of Sharing Rate and Number of Agents')
 
     fig.colorbar(surf, shrink=0.5, aspect=5)
 
@@ -402,17 +413,17 @@ def plot_wealth_3d(process, w, time, simulation_timestep, timestep, s_range, n_r
 
     # Create and save interactive 3D plot using Plotly
     if save_html:
-        fig_plotly = go.Figure(data=[go.Surface(z=total_wealth, x=s_values, y=n_values)])
+        fig_plotly = go.Figure(data=[go.Surface(z=average_wealth, x=s_values, y=n_values)])
         fig_plotly.update_layout(
-            title='Total Wealth as a Function of Sharing Rate and Number of Agents',
+            title='Average Wealth as a Function of Sharing Rate and Number of Agents',
             scene=dict(
                 xaxis_title='Sharing Rate (s)',
                 yaxis_title='Number of Agents (n)',
-                zaxis_title='Total Wealth'
+                zaxis_title='Average Wealth'
             )
         )
 
-        html_filename = 'total_wealth_3d_plot.html'
+        html_filename = 'average_wealth_3d_plot.html'
         fig_plotly.write_html(html_filename)
         print(f"3D interactive graph saved as {html_filename}")
 

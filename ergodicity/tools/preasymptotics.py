@@ -83,7 +83,6 @@ if __name__ == "__main__":
 
     reporter.export_visualizations(format='png')
 """
-
 from statsmodels.tsa.stattools import adfuller
 from scipy.optimize import curve_fit
 import seaborn as sns
@@ -197,7 +196,8 @@ class PreasymptoticBehaviorQuantification:
         adf_results = []
         for i in range(0, len(self.time_series) - window_size + 1, window_size // 10):
             result = adfuller(self.time_series[i:i + window_size])
-            adf_results.append((self.time_values[i], result[1]))  # Store time and p-value
+            middle_index = i + window_size // 2
+            adf_results.append((self.time_values[middle_index], result[1]))  # Store time and p-value
 
         adf_results = np.array(adf_results)
 

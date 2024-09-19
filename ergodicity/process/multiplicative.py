@@ -70,6 +70,21 @@ Available Processes:
     across multiple interacting components. This class is particularly useful in fields such as finance, where
     multiple asset prices or risk factors may exhibit simultaneous extreme behaviors.
 
+- **Geometric Generalized Hyperbolic Process**:
+
+    A generalization of the Lévy process that includes the generalized hyperbolic distribution, providing a
+    flexible framework for modeling heavy-tailed phenomena with varying skewness and kurtosis.
+
+- **Geometric Bessel Process**:
+
+    A Lévy process based on the Bessel distribution, useful for modeling processes with infinite activity and
+    non-negative jumps. This process is particularly relevant in insurance and risk management contexts.
+
+- **Geometric Squared Bessel Process**:
+
+    A variant of the Bessel process where the squared values of the process are considered, leading to different
+    behavior and statistical properties. 
+
 Helper Functions:
 
 - **implied_levy_correction**:
@@ -110,7 +125,6 @@ that exhibit multiplicative growth, heavy tails, and interdependencies, offering
 dynamics.
 
 """
-
 from typing import List, Any, Type, Callable, Tuple, Literal
 from .definitions import ItoProcess
 from .definitions import NonItoProcess
@@ -130,7 +144,6 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-
 from stochastic.processes.continuous import GeometricBrownianMotion as StochasticGBM
 from .basic import BrownianMotion
 
@@ -163,6 +176,8 @@ class GeometricBrownianMotion(BrownianMotion):
         if use_external_simulators is True:
             self._has_wrong_params = True
             print('External simulator for this process may not work properly. We advice to use the internal simulator or make sure you know exactly what you are doing.')
+        self._drift_term_sympy = self._drift*sp.Symbol('x')
+        self._stochastic_term_sympy = self._volatility*sp.Symbol('x')
 
     def custom_increment(self, X: float, timestep: float = timestep_default) -> Any:
         """
@@ -177,24 +192,6 @@ class GeometricBrownianMotion(BrownianMotion):
         """
         dX = X * timestep * self._drift + X * (timestep ** 0.5) * self._volatility * np.random.normal(0, 1)
         return dX
-
-    def closed_formula(self) -> Any:
-        """
-        Returns the closed formula for the process.
-
-        :return: Closed formula for the process
-        :rtype: Any
-        """
-        # Implement this as a wrapper for all processes later
-        if verbose == True:
-            t, W = sp.symbols('t W')
-            formula = sp.exp((self._drift - 0.5 * self._volatility ** 2) * t + self._volatility * W)
-            print("The closed formula for the Geometric Brownian Motion is:", formula)
-
-        def formula(t, W):
-            return sp.exp((self._drift - 0.5 * self._scale ** 2) * t + self._scale * W)
-
-        return formula
 
     def simulate_growth_rate(self, t: float = t_default, timestep: float = timestep_default,
                              num_instances: int = num_instances_default, n_simulations: int = num_instances_default, save: bool = False,
@@ -289,11 +286,12 @@ class GeometricBrownianMotion(BrownianMotion):
         sat = (2 * np.log(num_instances)) / (self._volatility ** 2)
         return sat
 
-    def relative_variance_pea(self, num_instances: int = num_instances_default, t: float = t_default):
+    def relative_variance_pea_theory(self, num_instances: int = num_instances_default, t: float = t_default):
         """
-        Calculate the theoretical relative variance of the process using the PEA method.
-        The PEA method estimates the relative variance of the process by considering the ensemble average
-        of the process.
+        Calculate the theoretical relative variance of a partial ensemble average (PEA).
+        It is used to estimate if PEA is close to its expectation value.
+        If the results is <<1, then PEA is close to its expectation value.
+        Otherwise, the process has exited the self-averaging regime.
 
         :param num_instances: Number of instances to simulate
         :type num_instances: int
@@ -415,7 +413,7 @@ class GeometricLevyProcess(LevyStableProcess):
         :rtype: float
         """
         if simulate_with_differential is True:
-            L = LevyStableProcess(alpha=self._alpha, beta=self._beta, scale=self._scale, loc=self._loc, default_comments=False)
+            L = LevyStableProcess(alpha=self._alpha, beta=self._beta, scale=self._scale, loc=self._loc, comments=False)
             dL = L.increment(timestep_increment=timestep)
             dX = X * dL
         else:
@@ -499,7 +497,7 @@ class GeometricLevyProcess(LevyStableProcess):
 
         if plot:
             plt.figure(figsize=(10, 6))
-            plt.plot(times, average_growth_rate_values[1, :], label="Average Growth Rate", lw=1)
+            plt.plot(times, average_growth_rate_values[1, :], label="Growth Rate", lw=1)
             plt.plot(times, growth_function, label="Growth function", lw=1)
             plt.plot(times, naive_growth_function, label="Naive Growth function", lw=1)
             plt.title("Comparison of growth functions")
@@ -853,7 +851,6 @@ class MultivariateGeometricBrownianMotion(MultivariateBrownianMotion):
 
         return result
 
-
 from ergodicity.process.basic import StandardFractionalBrownianMotion
 
 class GeometricFractionalBrownianMotion(NonItoProcess):
@@ -1203,6 +1200,218 @@ class MultivariateGeometricLevy(MultivariateLevy):
 
         return result
 
+from .basic import GeneralizedHyperbolicProcess
+class GeometricGeneralizedHyperbolicProcess(GeneralizedHyperbolicProcess):
+    """
+    GeometricGeneralizedHyperbolicProcess represents a multiplicative version of the Generalized Hyperbolic Process.
+    This continuous-time stochastic process combines the flexibility of the Generalized Hyperbolic distribution
+    with multiplicative dynamics, making it suitable for modeling phenomena where changes are proportional to
+    the current state and exhibit complex distributional characteristics.
+
+    The process is defined as:
+    dS(t) = S(t) * dX(t)
+
+    where X(t) is a Generalized Hyperbolic Process.
+
+    Key properties include:
+    1. Multiplicative nature: Changes are proportional to the current value, preserving non-negativity.
+    2. Flexible distribution: Can model a wide range of tail behaviors and asymmetries.
+    3. Nests several important distributions: Including normal, Student's t, variance-gamma, and normal-inverse Gaussian.
+
+    This implementation extends the GeneralizedHyperbolicProcess class, adapting it to a multiplicative framework.
+    It's explicitly set as multiplicative (_multiplicative = True) and uses an internal simulator for precise
+    control over the process generation.
+
+    Researchers and practitioners should be aware of the increased complexity in parameter estimation and
+    interpretation compared to simpler processes. The rich behavior of this process requires careful consideration
+    in both theoretical development and practical applications.
+    """
+
+    def __init__(self, name: str = "Multiplicative Generalized Hyperbolic Process", process_class: Type[Any] = None,
+                 plambda: float = 0, alpha: float = 1.7, beta: float = 0, loc: float = 0.0005, delta: float = 0.01,
+                 t_scaling: Callable[[float], float] = lambda t: t ** 0.5, **kwargs):
+        """
+        Initialize the Geometric Generalized Hyperbolic Process.
+
+        :param name: Name of the process
+        :type name: str
+        :param process_class: Class of the process
+        :type process_class: Type[Any]
+        :param plambda: The shape parameter (λ)
+        :type plambda: float
+        :param alpha: The shape parameter (α)
+        :type alpha: float
+        :param beta: The skewness parameter (β)
+        :type beta: float
+        :param loc: The location parameter (μ)
+        :type loc: float
+        :param delta: The scale parameter (δ)
+        :type delta: float
+        :param t_scaling: The scaling function for time increments
+        :type t_scaling: Callable[[float], float]
+        :param kwargs: Additional keyword arguments for the process
+        """
+        super().__init__(name, process_class, plambda, alpha, beta, loc, delta, t_scaling, **kwargs)
+        self.types.append("multiplicative")
+        self._multiplicative = True
+        self._external_simulator = False
+
+    def custom_increment(self, X: float, timestep: float = timestep_default) -> Any:
+        """
+        Calculate the custom increment for the process.
+
+        :param X: Current value of the process
+        :type X: float
+        :param timestep: Time step for the simulation
+        :type timestep: float
+        :return: Increment for the process
+        :rtype: float
+        """
+        # Generate increment from the base Generalized Hyperbolic Process
+        dX_base = super().custom_increment(X, timestep)
+
+        # Convert to multiplicative increment
+        dX = X * dX_base
+
+        return dX
+
+from ergodicity.process.basic import StandardBesselProcess
+class GeometricBesselProcess(StandardBesselProcess):
+    """
+    GeometricBesselProcess represents a multiplicative extension of the StandardBesselProcess.
+    This process combines the characteristics of a Bessel process with the multiplicative nature of geometric processes.
+    The resulting stochastic process, denoted as (S_t)_{t≥0}, is defined as:
+
+    dS_t = S_t * dR_t
+
+    where R_t is the StandardBesselProcess of dimension d.
+
+    Key features of GeometricBesselProcess include:
+    1. Multiplicative nature: Changes are proportional to the current value, preserving non-negativity.
+    2. Dimension-dependent behavior: The underlying Bessel process characteristics (recurrence, transience) are preserved.
+    3. Non-negative: The process is always positive, making it suitable for modeling quantities that cannot be negative.
+
+    This implementation extends the StandardBesselProcess class, adapting it to a geometric framework.
+    It inherits the dimension-dependent properties of the Bessel process while providing a multiplicative growth model.
+
+    Applications of GeometricBesselProcess span various fields:
+    - Finance: Modeling asset prices or interest rates with specific volatility structures.
+    - Physics: Studying particle diffusion processes with multiplicative growth.
+    - Biology: Analyzing population dynamics with radial growth patterns.
+
+    Researchers and practitioners should be aware of the increased complexity in interpretation compared to the standard Bessel process.
+    The multiplicative nature introduces new dynamics that require careful consideration in both theoretical development and practical applications.
+    """
+
+    def __init__(self, name: str = "Geometric Bessel Process",
+                 process_class: Type[Any] = None,
+                 dim: int = dim_default):
+        """
+        Constructor method for the GeometricBesselProcess class.
+
+        :param name: The name of the process
+        :type name: str
+        :param process_class: The specific stochastic process class to use for simulation
+        :type process_class: Type[Any]
+        :param dim: The dimension of the underlying Bessel process
+        :type dim: int
+        """
+        super().__init__(name, process_class, dim)
+        self.types.append("geometric")
+        self._multiplicative = True
+        self._external_simulator = False
+
+    def custom_increment(self, X: float, timestep: float = timestep_default) -> float:
+        """
+        Calculate the custom increment for the process.
+
+        :param X: Current value of the process
+        :type X: float
+        :param timestep: Time step for the simulation
+        :type timestep: float
+        :return: Increment for the process
+        :rtype: float
+        """
+        # Generate increment from the base Bessel Process
+        BP = StandardBesselProcess(dim=self._dim)
+        dR = BP.increment(timestep)
+
+        # Convert to multiplicative increment
+        dX = X * dR
+
+        return dX
+
+from .basic import SquaredBesselProcess
+from typing import Type, Any
+
+class GeometricSquaredBesselProcess(SquaredBesselProcess):
+    """
+    GeometricSquaredBesselProcess represents a multiplicative extension of the SquaredBesselProcess.
+    This process combines the characteristics of a squared Bessel process with the multiplicative nature of geometric processes.
+    The resulting stochastic process, denoted as (S_t)_{t≥0}, is defined as:
+
+    dS_t = S_t * dR²_t
+
+    where R²_t is the SquaredBesselProcess of dimension d.
+
+    Key features of GeometricSquaredBesselProcess include:
+    1. Multiplicative nature: Changes are proportional to the current value, preserving non-negativity.
+    2. Dimension-dependent behavior: The underlying squared Bessel process characteristics are preserved.
+    3. Non-negative: The process is always positive, making it suitable for modeling quantities that cannot be negative.
+    4. Inherits properties of squared Bessel process: Including recurrence/transience behavior based on dimension.
+
+    This implementation extends the SquaredBesselProcess class, adapting it to a geometric framework.
+    It inherits the dimension-dependent properties of the squared Bessel process while providing a multiplicative growth model.
+
+    Applications of GeometricSquaredBesselProcess span various fields:
+    - Finance: Modeling volatility of asset prices or interest rates with specific structures.
+    - Physics: Studying particle diffusion processes with multiplicative squared radial growth.
+    - Biology: Analyzing population dynamics with quadratic radial growth patterns.
+    - Queueing theory: Modeling busy periods with multiplicative squared characteristics.
+
+    Researchers and practitioners should be aware of the increased complexity in interpretation compared to the standard squared Bessel process.
+    The multiplicative nature introduces new dynamics that require careful consideration in both theoretical development and practical applications.
+    The dimension parameter d plays a crucial role in determining the behavior of the process, affecting its recurrence properties and long-term behavior.
+    """
+
+    def __init__(self, name: str = "Geometric Squared Bessel Process",
+                 process_class: Type[Any] = None,
+                 dim: int = dim_default):
+        """
+        Constructor method for the GeometricSquaredBesselProcess class.
+
+        :param name: The name of the process
+        :type name: str
+        :param process_class: The specific stochastic process class to use for simulation
+        :type process_class: Type[Any]
+        :param dim: The dimension of the underlying squared Bessel process
+        :type dim: int
+        """
+        super().__init__(name, process_class, dim)
+        self.types.append("geometric")
+        self._multiplicative = True
+        self._external_simulator = False
+
+    def custom_increment(self, X: float, timestep: float = timestep_default) -> float:
+        """
+        Calculate the custom increment for the process.
+
+        :param X: Current value of the process
+        :type X: float
+        :param timestep: Time step for the simulation
+        :type timestep: float
+        :return: Increment for the process
+        :rtype: float
+        """
+        # Generate increment from the base Squared Bessel Process
+        SBP = SquaredBesselProcess(dim=self._dim)
+        dR2 = SBP.increment(timestep)
+
+        # Convert to multiplicative increment
+        dX = X * dR2
+
+        return dX
+
 def implied_levy_correction(alpha_range: Tuple[float, float],
                             beta_range: Tuple[float, float],
                             time_range: Tuple[float, float],
@@ -1221,8 +1430,8 @@ def implied_levy_correction(alpha_range: Tuple[float, float],
     :type alpha_range: Tuple[float, float]
     :param beta_range: Tuple of (min_beta, max_beta)
     :type beta_range: Tuple[float, float]
-    :param time_range: Tuple of (min_time, max_time)
-    :type time_range: Tuple[float, float]
+    :param time_range: Tuple of (min_time, max_time) or a single time value
+    :type time_range: Tuple[float, float] or float
     :param alpha_step: Step size for alpha
     :type alpha_step: float
     :param beta_step: Step size for beta
@@ -1247,7 +1456,13 @@ def implied_levy_correction(alpha_range: Tuple[float, float],
 
     alphas = np.arange(*alpha_range, alpha_step)
     betas = np.arange(*beta_range, beta_step)
-    times = np.arange(*time_range, time_step)
+
+    # if times is float just convert it to list
+    if isinstance(time_range, float):
+        times = [time_range]
+
+    else:
+        times = np.arange(*time_range, time_step)
 
     corrections = np.zeros((len(alphas), len(betas), len(times)))
 

@@ -64,8 +64,9 @@ from typing import Tuple, Any
 from scipy.stats import levy_stable
 import functools
 import sympy as sp
-from scipy.interpolate import interp1d
 from scipy.integrate import quad
+from scipy import integrate
+from scipy.interpolate import interp1d
 
 def visualize_function(time: np.ndarray, data: np.ndarray, name: str, save: bool = False) -> None:
     """
@@ -383,6 +384,9 @@ def demonstrate_alpha_stable_self_similarity(alpha, c, n_points, n_simulations):
     ax2.legend()
 
     plt.tight_layout()
+
+    fig.show()
+
     return fig, (ax1, ax2)
 
 @validate_input_shape
@@ -433,8 +437,7 @@ if __name__ == "__main__":
 
     plt.show()
 
-
-def generate_levy_process(T, N, alpha):
+def generate_levy_process(T=10, N=10, alpha=1.5, beta=0, loc=0, scale=1):
     """
     A Function to generate a Lévy process with the given parameters.
 
@@ -447,7 +450,7 @@ def generate_levy_process(T, N, alpha):
     :rtype: np.ndarray
     """
     dt = T / N
-    dL = levy_stable.rvs(alpha, beta=0, size=N) * dt ** (1 / alpha)
+    dL = levy_stable.rvs(alpha=alpha, beta=beta, size=N, scale=scale, loc=loc) * dt ** (1 / alpha)
     return np.cumsum(dL)
 
 
@@ -546,7 +549,7 @@ def create_multivariate_gaussian_process(A, independent_processes):
     """
     return np.dot(A, independent_processes)
 
-def random_variable_from_pdf(pdf, x, num_samples):
+def random_variable_from_pdf(pdf, x, num_samples, t=1):
     """
     Generate random variable samples from a given probability density function (pdf).
 
@@ -556,21 +559,27 @@ def random_variable_from_pdf(pdf, x, num_samples):
     :type x: sympy.core.symbol.Symbol
     :param num_samples: Number of random variable samples to generate.
     :type num_samples: int
+    :param t: Time parameter for the PDF (default is 1).
+    :type t: float
     :return: Random variable samples.
     :rtype: np.ndarray
     """
-    # Step 1: Compute the CDF symbolically by integrating the PDF
-    cdf_expr = sp.integrate(pdf, (x, -sp.oo, x))
-    cdf_func = sp.lambdify(x, cdf_expr, "numpy")
+    # Convert sympy expression to numpy function
+    pdf_func = sp.lambdify((x, sp.symbols('t')), pdf, "numpy")
 
-    # Step 2: Create a grid for x and compute the CDF numerically
-    x_vals = np.linspace(-5, 5, 1000)  # A grid of x values
-    cdf_vals = np.array([cdf_func(xi) for xi in x_vals])  # Evaluate the CDF at these points
+    # Create a grid for x
+    x_vals = np.linspace(-10, 10, 1000)  # Adjust range as needed
 
-    # Step 3: Inverse CDF (interpolation)
-    inverse_cdf = interp1d(cdf_vals, x_vals)
+    # Compute the CDF numerically
+    cdf_vals = np.array([integrate.quad(lambda xi: pdf_func(xi, t), -np.inf, x)[0] for x in x_vals])
 
-    # Step 5: Generate uniform random numbers and apply inverse CDF
+    # Normalize CDF
+    cdf_vals = (cdf_vals - cdf_vals.min()) / (cdf_vals.max() - cdf_vals.min())
+
+    # Inverse CDF (interpolation)
+    inverse_cdf = interp1d(cdf_vals, x_vals, bounds_error=False, fill_value="extrapolate")
+
+    # Generate uniform random numbers and apply inverse CDF
     uniform_random = np.random.uniform(0, 1, num_samples)
     random_samples = inverse_cdf(uniform_random)
 

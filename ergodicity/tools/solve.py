@@ -63,9 +63,6 @@ Applications:
 
 This submodule is a powerful toolkit for anyone involved in the analysis of stochastic processes, offering symbolic solutions and insights into the dynamics of complex systems.
 """
-
-# Compute the speed of convergence
-
 import sympy as sp
 import re
 from sympy.stats import Normal, E
@@ -145,9 +142,11 @@ def extract_ito_terms(differential, x, t):
     mu = collected.get(dt, 0)
     sigma = collected.get(dW, 0)
 
+    # Simplify mu and sigma
+    mu = sp.simplify(mu)
+    sigma = sp.simplify(sigma)
+
     return mu, sigma
-
-
 
 def ito_integrate(mu, sigma, x, t, x0=1):
     """
@@ -257,7 +256,7 @@ def integrate_with_substitution(f, mu, sigma, x, t, x0=1):
 
         # 4. Find the reverse function of f
         y_symbol = sp.symbols('y')
-        inverse_f = find_inverse(f, x, t, y_symbol)
+        inverse_f = find_inverse(f, x, y_symbol)
         if inverse_f is None:
             raise ValueError("Unable to find inverse of f(x,t)")
         print(f"Inverse of f(x,t): x = {inverse_f}")
@@ -271,7 +270,6 @@ def integrate_with_substitution(f, mu, sigma, x, t, x0=1):
     except Exception as e:
         print(f"Error in integration with substitution: {e}")
         return None
-
 
 def find_dx(x, t, W):
     """
@@ -294,7 +292,7 @@ def find_dx(x, t, W):
         dX_dW = sp.diff(x, W)
         d2X_dW2 = sp.diff(x, W, 2)
 
-        print('x expression', x)
+        print('x expression:', x)
 
         # Apply Ito's Lemma
         dt = sp.symbols('dt')
@@ -343,6 +341,12 @@ def integration_check(f, mu, sigma, x, t, x0=1):
     integration_result = integrate_with_substitution(f, mu, sigma, x, t, x0=x0)
     differential_result = find_dx(integration_result, t, sp.symbols('W(t)'))
     mu_new, sigma_new = extract_ito_terms(differential_result, x, t)
+
+    print(f'Integration result: {integration_result}')
+
+    # replace integration result inside mu_new and sigma_new with x if it is there
+    mu_new = mu_new.subs(integration_result, x)
+    sigma_new = sigma_new.subs(integration_result, x)
 
     if mu_new == mu and sigma_new == sigma:
         print("Integration successful.")
@@ -463,11 +467,10 @@ def solve(mu, sigma, x, t, x0=1):
 
     return integration_result
 
-
 def ergodicity_transform(mu, sigma, x, t):
     """
     Check the consistency condition for ergodicity and find the ergodicity transform if consistent.
-    b_u from the ergodicity economics book (page 57) is set to 1.Then, a_u = c.
+    b_u from the ergodicity economics book (page 57) is set to 1. Then, a_u = c.
     The function is implemented only for the case when mu ang sigma are only functions of x.
 
     :param mu: The drift term mu(x,t)
@@ -523,6 +526,8 @@ def ergodicity_transform(mu, sigma, x, t):
 def dynamic_from_utility(u_function, x, mu_u, sigma_u):
     """
     Calculate the dynamics of the ergodicity transform u(t,x) using Ito calculus.
+    It finds a stochastic dynamic corresponding to the given ergodicity transform.
+    Hence, it allows to estimate what stochastic dynamics corresponds to the given "utility" function.
 
     :param u_function: The ergodicity transform u(t,x)
     :type u_function: sympy expression
@@ -545,6 +550,7 @@ def dynamic_from_utility(u_function, x, mu_u, sigma_u):
 def calculate_time_average_dynamics(u, a_u, x, t):
     """
     Calculate the time average dynamics using the ergodicity transform.
+    It is done by inverting the ergodicity transform and applying the inverse to a_u * t.
 
     :param u: The ergodicity transform u(t,x)
     :type u: sympy expression
@@ -578,6 +584,40 @@ def calculate_time_average_dynamics(u, a_u, x, t):
 
     except Exception as e:
         print(f"Error in calculating time average dynamics: {e}")
+        return None
+
+def time_average(mu, sigma, x, t):
+    """
+    Calculate the time average of a stochastic process x(t, W(t)) using the ergodicity transform.
+
+    :param mu: The drift term mu(x,t)
+    :type mu: sympy expression
+    :param sigma: The diffusion term sigma(x,t)
+    :type sigma: sympy expression
+    :param x: The symbol representing the stochastic variable x
+    :type x: sympy symbol
+    :param t: The symbol representing time t
+    :type t: sympy symbol
+    :return: The time average of x(t, W(t))
+    :rtype: sympy expression
+    :exception: Returns None if an error occurs during the calculation
+    """
+    try:
+        # Step 1: Find the ergodicity transform
+        is_consistent, u, a_u, b_u = ergodicity_transform(mu, sigma, x, t)
+
+        if not is_consistent:
+            raise ValueError("Ergodicity transform not found")
+
+        # Step 2: Calculate the time average dynamics
+        time_avg_dynamics = calculate_time_average_dynamics(u, a_u, x, t)
+
+        print(f"Time average function: {time_avg_dynamics}")
+
+        return time_avg_dynamics
+
+    except Exception as e:
+        print(f"Error in calculating time average: {e}")
         return None
 
 def ergodicity_transform_differential(u, a_u, b_u, x, t):
@@ -648,7 +688,7 @@ def ensemble_average(x_expr, t, W):
         print(f"Error in expected value calculation: {e}")
         return None
 
-def time_average(x_expr, t, W):
+def time_average_limit(x_expr, t, W):
     """
     Calculate the time average of a stochastic process x(t, W(t))
     by expressing W(t) as sqrt(t) * N(0,1) and finding the limit of x/t as t -> infinity.
@@ -727,7 +767,6 @@ def compare_growth(term1, term2, t):
             return -1
         else:
             return 0
-
 
 def asymptotic_approximation(expr, t=sp.symbols('t'), W=sp.symbols('W(t)')):
     """
@@ -845,7 +884,6 @@ def functions_convergence_rate(f, g, t):
         print(f"Error in calculating convergence rate: {e}")
         return None
 
-
 def mean_convergence_rate_alpha_stable(alpha, n):
     """
     Calculate the convergence rate for a distribution with infinite variance (alpha-stable).
@@ -892,25 +930,27 @@ def mad_convergence_rate_alpha_stable(alpha, n):
     return rate
 
 # Function to check Novikov's condition for applicability of Girsanov's theorem
-def check_novikov_condition(theta_t, t):
+def check_novikov_condition(theta_t, t, T):
     """
-    Checks Novikov's condition for the applicability of Girsanov's theorem.
-    Novikov's condition requires that:
-    E[exp(1/2 * integral(theta_t^2 dt))] < infinity.
+    Checks Novikov's condition over a finite time horizon T.
 
     :param theta_t: The adjustment to the drift (Radon-Nikodym derivative)
     :type theta_t: sympy expression
     :param t: The time variable
     :type t: sympy symbol
-    :return: Whether Novikov's condition holds
-    :rtype: sympy boolean
+    :param T: The finite time horizon
+    :type T: float or sympy expression
+    :return: Whether Novikov's condition holds over [0, T]
+    :rtype: boolean
     """
-    # Check the expectation of the exponential of theta_t^2 over time
-    novikov_integral = sp.integrate(theta_t ** 2 / 2, (t, 0, t))
+    # Compute the integral from 0 to T
+    novikov_integral = sp.integrate(theta_t ** 2 / 2, (t, 0, T))
+    # Compute the expectation
     expectation_novikov = sp.exp(novikov_integral)
-
-    # If expectation is finite, Novikov's condition holds
-    return sp.simplify(expectation_novikov) < sp.oo
+    # Check if the expectation is finite
+    condition = expectation_novikov.is_finite
+    # Ensure that condition is a boolean value
+    return bool(condition)
 
 # Function to apply Girsanov's theorem and return the transformed drift
 def apply_girsanov(initial_drift, new_drift, diffusion, time_horizon):
@@ -933,7 +973,7 @@ def apply_girsanov(initial_drift, new_drift, diffusion, time_horizon):
     # Define the Radon-Nikodym derivative (theta_t is the change in drift)
     theta_t = (new_drift - initial_drift) / diffusion
     t = sp.symbols('t')
-    novikov_condition = check_novikov_condition(theta_t, t)
+    novikov_condition = check_novikov_condition(theta_t, t, T=time_horizon)
     if not novikov_condition:
         raise ValueError("Novikov's condition is not satisfied. Girsanov's theorem cannot be applied.")
 
@@ -968,72 +1008,6 @@ def calculate_moment(pdf, x, n):
     # Simplify the result
     return sp.simplify(moment_n)
 
-def solve_fokker_planck(mu_expr, sigma_expr, initial_condition, boundary_conditions):
-    """
-    Solve the Fokker-Planck equation symbolically with initial and boundary conditions.
-
-    :param mu_expr: The drift term as a SymPy expression of x and t (e.g., x + t).
-    :type mu_expr: sympy expression
-    :param sigma_expr: The diffusion term as a SymPy expression of x and t (e.g., x**2 + t).
-    :type sigma_expr: sympy expression
-    :param initial_condition: A tuple (x0, P0_expr) where P(x0, 0) = P0_expr defines the initial condition.
-    :type initial_condition: tuple
-    :param boundary_conditions: A list of tuples specifying boundary conditions in the form:
-                                [(x_val1, P_expr1), (x_val2, P_expr2), ...] for Dirichlet conditions.
-    :type boundary_conditions: list
-    :return: The symbolic solution of the Fokker-Planck equation with the given conditions if solvable.
-    :rtype: sympy expression or str
-    """
-    # Define variables
-    x, t = sp.symbols('x t')
-
-    # Define the probability density function P(x, t)
-    P = sp.Function('P')(x, t)
-
-    # Define the Fokker-Planck equation
-    fokker_planck_eq = sp.Eq(
-        sp.diff(P, t),
-        -sp.diff(mu_expr * P, x) + (1 / 2) * sp.diff(sp.diff(sigma_expr ** 2 * P, x), x)
-    )
-
-    # Extract initial condition
-    x0, P0_expr = initial_condition
-
-    # Add boundary conditions to a list
-    boundary_conditions_list = []
-    for bc in boundary_conditions:
-        x_val, P_expr = bc
-        boundary_conditions_list.append(P.subs(x, x_val) - P_expr)
-
-    # Try to solve the Fokker-Planck equation with initial and boundary conditions
-    try:
-        solution = sp.dsolve(fokker_planck_eq, P, ics={P.subs(t, 0): P0_expr})
-
-        # Apply boundary conditions manually if necessary
-        for bc in boundary_conditions_list:
-            solution = sp.simplify(solution.subs(bc.lhs, bc.rhs))
-
-        return solution
-    except Exception as e:
-        return f"Could not solve the equation: {e}"
-
-if __name__=='__main__':
-
-    # Example usage with drift and diffusion terms, initial and boundary conditions
-
-    # Define drift and diffusion terms
-    mu_expr = x + t  # Example drift term: linear in x and t
-    sigma_expr = x ** 2 + t  # Example diffusion term: quadratic in x, linear in t
-
-    # Define initial condition: P(x, 0) = exp(-x**2)
-    initial_condition = (x, sp.exp(-x ** 2))
-
-    # Define boundary conditions: P(-inf, t) = 0 and P(inf, t) = 0 (at the boundaries)
-    boundary_conditions = [(-sp.oo, 0), (sp.oo, 0)]  # Dirichlet conditions at infinity
-
-    # Solve the Fokker-Planck equation symbolically
-    solution = solve_fokker_planck(mu_expr, sigma_expr, initial_condition, boundary_conditions)
-    print(solution)
 
 
 

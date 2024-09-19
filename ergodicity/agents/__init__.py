@@ -97,3 +97,21 @@ weighted_pdf = probability_weighting.gbm_weighting(initial_mu=0.05, sigma=0.2)
 
 probability_weighting.visualize_weighting(weighted_pdf, new_mu=0.03, sigma=0.2, timestep=0.01, num_samples=1000, t=1.0)
 """
+import os
+import glob
+import importlib
+
+# Get the current directory
+current_dir = os.path.dirname(__file__)
+
+from ergodicity.process.default_values import *
+from ..configurations import *
+
+# Get all Python files in the current directory
+modules = glob.glob(os.path.join(current_dir, "*.py"))
+
+# Import all modules dynamically
+for module in modules:
+    module_name = os.path.basename(module)[:-3]
+    if module_name != "__init__":
+        importlib.import_module(f".{module_name}", package="ergodicity.agents")

@@ -130,8 +130,10 @@ import subprocess
 import plotly.graph_objects as go
 from mpl_toolkits.mplot3d import Axes3D
 from ..custom_warnings import InDevelopmentWarning, KnowWhatYouDoWarning
-from ergodicity.tools.compute import growth_rate_of_average_per_time
+from ergodicity.tools.compute import growth_rate_of_average_per_time, average_growth_rate
 from ergodicity.tools.compute import average
+from ..tools.helper import separate
+
 
 class Process(ABC):
     """
@@ -751,7 +753,7 @@ class Process(ABC):
                 plt.title(f'Simulation of {self.name}')
                 plt.xlabel('Time')
                 plt.ylabel('Value')
-                plt.grid(True)
+                plt.grid(True)  # Change the color and thickness of the grid lines
 
                 if plotlog:
                     plt.yscale('log')  # Apply logarithmic scale for y-axis if plotlog is True
@@ -1213,9 +1215,11 @@ class Process(ABC):
             data = self.simulate(t=t_m, timestep=timestep_m, num_instances=num_instances_m)
         return data
 
-    def moments(self, data, save: bool = False, t = 10, timestep = 0.01, num_instances = 10) -> Any:
+    def moments(self, data=None, save: bool = False, t = 10, timestep = 0.01, num_instances = 10) -> Any:
         """
-        Calculate the cumulative moments of the process up to every point in time using an optimized iterative approach.
+        Calculate the cumulative moments of the process increments up to every point in time using an optimized iterative approach.
+        If the process is multiplicative, the increments are calculated for the logarithm of the data.
+        The moments can be calculated either based on the already simulated data (using simulate method or exporting data) or by simulating the data using the specified parameters.
 
         :param data: The data array of the process.
         :type data: Any
@@ -1230,8 +1234,8 @@ class Process(ABC):
         :return: A tuple of times and the calculated moments (mean, variance, skewness, kurtosis, etc.
         :rtype: Tuple
         """
-
-        data = self.get_data_for_moments(data, t_m=t, timestep_m=timestep, num_instances_m=num_instances)
+        if data is None:
+            data = self.get_data_for_moments(data, t_m=t, timestep_m=timestep, num_instances_m=num_instances)
 
         times, data_raw = self.separate(data)
 
@@ -1279,7 +1283,7 @@ class Process(ABC):
 
         return times, mean, variance, skewness, kurtosis, mad
 
-    def k_moments(self, data, order: int = 4, save: bool = False, t: float = 10, timestep: float = 0.01,
+    def k_moments(self, data=None, order: int = 4, save: bool = False, t: float = 10, timestep: float = 0.01,
                           num_instances: int = 10, visualize: bool = False) -> Any:
         """
         Calculate the cumulative moments of the process up to a specified order for every point in time
@@ -1300,8 +1304,8 @@ class Process(ABC):
         :return: A tuple of times and the calculated moments (mean, variance, skewness, kurtosis, etc.).
         :rtype: Tuple
         """
-
-        data = self.get_data_for_moments(data, t_m=t, timestep_m=timestep, num_instances_m=num_instances)
+        if data is None:
+            data = self.get_data_for_moments(data, t_m=t, timestep_m=timestep, num_instances_m=num_instances)
 
         times, data_raw = self.separate(data)
 
@@ -1415,7 +1419,7 @@ class Process(ABC):
         times, mean, variance, skewness, kurtosis, mad = self.moments(data, save=save, t=t, timestep=timestep, num_instances=num_instances)
         return {"Mean": mean, "Variance": variance, "Skewness": skewness, "Kurtosis": kurtosis, "Mean Absolute Deviation": mad}
 
-    def visualize_moments(self, data, mask=mask_default, save: bool = False, t = 10, timestep = 0.01, num_instances = 10):
+    def visualize_moments(self, data=None, mask=mask_default, save: bool = False, t = 10, timestep = 0.01, num_instances = 10):
         """
         Visualize the first, the second, the third, and the fourth moments of the process.
 
@@ -1430,8 +1434,8 @@ class Process(ABC):
         :return: None
         :rtype: None
         """
-
-        data = self.get_data_for_moments(data, t_m=t, timestep_m=timestep, num_instances_m=num_instances)
+        if data is None:
+            data = self.get_data_for_moments(data, t_m=t, timestep_m=timestep, num_instances_m=num_instances)
 
         times, data_raw = self.separate(data)
         moments = self.moments_dict(data, save=save, t=t, timestep=timestep, num_instances=num_instances)
@@ -1443,7 +1447,7 @@ class Process(ABC):
                           f"moments_simulation_{self.get_params()}.csv",
                           save)
 
-    def visualize_moment(self, data, label, mask=mask_default, save: bool = False, t = 10, timestep = 0.01, num_instances = 10):
+    def visualize_moment(self, data=None, label="Mean", mask=mask_default, save: bool = False, t = 10, timestep = 0.01, num_instances = 10):
         """
         Visualize a given moment of the process - a helper function for the next methods.
 
@@ -1458,8 +1462,8 @@ class Process(ABC):
         :return: None
         :rtype: None
         """
-
-        data = self.get_data_for_moments(data, t_m=t, timestep_m=timestep, num_instances_m=num_instances)
+        if data is None:
+            data = self.get_data_for_moments(data, t_m=t, timestep_m=timestep, num_instances_m=num_instances)
 
         times, data_raw = self.separate(data)
         times = times[1:]
@@ -1469,6 +1473,7 @@ class Process(ABC):
         self.save_to_file(moments[label],
                           f"{label}_simulation_{self.get_params()}.csv",
                           save)
+        return moments[label]
 
     def simulate_live(self, t: float = t_default, timestep: float = timestep_default, num_instances: int = num_instances_default, save: bool = False, speed: float = 1) -> Any:
         """
@@ -1883,6 +1888,7 @@ class Process(ABC):
         """
         data = self.simulate(t=t, timestep=timestep, num_instances=1)
         times, data = self.separate(data)
+
         time_average = (np.mean(data))/timestep
 
         self.save_to_file(time_average,
@@ -1960,7 +1966,7 @@ class Process(ABC):
         else:
             raise ValueError("The time average of growth rates can now only be calculated for multiplicative processes.")
 
-    def plot_growth_rate_of_average_3d(self, instance_range, time_range, instance_step, time_step,
+    def plot_growth_rate_of_average_3d(self, instance_range, time_range, instance_step, time_step, simulation_timestep=timestep_default,
                                     step_type='linear', filename='growth_rate_of_average_function', save_html=True):
         """
         Draw a 3D graph of average growth rate as a function of number of instances and time.
@@ -1973,6 +1979,8 @@ class Process(ABC):
         :type instance_step: float
         :param time_step: Step size for time
         :type time_step: float
+        :param simulation_timestep: Time step for the simulation (used in the simulate method)
+        :type simulation_timestep: float
         :param step_type: 'linear' or 'logarithmic'
         :type step_type: str
         :param filename: Path to save the results (if None, results won't be saved)
@@ -1997,7 +2005,8 @@ class Process(ABC):
 
         for i, num_instances in enumerate(instances):
             for j, t in enumerate(times):
-                data = self.simulate(t=t, num_instances=int(num_instances))
+                data = self.simulate(t=t, timestep=simulation_timestep, num_instances=int(num_instances))
+                # print('simulation finished')
                 results[i, j] = growth_rate_of_average_per_time(data)
 
         # Create the 3D plot
@@ -2119,6 +2128,7 @@ class Process(ABC):
         Self-averaging time is the time after which the process ensemble starts to behave as a time average and stops behave as an ensemble average (so stops self-averaging).
         This method will work properly only if you select t that is long enough.
         We do not know any formal method to select t that is long enough for arbitrary process, so you have to check it by yourself.
+        The method works only for multiplicative processes.
 
         :param num_instances: The number of instances of the process to use in the pea estimation
         :type num_instances: int
@@ -2133,64 +2143,59 @@ class Process(ABC):
         :return: The empirical estimation of self-averaging time of the process
         :rtype: float
         """
-        times = np.arange(0, t, timestep)
-        # times = times[:-1]
-        ensemble, total_average = self.simulate_ensembles(t=t, timestep=timestep,
-        num_instances=num_instances, num_ensembles=n)
-        ensemble_average_simulation = self.simulate(t=1, timestep=timestep, num_instances=n)
-        ensemble_average = ensemble_average_simulation[:, -1]
-        ensemble_average = np.mean(ensemble_average)
+        if self._multiplicative is False:
+            raise ValueError("The self-averaging time can now only be calculated for multiplicative processes.")
 
-        if self._multiplicative:
-            ensemble_average = np.log(ensemble_average)
+        else:
+            times = np.arange(0, t, timestep)
+            ensemble, total_average = self.simulate_ensembles(t=t, timestep=timestep, num_instances=num_instances,
+                                                              num_ensembles=n)
+
+            print(f"Shape of total_average: {total_average.shape}")
+            print(f"Shape of times: {times.shape}")
+
             data = np.log(total_average)
+            index = int(1/timestep)
+            ensemble_average = data[index]
 
-        if not self._multiplicative:
-            data = total_average
+            print(f'Ensemble average: {ensemble_average}')
 
-        # calculate time average growth rate of data - last - first element divided by t
-        time_average_rate = (data[-1] - data[0]) / t
+            time_average_rate = (data[-1] - data[0]) / t
+            print(f"Time average rate: {time_average_rate}")
 
-        index = 0
+            # Ensure data and times have the same length
+            min_length = min(len(data), len(times))
+            data = data[:min_length]
+            times = times[:min_length]
 
-        # find the first element that is smaller than increment[0] - 0.5*difference
-        for i in range(len(data)):
-            current_time = times[i]
-            if abs(data[i]-time_average_rate*current_time) < abs(data[i] - ensemble_average*current_time):
-                index = i
-                break
+            time_avg_diff = np.cumsum(np.abs(data - time_average_rate * times))
+            ensemble_avg_diff = np.cumsum(np.abs(data - ensemble_average * times))
 
-        if index == 0:
-            print("The self-averaging time could not be calculated. The time t may be too short for the process or the process is not subject to self-averaging breaking.")
+            self_averaging_time = 0
 
-        # merge times and increments and find time corresponding to the index (self-averaging time)
-        data = np.vstack((times, data))
-        self_averaging_time = data[0, index]
+            for i in range(len(data)):
+                if time_avg_diff[i] < ensemble_avg_diff[i]:
+                    self_averaging_time = times[i]
+                    break
 
-        if plot:
-            # plot the increments with vertical line at the self-averaging time
-            plt.figure(figsize=(10, 6))
-            plt.plot(data[0], data[1], label='Increments')
+            print(f"Self-averaging time: {self_averaging_time}")
 
-            # Ensure the self_averaging_time is within the data range
-            min_time, max_time = min(data[0]), max(data[0])
-            if min_time <= self_averaging_time <= max_time:
-                plt.axvline(x=self_averaging_time, color='r', linestyle='--', label='Self-averaging time')
-            else:
-                print(f"Warning: self_averaging_time ({self_averaging_time}) is outside the data time range.")
+            if plot:
+                plt.figure(figsize=(12, 8))
+                plt.plot(times, data, label='Process')
+                plt.plot(times, time_average_rate * times, label='Time Average Projection', linestyle='--')
+                plt.plot(times, ensemble_average * times, label='Ensemble Average Projection', linestyle='--')
+                nearest_index = np.argmin(np.abs(times - self_averaging_time))
+                plt.plot(self_averaging_time, data[nearest_index], 'ro', markersize=10, label='Self-averaging point')
 
-            # Set x-axis limits to ensure the vertical line is within the visible range
-            plt.xlim([min_time, max_time])
+                plt.title(f'Self-averaging Analysis of {self.name}')
+                plt.xlabel('Time')
+                plt.ylabel('Value')
+                plt.legend()
+                plt.grid(True)
+                plt.show()
 
-            plt.title(f'Increments of {self.name}')
-            plt.xlabel('Time')
-            plt.ylabel('Increment')
-            plt.legend()
-            plt.grid(True)
-            plt.show()
-            plt.close()
-
-        return self_averaging_time
+            return self_averaging_time
 
     def empirical_properties(self):
         """
@@ -2219,23 +2224,6 @@ class Process(ABC):
         :rtype: str
         """
         print('The closed formula for this process is not yet implemented')
-        pass
-
-    def simulate_ensemble(self, t: float = t_default, timestep: float = timestep_default, num_instances: int = num_instances_default, save: bool = False) -> Any:
-        """
-        Simulate the process ensemble for a given time and return the ensemble of instances using analytical approximation when possible.
-
-        :param t: The time to simulate
-        :type t: float
-        :param timestep: The time step for the simulation
-        :type timestep: float
-        :param num_instances: The number of instances to simulate
-        :type num_instances: int
-        :param save: Whether to save the results to a file
-        :type save: bool
-        :return: The ensemble of instances of the process
-        :rtype: np.ndarray
-        """
         pass
 
     def pdf_evolution(self, t=t_default, timestep=timestep_default, num_instances=num_instances_default) -> Any:
@@ -2366,8 +2354,7 @@ class Process(ABC):
             raise ValueError(
                 "The eternal simulator is not available for this process because an external simulator is used for it. To use this method, an internal simulator must be implemented.")
 
-from ergodicity.tools.solve import solve
-from ergodicity.tools.solve import solve_fokker_planck
+from ergodicity.tools.solve import solve, time_average, ergodicity_transform
 from ergodicity.tools.compute import solve_fokker_planck_numerically
 
 class ItoProcess(Process, ABC):
@@ -2402,6 +2389,8 @@ class ItoProcess(Process, ABC):
             self._stochastic_term = stochastic_term
         else:
             raise ValueError("The stochastic term must be greater than or equal to zero.")
+        self._drift_term_sympy = None
+        self._stochastic_term_sympy = None
 
     @property
     def drift_term(self) -> float:
@@ -2446,7 +2435,7 @@ class ItoProcess(Process, ABC):
         else:
             raise ValueError("The stochastic term must be greater than or equal to zero.")
 
-    def solve(self):
+    def closed_formula(self):
         """
         Find the analytical solution for the given Ito process using Ito calculus.
 
@@ -2455,8 +2444,19 @@ class ItoProcess(Process, ABC):
         """
         x = sp.symbols('x')
         t = sp.symbols('t')
-        solution = solve(mu=self._drift_term, sigma=self._stochastic_term, x=x, t=t)
+        solution = solve(mu=self._drift_term_sympy, sigma=self._stochastic_term_sympy, x=x, t=t)
+        print(f'The closed formula for the process is: {solution}')
         return solution
+
+    def ergodicity_transform(self):
+        """
+        Find the ergodicity transformation for the given Ito process using Ito calculus.
+
+        :return: The ergodicity transformation for the Ito process
+        :rtype: Sympy expression
+        """
+        transform = ergodicity_transform(self._drift_term_sympy, self._stochastic_term_sympy, x=sp.symbols('x'), t=sp.symbols('t'))
+        return transform
 
     def differential(self) -> str:
         """
@@ -2465,8 +2465,55 @@ class ItoProcess(Process, ABC):
         :return: The differential of the process
         :rtype: str
         """
-        return f"dX = {self._drift_term} * dt + {self._stochastic_term} * dW"
+        # print(f'dX = {self._drift_term_sympy} * dt + {self._stochastic_term_sympy} * dW')
+        dt = sp.symbols('dt')
+        dW = sp.symbols('dW(t)')
+        dx = self._drift_term_sympy * dt + self._stochastic_term_sympy * dW
+        return dx
 
+    def time_average_expression(self) -> str:
+        """
+        Return the symbolic expression for the time average of the process if possible using Ito calculus.
+
+        :return: The symbolic expression for the time average of the process
+        :rtype: Sympy expression
+        """
+        x = sp.symbols('x')
+        t = sp.symbols('t')
+
+        solution = time_average(mu=self._drift_term_sympy, sigma=self._stochastic_term_sympy, x=x, t=t)
+
+        return solution
+
+    def expected_value_expression(self, initial_condition=1) -> str:
+        """
+        Return the symbolic expression for the expected value of the process if possible using conventional calculus.
+
+        :return: The symbolic expression for the expected value of the process
+        :rtype: Sympy expression
+        """
+        t = sp.symbols('t')
+        x = sp.Function('x')(t)
+        mu = self._drift_term_sympy
+
+        # replace x symbol with x function in mu:
+        mu = mu.subs(sp.Symbol('x'), x)
+
+        # Define the differential equation
+        diffeq = sp.Eq(sp.diff(x, t), mu)
+
+        # Solve the differential equation
+        solution = sp.dsolve(diffeq, x)
+
+        # Substitute the initial condition C1
+        solution = solution.subs(sp.Symbol('C1'), initial_condition)
+
+        print("Differential equation:")
+        print(diffeq)
+        print("\nSolution:")
+        print(solution)
+
+        return solution
 
 class NonItoProcess(Process, ABC):
     """

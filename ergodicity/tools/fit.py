@@ -65,33 +65,178 @@ plot_fitted_distributions(data, fitted_dists)
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
-from scipy.optimize import minimize
-from typing import List, Any, Type, Callable, Dict, Tuplemak
+from typing import List, Any, Type, Callable, Dict, Tuple
+import warnings
+from scipy import stats
+from ergodicity.tools.helper import separate
+from scipy.optimize import minimize, differential_evolution
+from scipy.stats import levy_stable
 
 def levy_stable_fit(data):
     """
-    Fit Lévy stable distribution to data using maximum likelihood estimation.
+    Estimate the parameters of a stable distribution using the Empirical Characteristic Function method.
 
-    :param data: The data to fit the Lévy stable distribution to
-    :type data: array
-    :return: The fitted parameters (alpha, beta, loc, scale) for the Lévy stable distribution
-    :rtype: array
+    :param data: The data to fit the stable distribution to
+    :type data: array-like
+    :return: The estimated parameters of the stable distribution
+    :rtype: dict
     """
 
-    def negative_log_likelihood(params, data):
-        alpha, beta, loc, scale = params
-        return -np.sum(stats.levy_stable.logpdf(data, alpha, beta, loc, scale))
+    # Empirical Characteristic Function (ECF)
+    def ecf(t):
+        return np.mean(np.exp(1j * t * data))
 
-    # Initial guess
-    initial_guess = [1.5, 0, np.mean(data), np.std(data)]
+    # Theoretical Characteristic Function (TCF) of stable distribution
+    def tcf(t, alpha, beta, gamma, delta):
+        return np.exp(1j * delta * t - gamma ** alpha * np.abs(t) ** alpha * (
+                    1 - 1j * beta * np.sign(t) * np.tan(np.pi * alpha / 2)))
 
-    # Bounds for parameters
-    bounds = [(0.01, 2), (-1, 1), (None, None), (1e-6, None)]
+    # Objective function to minimize
+    def objective(params):
+        alpha, beta, gamma, delta = params
+        t_values = np.linspace(-10, 10, 100)
+        ecf_values = np.array([ecf(t) for t in t_values])
+        tcf_values = np.array([tcf(t, alpha, beta, gamma, delta) for t in t_values])
+        error = np.sum(np.abs(ecf_values - tcf_values) ** 2)
+        return error
 
-    # Minimize negative log-likelihood
-    result = minimize(negative_log_likelihood, initial_guess, args=(data,), bounds=bounds)
+    # Initial guesses
+    alpha0 = 1.5
+    beta0 = 0.0
+    gamma0 = np.std(data)
+    delta0 = np.mean(data)
+    print(f'Initial guesses: alpha={alpha0}, beta={beta0}, gamma={gamma0}, delta={delta0}')
 
-    return result.x
+    initial_guess = [alpha0, beta0, gamma0, delta0]
+
+    # Bounds
+    bounds = [(0.5, 2), (-1, 1), (1e-3, None), (None, None)]
+
+    # Minimization
+    result = minimize(objective, initial_guess, bounds=bounds, method='L-BFGS-B')
+
+    if result.success:
+        alpha_est, beta_est, gamma_est, delta_est = result.x
+        return {
+            'alpha': alpha_est,
+            'beta': beta_est,
+            'scale': gamma_est,
+            'loc': delta_est
+        }
+    else:
+        print("Optimization failed:", result.message)
+        return None
+
+# Example Usage
+if __name__ == "__main__":
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from scipy.stats import levy_stable
+
+    # Set random seed for reproducibility
+    np.random.seed(0)
+
+    # Define true parameters for the Lévy stable distribution
+    true_alpha = 1.8  # Stability parameter
+    true_beta = -0.2  # Skewness parameter
+    true_loc = 0.1  # Location parameter
+    true_scale = 0.6  # Scale parameter
+
+    # Generate sample data
+    sample_size = 10000
+    data_raw = levy_stable.rvs(
+        alpha=true_alpha,
+        beta=true_beta,
+        loc=true_loc,
+        scale=true_scale,
+        size=sample_size
+    )
+
+    # Extract increments
+    data = np.diff(data_raw)
+
+    # Visualize the increments
+    plt.figure(figsize=(10, 6))
+    plt.hist(data, bins=100, density=True, alpha=0.6, color='g', label='Increments Histogram')
+    plt.title('Histogram of Increments')
+    plt.xlabel('Increment Value')
+    plt.ylabel('Density')
+    plt.legend()
+    plt.show()
+
+    # Plot empirical cumulative distribution
+    plt.figure(figsize=(10, 6))
+    sorted_data = np.sort(data)
+    ecdf = np.arange(1, sample_size) / sample_size
+    plt.plot(sorted_data, ecdf, label='Empirical CDF')
+
+    # Overlay the true CDF
+    true_cdf = levy_stable.cdf(sorted_data, true_alpha, true_beta, loc=true_loc, scale=true_scale)
+    plt.plot(sorted_data, true_cdf, 'r--', label='True CDF')
+    plt.title('Empirical vs. True CDF')
+    plt.xlabel('Increment Value')
+    plt.ylabel('CDF')
+    plt.legend()
+    plt.show()
+
+    # Fit the Lévy stable distribution to the increments
+    levy_params = levy_stable_fit(
+        data,
+        alpha_bounds=(0.5, 2),
+        beta_bounds=(-1, 1),
+        scale_bounds=(1e-3, None),
+        fix_loc=True,
+        verbose=True  # Enable detailed logging
+    )
+
+    # Display the fitted parameters
+    print("\nFitted Lévy stable parameters:")
+    print(f"Alpha (stability): {levy_params['alpha']}")
+    print(f"Beta (skewness): {levy_params['beta']}")
+    print(f"Loc (location): {levy_params['loc']}")
+    print(f"Scale (scale): {levy_params['scale']}")
+    print(f"Optimization Success: {levy_params['success']}")
+    print(f"Message: {levy_params['message']}")
+
+    # Extract fitted parameters
+    fitted_alpha = levy_params['alpha']
+    fitted_beta = levy_params['beta']
+    fitted_loc = levy_params['loc']
+    fitted_scale = levy_params['scale']
+
+    # Define a range for plotting the fitted PDF
+    x = np.linspace(min(data), max(data), 1000)
+    fitted_pdf = levy_stable.pdf(x, fitted_alpha, fitted_beta, loc=fitted_loc, scale=fitted_scale)
+
+    # Plot the histogram and fitted PDF
+    plt.figure(figsize=(10, 6))
+    plt.hist(data, bins=100, density=True, alpha=0.6, color='g', label='Increments Histogram')
+    plt.plot(x, fitted_pdf, 'r-', lw=2, label='Fitted Lévy Stable PDF')
+    plt.title('Histogram of Increments with Fitted Lévy Stable PDF')
+    plt.xlabel('Increment Value')
+    plt.ylabel('Density')
+    plt.legend()
+    plt.show()
+
+    # Overlay the true PDF for comparison
+    true_pdf = levy_stable.pdf(x, true_alpha, true_beta, loc=true_loc, scale=true_scale)
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, fitted_pdf, 'r-', lw=2, label='Fitted Lévy Stable PDF')
+    plt.plot(x, true_pdf, 'b--', lw=2, label='True Lévy Stable PDF')
+    plt.title('Fitted vs. True Lévy Stable PDF')
+    plt.xlabel('Increment Value')
+    plt.ylabel('Density')
+    plt.legend()
+    plt.show()
+
+    # Q-Q plot against the fitted distribution
+    from scipy.stats import probplot
+
+    fitted_dist = stats.levy_stable(alpha=fitted_alpha, beta=fitted_beta, loc=fitted_loc, scale=fitted_scale)
+    probplot(data, dist=fitted_dist, plot=plt)
+    plt.title('Q-Q Plot Against Fitted Lévy Stable Distribution')
+    plt.show()
+
 
 def fit_distributions(data):
     """
@@ -115,67 +260,108 @@ def fit_distributions(data):
     fitted_dists = {}
 
     for name, distribution in distributions.items():
-        if name == 'levy_stable':
-            params = levy_stable_fit(data)
+        try:
+            if name == 'levy_stable':
+                param_dict = levy_stable_fit(data)
+                if param_dict is None:
+                    print(f"Failed to fit Levy stable distribution")
+                    continue
+                params = (param_dict['alpha'], param_dict['beta'], param_dict['loc'], param_dict['scale'])
+            else:
+                params = distribution.fit(data)
+
+            print(f"Fitted parameters for {name}: {params}")  # Debugging line
+
+            # Check if all parameters are numerical
+            if not all(isinstance(p, (int, float)) for p in params):
+                print(f"Warning: Non-numerical parameters for {name}: {params}")
+                continue
+
             fitted_dist = distribution(*params)
-        else:
-            params = distribution.fit(data)
-            fitted_dist = distribution(*params)
 
-        # Kolmogorov-Smirnov test
-        ks_statistic, p_value = stats.kstest(data, fitted_dist.cdf)
+            # Kolmogorov-Smirnov test
+            ks_statistic, p_value = stats.kstest(data, fitted_dist.cdf)
 
-        # Log-likelihood
-        log_likelihood = np.sum(fitted_dist.logpdf(data))
+            # If ks_statistic or p_value is an array, take the first element
+            ks_statistic = ks_statistic[0] if isinstance(ks_statistic, np.ndarray) else ks_statistic
+            p_value = p_value[0] if isinstance(p_value, np.ndarray) else p_value
 
-        # Number of parameters
-        if name in ['normal', 'exponential', 'cauchy']:
-            n_params = 2
-        elif name in ['lognormal', 'gamma', 't']:
-            n_params = 3
-        elif name == 'levy_stable':
-            n_params = 4
+            print(f"KS test results for {name}: statistic={ks_statistic}, p-value={p_value}")  # Debug line
 
-        # AIC and BIC
-        n = len(data)
-        aic = 2 * n_params - 2 * log_likelihood
-        bic = n_params * np.log(n) - 2 * log_likelihood
+            # Log-likelihood
+            log_likelihood = np.sum(fitted_dist.logpdf(data))
 
-        fitted_dists[name] = {
-            'distribution': fitted_dist,
-            'params': params,
-            'ks_statistic': ks_statistic,
-            'p_value': p_value,
-            'aic': aic,
-            'bic': bic
-        }
+            # Number of parameters
+            n_params = len(params)
+
+            # AIC and BIC
+            n = len(data)
+            aic = 2 * n_params - 2 * log_likelihood
+            bic = n_params * np.log(n) - 2 * log_likelihood
+
+            fitted_dists[name] = {
+                'distribution': fitted_dist,
+                'params': params,
+                'ks_statistic': ks_statistic,
+                'p_value': p_value,
+                'aic': aic,
+                'bic': bic
+            }
+        except Exception as e:
+            print(f"Error fitting {name} distribution: {str(e)}")
 
     return fitted_dists
+
 
 def plot_fitted_distributions(data, fitted_dists):
     """
     Plot the histogram of the data with fitted distributions.
 
     :param data: The data to plot the histogram of
-    :type data: array
+    :type data: array or list of arrays
     :param fitted_dists: A dictionary containing the fitted distributions and their parameters
     :type fitted_dists: dict
     :return: None
     :rtype: None
     """
     plt.figure(figsize=(12, 6))
-    plt.hist(data, bins=50, density=True, alpha=0.7, color='skyblue')
 
-    x = np.linspace(min(data), max(data), 1000)
+    # Check if data is a list of datasets or a single dataset
+    if isinstance(data[0], (list, np.ndarray)):
+        # Multiple datasets
+        for dataset in data:
+            plt.hist(dataset, bins=50, density=True, alpha=0.1, color='skyblue')
+        # Compute global min and max across all datasets
+        global_min = min(np.min(dataset) for dataset in data)
+        global_max = max(np.max(dataset) for dataset in data)
+    else:
+        # Single dataset
+        plt.hist(data, bins=50, density=True, alpha=0.7, color='skyblue')
+        global_min = np.min(data)
+        global_max = np.max(data)
 
-    for name, dist_info in fitted_dists.items():
-        plt.plot(x, dist_info['distribution'].pdf(x), label=name)
+    x = np.linspace(global_min, global_max, 1000)
+
+    colors = plt.cm.rainbow(np.linspace(0, 1, len(fitted_dists)))
+
+    for (name, dist_info), color in zip(fitted_dists.items(), colors):
+        try:
+            y = dist_info['distribution'].pdf(x)
+            plt.plot(x, y, label=name, color=color)
+            print(f"Successfully plotted {name} distribution")
+        except Exception as e:
+            print(f"Error plotting {name} distribution: {str(e)}")
 
     plt.title('Data Histogram with Fitted Distributions')
     plt.xlabel('Value')
     plt.ylabel('Density')
     plt.legend()
     plt.show()
+
+    # Print debug information
+    print("\nDebug Information:")
+    for name, dist_info in fitted_dists.items():
+        print(f"{name}: {dist_info['params']}")
 
 def print_results(fitted_dists):
     """
@@ -208,7 +394,16 @@ def print_results(fitted_dists):
     print(f"Best model according to AIC: {best_aic[0]} (AIC: {best_aic[1]['aic']:.2f})")
     print(f"Best model according to BIC: {best_bic[0]} (BIC: {best_bic[1]['bic']:.2f})")
 
-def fit_stochastic_process(process_func, external_data, initial_params, param_names, bounds=None, num_fits=10):
+def fit_stochastic_process(
+    process_func,
+    external_data,
+    initial_params,
+    param_names,
+    bounds=None,
+    num_fits=10,
+    t=10,
+    timestep=0.01
+):
     """
     Fit parameters for a given stochastic process function to external data.
 
@@ -224,24 +419,40 @@ def fit_stochastic_process(process_func, external_data, initial_params, param_na
     :type bounds: list of tuples, optional
     :param num_fits: Number of fitting attempts with different initial conditions
     :type num_fits: int
-    :return: Optimized parameters
-    :rtype: dict
+    :param t: Total simulation time
+    :type t: float
+    :param timestep: Time step for the simulation
+    :type timestep: float
+    :return: Optimized parameters and the plot figure
+    :rtype: dict, matplotlib.figure.Figure
     """
 
-    def objective(params_to_fit):
+    def objective(params_to_fit, external_data=external_data):
         # Create kwargs for the process function
         kwargs = {name: value for name, value in zip(param_names, params_to_fit)}
         kwargs.update(initial_params)  # Add any fixed parameters
         kwargs['num_instances'] = 1  # We only need one instance for fitting
-        kwargs['t'] = 10
-        kwargs['timestep'] = 0.01
-        kwargs['initial_value'] = external_data[0]  # Set initial value to match external data
+        kwargs['t'] = t
+        kwargs['timestep'] = timestep
 
         # Run the simulation
-        simulated_data = process_func(**kwargs)
+        simulated_output = process_func(**kwargs)
+        times_simulated, simulated_data = separate(simulated_output)
 
-        # Calculate the error (using only the simulated values, not the time points)
-        error = np.mean((simulated_data[1] - external_data[1]) ** 2)
+        # Ensure that simulated_data and external_data are numpy arrays
+        simulated_data = np.array(simulated_data).flatten()
+        external_data_flat = np.array(external_data).flatten()
+
+        # Check that they have the same length
+        if len(simulated_data) != len(external_data_flat):
+            # Optionally, you can interpolate or truncate to match lengths
+            min_length = min(len(simulated_data), len(external_data_flat))
+            simulated_data = simulated_data[:min_length]
+            external_data_flat = external_data_flat[:min_length]
+            print("Warning: Truncated data to match lengths.")
+
+        # Calculate the error
+        error = np.mean((simulated_data - external_data_flat) ** 2)
         return error
 
     best_fit = None
@@ -255,21 +466,50 @@ def fit_stochastic_process(process_func, external_data, initial_params, param_na
             initial_values = [initial_params[name] for name in param_names]
 
         # Optimize
-        result = minimize(objective, initial_values, bounds=bounds, method='L-BFGS-B')
+        result = minimize(
+            objective,
+            initial_values,
+            bounds=bounds,
+            method='L-BFGS-B'
+        )
 
         if result.fun < best_error:
             best_error = result.fun
             best_fit = result.x
 
+    # Build kwargs for the final simulation with fitted parameters
     fitted_params = {name: value for name, value in zip(param_names, best_fit)}
+    kwargs = {}
+    kwargs.update(fitted_params)
+    kwargs['num_instances'] = 1
+    kwargs['t'] = t
+    kwargs['timestep'] = timestep
+
+    # Run the process_func with fitted parameters to get simulated data
+    simulated_output = process_func(**kwargs)
+    times_simulated, simulated_data = separate(simulated_output)
+
+    # Flatten or squeeze simulated_data
+    simulated_data = np.squeeze(simulated_data)
+
+    # Correct the shapes of times_external and external_data
+    external_data_flat = np.array(external_data).flatten()  # Ensure external_data is 1D
+    times_external = np.linspace(0, t, len(external_data_flat))  # Create a 1D array for times_external
+
+    # Debug: Print shapes
+    # print("Shape of times_simulated:", times_simulated.shape)
+    # print("Shape of simulated_data:", simulated_data.shape)
+    # print("Shape of times_external:", times_external.shape)
+    # print("Shape of external_data_flat:", external_data_flat.shape)
 
     # Plotting
     fig, ax = plt.subplots(figsize=(12, 6))
-    t = np.linspace(0, params['t'], len(external_data))
-    ax.plot(t, external_data, label='External Data', alpha=0.7)
 
-    simulated_data = process_func(**fitted_params, num_instances=1, initial_value=external_data[0])[1]
-    ax.plot(t, simulated_data, label='Fitted Process', alpha=0.7)
+    # Plot external data once
+    ax.plot(times_external, external_data_flat, label='External Data', alpha=0.7)
+
+    # Plot fitted process
+    ax.plot(times_simulated, simulated_data, label='Fitted Process', alpha=0.7)
 
     ax.set_title(f'Stochastic Process: External Data vs Fitted\nFitted Parameters: {fitted_params}')
     ax.set_xlabel('Time')
@@ -314,7 +554,7 @@ def test_fitting_success(process_func: Callable,
     for _ in range(num_tests):
         # Generate data using true parameters
         generated_data = \
-        process_func(t=t, timestep=timestep, num_instances=1, initial_value=initial_value, **true_params)[1]
+        process_func(t=t, timestep=timestep, num_instances=1, **true_params)[1]
 
         # Fit the process to the generated data
         initial_guess = {param: np.random.uniform(bounds[i][0], bounds[i][1]) for i, param in enumerate(param_names)}

@@ -58,7 +58,7 @@ automated_live_visualization(
 import ergodicity.process as ep
 import numpy as np
 from ergodicity.process.default_values import *
-from ergodicity.tools.research import *
+# from ergodicity.tools.research import *
 import numpy as np
 from ergodicity.configurations import *
 import itertools

@@ -84,6 +84,22 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from mpl_toolkits.mplot3d import Axes3D
 from typing import Callable, Tuple
+from ergodicity.process.basic import WienerProcess
+
+def wiener_increment_function(timestep_increment: float):
+    """
+    Function to generate Wiener process increments.
+    This is a default increment function for the PSDE simulator.
+    It can be changed to use different increments, such as for example Levy increments.
+
+    :param timestep_increment: The time step of the discrete increment
+    :type timestep_increment: float
+    :return: The Wiener process increment
+    :rtype: float
+    """
+    WP = WienerProcess()
+    dW = WP.increment(timestep_increment=timestep_increment)
+    return dW
 
 class PSDESimulator:
     """
@@ -128,7 +144,7 @@ class PSDESimulator:
                  t_range: tuple,
                  nx: int,
                  nt: int,
-                 boundary_condition: Tuple[str, Callable] = ("dirichlet", lambda t, x: 0)):
+                 boundary_condition: Tuple[str, Callable] = ("dirichlet", lambda t, x: 0), increment: Callable = wiener_increment_function):
         """
         Initialize the PSDE simulator.
 
@@ -148,6 +164,8 @@ class PSDESimulator:
         :type nt: int
         :param boundary_condition: Type of boundary condition and function. It can be "dirichlet", "neumann", or "periodic"
         :type boundary_condition: Tuple[str, Callable]
+        :param increment: The increment function for the stochastic term (default: Wiener process)
+        :type increment: Callable
         """
         self.drift = drift
         self.diffusion = diffusion
@@ -168,6 +186,8 @@ class PSDESimulator:
 
         # Apply initial boundary conditions
         self.apply_boundary_condition(0)
+
+        self.increment = increment
 
     def apply_boundary_condition(self, n):
         """
@@ -199,7 +219,8 @@ class PSDESimulator:
         :rtype: None
         """
         for n in range(1, self.nt):
-            dW = np.sqrt(self.dt) * np.random.normal(0, 1, self.nx)
+            # dW = np.sqrt(self.dt) * np.random.normal(0, 1, self.nx)
+            dW = [self.increment(timestep_increment=self.dt) for i in range(self.nx)]
 
             u_x = np.gradient(self.u[n - 1], self.dx)
             u_xx = np.gradient(u_x, self.dx)

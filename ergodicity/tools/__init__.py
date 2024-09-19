@@ -77,8 +77,26 @@ fitted_distribution = fit.levy_stable_fit(data)
 
 sim_results = multiprocessing.multi_simulations(MyStochasticProcess, param_ranges)
 """
+import os
+import glob
+import importlib
+
+# Get the current directory
+current_dir = os.path.dirname(__file__)
 
 from ergodicity.process.default_values import *
-from ergodicity.configurations import *
+from ..configurations import *
+
+# Get all Python files in the current directory
+modules = glob.glob(os.path.join(current_dir, "*.py"))
+
+# Exclude the partial_sde.py file from the list
+modules = [module for module in modules if os.path.basename(module) != "partial_sde.py"]
+
+# Import all modules dynamically
+for module in modules:
+    module_name = os.path.basename(module)[:-3]
+    if module_name != "__init__":
+        importlib.import_module(f".{module_name}", package="ergodicity.tools")
 
 

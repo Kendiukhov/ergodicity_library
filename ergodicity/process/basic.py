@@ -81,8 +81,11 @@ import os
 import plotly.graph_objects as go
 from scipy.stats import norm
 import matplotlib.pyplot as plt
+from ergodicity.custom_warnings import *
+from ..tools.helper import covariance_to_correlation
 
-class EmptyProcess(Process):
+
+class EmptyProcess(ItoProcess):
     """
     A process that is always zero or one.
     It may be used as a placeholder, for testing purposes, or often in the agents module as a null-action.
@@ -102,11 +105,13 @@ class EmptyProcess(Process):
         :type zero_or_one: float
         :raises ValueError: If zero_or_one is not 0 or 1
         """
-        super().__init__(name)
+        super().__init__(name, process_class=None, drift_term=0, stochastic_term=0)
         self.types = ["empty"]
         if zero_or_one not in [0, 1]:
             raise ValueError("zero_or_one must be 0 or 1.")
         self._zero_or_one = zero_or_one
+        self._independent = True
+        self._multiplicative = False
 
     def custom_increment(self, X: float, timestep: float = timestep_default) -> Any:
         """
@@ -312,6 +317,11 @@ class BrownianMotion(ItoProcess):
         self._scale = scale
         self._drift_term = self._drift
         self._has_wrong_params = True
+        if drift == 0 and scale == 1:
+            print(f'Congratulations! You have created a standard Brownian motion process (Wiener process).')
+            self.add_type("standard")
+        self._drift_term_sympy = self._drift
+        self._stochastic_term_sympy = self._scale
 
     def custom_increment(self, X: float, timestep: float = timestep_default) -> Any:
         """
@@ -725,6 +735,8 @@ class WienerProcess(ItoProcess):
         """
         self.types = ["wiener", 'standard']
         super().__init__(name, process_class, drift_term=0, stochastic_term=1)
+        self._drift_term_sympy = 0
+        self._stochastic_term_sympy = 1
 
 from stochastic.processes.continuous import PoissonProcess as StochasticPoissonProcess
 class PoissonProcess(NonItoProcess):
@@ -760,7 +772,7 @@ class PoissonProcess(NonItoProcess):
         :type rate: float
         :raises ValueError: If the rate parameter is non-positive
         """
-        self.types = ["poisson"]
+        self.types = ["poisson", "jump", "increasing"]
         super().__init__(name, process_class)
         if rate > 0:
             self._rate = rate
@@ -824,7 +836,7 @@ class LevyStableProcess(NonItoProcess):
     This implementation strikes a balance between the theoretical richness of Lévy stable processes and the
     practical needs of modeling real-world phenomena with potentially bounded extreme events.
     """
-    def __init__(self, name: str = "Levy Stable Process", process_class: Type[Any] = None, alpha: float = alpha_default, beta: float = beta_default, scale: float = scale_default, loc: float = loc_default, default_comments: bool = default_comments, tempering: float = 0, truncation_level: float = None, truncation_type: str = 'hard'):
+    def __init__(self, name: str = "Levy Stable Process", process_class: Type[Any] = None, alpha: float = alpha_default, beta: float = beta_default, scale: float = scale_default, loc: float = loc_default, comments: bool = default_comments, tempering: float = 0, truncation_level: float = None, truncation_type: str = 'hard', scaled_scale: bool = False):
         """
         Constructor method for the LevyStableProcess class.
 
@@ -848,6 +860,8 @@ class LevyStableProcess(NonItoProcess):
         :type truncation_level: float
         :param truncation_type: The type of truncation ('hard' or 'soft')
         :type truncation_type: str
+        :param scaled_scale: Whether to use the scaled scale parameter. If True, the scale parameter is equivalent to the normal process standard deviation.
+        :type scaled_scale: bool
         :raises ValueError: If the stability parameter is outside the range (0, 2]
         :raises ValueError: If the skewness parameter is outside the range [-1, 1]
         :raises ValueError: If the scale parameter is non-positive
@@ -870,7 +884,7 @@ class LevyStableProcess(NonItoProcess):
             self._scale = scale
         self._loc = loc
         self._loc_scaled = loc / 10
-        self._comments = default_comments
+        self._comments = comments
         self._external_simulator = False
         if tempering < 0:
             raise ValueError("The tempering parameter must be non-negative.")
@@ -891,8 +905,8 @@ class LevyStableProcess(NonItoProcess):
         # Determine if truncation is applied
         self._truncated = truncation_level is not None
 
-        # Set this true to use normal process variance equivalent as the scale parameter.
-        self._scaled_scale = False
+        # Set this true to use Wiener process variance equivalent as the scale parameter.
+        self._scaled_scale = scaled_scale
         if self._scaled_scale:
             self._scale = (1/2)**0.5 * self._scale**0.5
 
@@ -931,6 +945,19 @@ class LevyStableProcess(NonItoProcess):
         elif self._alpha == 0.5 and self._beta == 1:
             print(f'Congratulations! With your parameters, you created a Levy Process with drift = {self._loc} and scale = {self._scale}.')
             self.add_type('levy')
+            if self._loc == 0:
+                print(f'Even more, you created a Levy Smirnov process with scale = {self._scale}.')
+        elif self._alpha == 1.5 and self._beta == 0:
+            print(f'Congratulations! With your parameters, you created a Holtsmark process with drift = {self._loc} and scale = {self._scale}.')
+            self.add_type('holtsmark')
+        elif self._alpha == 1 and self._beta == 1:
+            print(f'Congratulations! With your parameters, you created a Landau process with drift = {self._loc} and scale = {self._scale}.')
+            self.add_type('landau')
+        elif self._alpha <= 0.01:
+            print(f'Congratulations! With your parameters, you created an inverse gamma process approximation with beta = {self._beta}, drift = {self._loc} and scale = {self._scale}.')
+            print('This is but an approximation of the inverse gamma process, for the true process is is achieved when alpha approaches zero.')
+            self.add_type('inverse gamma')
+
     @property
     def alpha(self):
         """
@@ -951,6 +978,9 @@ class LevyStableProcess(NonItoProcess):
         :return: None
         :rtype: None
         """
+        if alpha <= 0 or alpha > 2:
+            raise ValueError("The stability parameter alpha must be in the interval (0, 2].")
+        self._alpha = alpha
 
     @property
     def beta(self):
@@ -1135,17 +1165,19 @@ class LevyStableProcess(NonItoProcess):
             raise ValueError('scaled_scale must be a boolean.')
         self._scaled_scale = scaled_scale
 
-    def tempered_stable_rvs(self):
+    def tempered_stable_rvs(self, timestep):
         """
         Generate a tempered stable random variable.
         Tempering is applied by multiplying the Levy stable random variable with an exponential factor.
         Tempering parameter must be non-negative.
 
+        :param timestep: The time step for the simulation
+        :type timestep: float
         :return: A tempered stable random variable
         :rtype: float
         """
         # Generate a sample from a Levy stable distribution
-        levy_sample = levy_stable.rvs(alpha=self._alpha, beta=self._beta, loc=self._loc, scale=self._scale)
+        levy_sample = self._loc*timestep + (timestep**(1/self._alpha))*levy_stable.rvs(alpha=self._alpha, beta=self._beta, loc=0, scale=self._scale)
         # Apply the exponential tempering
         tempered_sample = levy_sample * np.exp(-self._tempering * abs(levy_sample))
         return tempered_sample
@@ -1185,9 +1217,9 @@ class LevyStableProcess(NonItoProcess):
         :rtype: float
         """
         if not self._tempered:
-            dX = (timestep ** (1 / self._alpha)) * levy_stable.rvs(alpha=self._alpha, beta=self._beta, loc=self._loc_scaled, scale=self._scale)
+            dX = self._loc*timestep + (timestep ** (1 / self._alpha)) * levy_stable.rvs(alpha=self._alpha, beta=self._beta, loc=0, scale=self._scale)
         else:
-            dX = (timestep ** (1 / self._alpha)) * self.tempered_stable_rvs()
+            dX = self.tempered_stable_rvs(timestep)
 
         if self._truncated:
             dX = self.truncate(dX)
@@ -1214,12 +1246,28 @@ class LevyStableProcess(NonItoProcess):
         """
         return f"X(t) = {self._loc} * t + {self._scale} * LevyStableProcess(alpha={self._alpha}, beta={self._beta}, truncation={self._truncation_level}, type={self._truncation_type}).increment()"
 
+    def characteristic_function(self) -> str:
+        """
+        Express the characteristic function of the Lévy stable distribution corresponding to the process.
+
+        :return: The characteristic function of the process
+        :rtype: str
+        """
+        if self._alpha != 1:
+            phi = f"tan(pi * {self._alpha} / 2)"
+        else:
+            phi = f"-(2/pi) * log(|t|)"
+
+        char_function = f"exp(i * {self._loc} * t - |{self._scale} * t|^{self._alpha} * (1 - i * {self._beta} * sign(t) * {phi}))"
+        return char_function
+
 class LevyStableStandardProcess(LevyStableProcess):
     """
     LevyStableStandardProcess represents a standardized version of the Lévy stable process, a class of
     continuous-time stochastic processes known for their ability to model heavy-tailed distributions and
     asymmetry. This process, denoted as (X_t)_{t≥0}, is a special case of the general Lévy stable process
     with fixed scale and location parameters (set to 1/2**0.5 and 0 correspondingly). It is primarily characterized by two parameters:
+    Scale is set to 1/2**0.5 because it corresponds to the standard deviation of the process when the process is Gaussian.
 
     1. α (alpha): The stability parameter, where 0 < α ≤ 2. This parameter determines the tail heaviness
        of the distribution. As α approaches 2, the process behaves more like Brownian motion, while
@@ -1302,9 +1350,9 @@ class MultivariateBrownianMotion(ItoProcess):
         :type name: str
         :param process_class: The specific stochastic process class to use for simulation
         :type process_class: Type[Any]
-        :param drift: The drift term for the process
+        :param drift: The drift term for the process: a vector of mean values
         :type drift: List[float]
-        :param scale: The scale parameter for the process
+        :param scale: The scale parameter for the process: a matrix of variances and covariances
         :type scale: List[List[float]]
         :raises ValueError: If the scale matrix is not positive definite
         :raises ValueError: If the scale matrix does not match the dimension of the drift vector
@@ -1422,7 +1470,6 @@ class MultivariateBrownianMotion(ItoProcess):
             plt.show()
 
         return weight_data
-
 
     def simulate_live(self, t: float = t_default, timestep: float = timestep_default) -> Any:
         """
@@ -1784,8 +1831,14 @@ class GeneralizedHyperbolicProcess(NonItoProcess):
     hyperbolic process comes with increased model complexity, requiring careful consideration in application and
     interpretation. Its ability to nest simpler models allows for sophisticated hypothesis testing and model
     selection in empirical studies.
+
+    Attention! The class must be used with caution. The generalized hyperbolic distribution is not convolution-closed.
+    It means that the sum of two generalized hyperbolic random variables may be not a generalized hyperbolic random variable.
+    This makes the simulation of the process using finite differential problematic.
+    A related problem is that it is unclear how to scale time increments dt in the simulations. The process may not be self-similar.
+    Or if we make it self-similar by design, many options are possible which lead to different processes.
     """
-    def __init__(self, name: str = "Generalized Hyperbolic Process", process_class: Type[Any] = None, alpha: float = 1.7, beta: float = 0, loc: float = 0.0005, scale: float = 0.003, **kwargs):
+    def __init__(self, name: str = "Generalized Hyperbolic Process", process_class: Type[Any] = None, plambda: float = 0, alpha: float = 1.7, beta: float = 0, loc: float = 0.0005, delta: float = 0.01, t_scaling: Callable[[float], float] = lambda t: t**0.5, **kwargs):
         """
         Constructor method for the GeneralizedHyperbolicProcess class.
 
@@ -1799,31 +1852,49 @@ class GeneralizedHyperbolicProcess(NonItoProcess):
         :type beta: float
         :param loc: The location parameter (μ)
         :type loc: float
-        :param scale: The scale parameter (σ)
-        :type scale: float
+        :param plambda: The shape parameter (λ)
+        :type plambda: float
+        :param t_scaling: The scaling function for time increments
+        :type t_scaling: Callable[[float], float]
         :param kwargs: Additional keyword arguments for the process
         :raises ValueError: If the scale parameter is non-positive
         :raises ValueError: If the shape parameter (a) is non-positive
+        :raises KnowWhatYouDoWarning: The class is under development and there are nuances with simulation. Please use with caution.
         """
         self.types = ["generalized", "hyperbolic"]
         super().__init__(name, process_class)
         self._alpha = alpha
         self._beta = beta
         self._loc = loc
-        self._scale = scale
+        self._delta = delta
+        self._plambda = plambda
         self._external_simulator = False  # Using custom increment function
+        self._t_scaling = t_scaling
 
         # Compute 'a' based on alpha and beta if not provided directly
-        if 'a' in kwargs:
-            self._a = kwargs['a']
-        else:
-            self._a = (self._beta ** 2 + self._alpha ** 2) ** 0.5
+        # if 'a' in kwargs:
+        #     self._a = kwargs['a']
+        # else:
+        #     self._a = (self._beta ** 2 + self._alpha ** 2) ** 0.5
 
         # Validity checks
-        if self._scale <= 0:
-            raise ValueError("Scale parameter must be positive.")
-        if self._a <= 0:
-            raise ValueError("Parameter 'a' must be positive.")
+        if self._delta <= 0:
+            raise ValueError("Parameter 'delta' must be positive.")
+
+        # Parametetrization to use with scipy
+        self._a = self._alpha*self._delta
+        self._b = self._beta*self._delta
+        self._scale = self._delta
+        self._p = self._plambda
+
+        warnings.warn("The GeneralizedHyperbolicProcess class is still under development and may not be fully functional."
+                                   "Its usage comes with potential risks if you do now know what you do exactly."
+                                   "Specifically, the parameters in the class define the distribution of the increments used in the simulation (stochastic differential approximation), and the distribution of process instances may be different and unpredictable."
+                                   "The generalized hyperbolic distribution is, generally, not convolution-closed."
+                                   "It means that the sum of two generalized hyperbolic random variables may be not a generalized hyperbolic random variable."
+                                   "This makes the simulation of the process using finite differential problematic."
+                                   "A related problem is that it is unclear how to scale time increments dt in the simulations. The process may not be self-similar."
+                                   "Or if we make it self-similar by design, many options are possible which lead to different processes.", KnowWhatYouDoWarning)
 
     @property
     def alpha(self):
@@ -1835,6 +1906,16 @@ class GeneralizedHyperbolicProcess(NonItoProcess):
         """
         return self._alpha
 
+    @alpha.setter
+    def alpha(self, alpha: float):
+        """
+        Set the shape parameter (α) of the process.
+
+        :param alpha: The shape parameter (α)
+        :type alpha: float
+        """
+        self._alpha = alpha
+
     @property
     def beta(self):
         """
@@ -1844,6 +1925,16 @@ class GeneralizedHyperbolicProcess(NonItoProcess):
         :rtype: float
         """
         return self._beta
+
+    @beta.setter
+    def beta(self, beta: float):
+        """
+        Set the skewness parameter (β) of the process.
+
+        :param beta: The skewness parameter (β)
+        :type beta: float
+        """
+        self._beta = beta
 
     @property
     def loc(self):
@@ -1855,25 +1946,116 @@ class GeneralizedHyperbolicProcess(NonItoProcess):
         """
         return self._loc
 
+    @loc.setter
+    def loc(self, loc: float):
+        """
+        Set the location parameter (μ) of the process.
+
+        :param loc: The location parameter (μ)
+        :type loc: float
+        """
+        self._loc = loc
+
     @property
-    def scale(self):
+    def delta(self):
         """
         Return the scale parameter (σ) of the process.
 
         :return: The scale parameter (σ)
         :rtype: float
         """
-        return self._scale
+        return self._delta
+
+    @delta.setter
+    def delta(self, delta: float):
+        """
+        Set the scale parameter (σ) of the process.
+
+        :param delta: The scale parameter (σ)
+        :type delta: float
+        """
+        self._delta = delta
 
     @property
     def a(self):
         """
-        Return the shape parameter 'a' of the process.
+        Return the shape parameter 'a' of the process, parametrized for the usage with scipy.
 
         :return: The shape parameter 'a'
         :rtype: float
         """
         return self._a
+
+    @property
+    def b(self):
+        """
+        Return the skewness parameter 'b' of the process, parametrized for the usage with scipy.
+
+        :return: The skewness parameter 'b'
+        :rtype: float
+        """
+        return self._b
+
+    @property
+    def scale(self):
+        """
+        Return the scale parameter 'scale' of the process, parametrized for the usage with scipy.
+
+        :return: The scale parameter 'scale'
+        :rtype: float
+        """
+        return self._scale
+
+    @property
+    def plambda(self):
+        """
+        Return the shape parameter 'λ' of the process.
+
+        :return: The shape parameter 'λ'
+        :rtype: float
+        """
+        return self._plambda
+
+    @plambda.setter
+    def plambda(self, plambda: float):
+        """
+        Set the shape parameter 'λ' of the process.
+
+        :param plambda: The shape parameter 'λ'
+        :type plambda: float
+        """
+        self._plambda = plambda
+
+    @property
+    def t_scaling(self):
+        """
+        Return the time scaling function of the process.
+
+        :return: The time scaling function
+        :rtype: Callable[[float], float]
+        """
+        return self._t_scaling
+
+    @t_scaling.setter
+    def t_scaling(self, t_scaling: Callable[[float], float]):
+        """
+        Set the time scaling function of the process.
+
+        :param t_scaling: The time scaling function
+        :type t_scaling: Callable[[float], float]
+        """
+        self._t_scaling = t_scaling
+
+    def apply_time_scaling(self, t: float):
+        """
+        Apply the time scaling function to the given time (increment) value.
+
+        :param t: he time (increment) value
+        :type t: float
+        :return: The scaled time value
+        :rtype: float
+        """
+        return self._t_scaling(t)
 
     def custom_increment(self, X: float, timestep: float = timestep_default) -> Any:
         """
@@ -1886,7 +2068,7 @@ class GeneralizedHyperbolicProcess(NonItoProcess):
         :return: The increment value
         :rtype: float
         """
-        dX = (timestep ** 0.5) * genhyperbolic.rvs(p=self._alpha, b=self._beta, loc=self._loc, scale=self._scale, a=self._a)
+        dX = self._loc*timestep + self.apply_time_scaling(timestep) * genhyperbolic.rvs(p=self._plambda, b=self._b, loc=0, scale=self._scale, a=self._a)
         return dX
 
     def differential(self) -> str:
@@ -2089,10 +2271,10 @@ class MultivariateLevy(LevyStableProcess):
     when dealing with empirical data.
     """
     def __init__(self, name: str = "Multivariate Levy Stable Process", process_class: Type[Any] = None,
-                 alpha: float = 1.5, beta: float = 0, scale: float = 1, loc: np.ndarray = None,
-                 default_comments: bool = False, tempering: float = 0, truncation_level: float = None,
-                 truncation_type: str = 'hard', correlation_matrix: np.ndarray = None,
-                 pseudovariances: np.ndarray = None):
+                 alpha: float = 1.5, beta: float = 0, loc: np.ndarray = mean_list_default,
+                 comments: bool = False, tempering: float = 0, truncation_level: float = None,
+                 truncation_type: str = 'hard', pseudocorrelation_matrix: np.ndarray = correlation_matrix_default,
+                 pseudovariances: np.ndarray = variances_default):
         """
         Constructor method for the MultivariateLevy class.
 
@@ -2116,26 +2298,26 @@ class MultivariateLevy(LevyStableProcess):
         :type truncation_level: float
         :param truncation_type: The type of truncation ('hard' or 'soft')
         :type truncation_type: str
-        :param correlation_matrix: The correlation matrix for the multivariate process
-        :type correlation_matrix: np.ndarray
+        :param pseudocorrelation_matrix: A generalization of the correlation matrix for the fat-tailed processes
+        :type pseudocorrelation_matrix: np.ndarray
         :param pseudovariances:The pseudovariances for the multivariate process
         :type pseudovariances: np.ndarray
         """
         # First, initialize the base class
-        super().__init__(name, process_class, alpha, beta, scale=scale, loc=0, default_comments=default_comments,
+        super().__init__(name, process_class, alpha, beta, scale=1, loc=0, comments=comments,
                          tempering=tempering, truncation_level=truncation_level, truncation_type=truncation_type)
 
         # Then, initialize MultivariateLevy-specific attributes
-        self._initialize_multivariate(loc, correlation_matrix, pseudovariances)
+        self._initialize_multivariate(loc, pseudocorrelation_matrix, pseudovariances)
 
-    def _initialize_multivariate(self, loc: np.ndarray, correlation_matrix: np.ndarray, pseudovariances: np.ndarray):
+    def _initialize_multivariate(self, loc: np.ndarray, pseudocorrelation_matrix: np.ndarray, pseudovariances: np.ndarray):
         """
         Initialize the multivariate parameters for the process.
 
         :param loc: The location vector (μ)
         :type loc: np.ndarray
-        :param correlation_matrix: The correlation matrix for the process
-        :type correlation_matrix: np.ndarray
+        :param pseudocorrelation_matrix: The correlation matrix for the process
+        :type pseudocorrelation_matrix: np.ndarray
         :param pseudovariances: The pseudovariances for the process
         :type pseudovariances: np.ndarray
         :raises ValueError: If the correlation matrix is not symmetric
@@ -2145,7 +2327,7 @@ class MultivariateLevy(LevyStableProcess):
         :return: None
         :rtype: None
         """
-        if correlation_matrix is None or pseudovariances is None:
+        if pseudocorrelation_matrix is None or pseudovariances is None:
             raise ValueError("Correlation matrix and pseudovariances must be provided.")
 
         # Ensure pseudovariances is a 1D array
@@ -2163,19 +2345,19 @@ class MultivariateLevy(LevyStableProcess):
         else:
             raise ValueError(f"loc must be a numpy array of shape ({self._dims},)")
 
-        print(f"Debug: correlation_matrix shape: {correlation_matrix.shape}")
+        print(f"Debug: correlation_matrix shape: {pseudocorrelation_matrix.shape}")
 
-        if not np.allclose(correlation_matrix, correlation_matrix.T):
+        if not np.allclose(pseudocorrelation_matrix, pseudocorrelation_matrix.T):
             raise ValueError("Correlation matrix must be symmetric.")
 
-        if np.any(np.linalg.eigvals(correlation_matrix) <= 0):
+        if np.any(np.linalg.eigvals(pseudocorrelation_matrix) <= 0):
             raise ValueError("Correlation matrix must be positive definite.")
 
-        self._correlation_matrix = correlation_matrix
+        self._pseudocorrelation_matrix = pseudocorrelation_matrix
         self._pseudovariances = pseudovariances
 
         # Compute the Cholesky decomposition of the correlation matrix
-        L = np.linalg.cholesky(self._correlation_matrix)
+        L = np.linalg.cholesky(self._pseudocorrelation_matrix)
 
         # Create the matrix A by scaling L with the standard deviations (square roots of pseudovariances)
         self._A = np.dot(np.diag(np.sqrt(self._pseudovariances)), L)
@@ -2189,17 +2371,17 @@ class MultivariateLevy(LevyStableProcess):
         self._X = np.zeros(self._dims)
 
     @property
-    def correlation_matrix(self):
+    def pseudocorrelation_matrix(self):
         """
         Return the correlation matrix of the process.
 
         :return: The correlation matrix
         :rtype: np.ndarray
         """
-        return self._correlation_matrix
+        return self._pseudocorrelation_matrix
 
-    @correlation_matrix.setter
-    def correlation_matrix(self, correlation_matrix: np.ndarray):
+    @pseudocorrelation_matrix.setter
+    def pseudocorrelation_matrix(self, correlation_matrix: np.ndarray):
         """
         Set the correlation matrix of the process.
 
@@ -2209,7 +2391,7 @@ class MultivariateLevy(LevyStableProcess):
         :rtype: None
         """
         self._dims = correlation_matrix.shape[0]
-        self._correlation_matrix = correlation_matrix
+        self._pseudocorrelation_matrix = correlation_matrix
 
     @property
     def pseudovariances(self):
@@ -2372,8 +2554,13 @@ class MultivariateLevy(LevyStableProcess):
             plt.legend()
 
             if save:
-                plt.savefig(os.path.join(self._output_dir,
+                try:
+                    plt.savefig(os.path.join(self._output_dir,
                                          f'{self.name}_{self.get_params()}_t:{t}_timestep:{timestep}_num_instances:{num_instances}_process_simulation.png'))
+                except:
+                    plt.savefig(os.path.join(self._output_dir,
+                                         f'{self.name}_simulation.png'))
+
             plt.tight_layout()
             plt.show()
 

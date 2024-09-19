@@ -365,6 +365,27 @@ class ProcessEncoder:
         encoded_process = self.pad_encoded_process(self.encode_process(process))
         return [encoded_process[0]] + [time] + encoded_process[1:-1]
 
+def covariance_to_correlation(covariance_matrix):
+    """
+    Convert a covariance matrix to a correlation matrix.
 
+    :param covariance_matrix: The covariance matrix to convert
+    :type covariance_matrix: numpy.ndarray
+    :return: The correlation matrix
+    :rtype: numpy.ndarray
+    """
+    # Extract the diagonal elements (variances)
+    variances = np.diag(covariance_matrix)
+
+    # Calculate standard deviations
+    std_devs = np.sqrt(variances)
+
+    # Create a diagonal matrix of inverse standard deviations
+    D_inv = np.diag(1 / std_devs)
+
+    # Calculate correlation matrix
+    correlation_matrix = D_inv @ covariance_matrix @ D_inv
+
+    return correlation_matrix
 
 

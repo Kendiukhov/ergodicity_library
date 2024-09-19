@@ -69,8 +69,8 @@ if __name__ == "__main__":
 """
 
 from ergodicity.tools.multiprocessing import *
-from ergodicity.process.multiplicative import *
-from ergodicity.process.basic import *
+# from ergodicity.process.multiplicative import *
+# from ergodicity.process.basic import *
 from ergodicity.tools.automate import *
 
 def LevyMicro_case():

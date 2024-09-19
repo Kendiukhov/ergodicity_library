@@ -55,7 +55,6 @@ wealth_history, weight_history = portfolio.simulate(timestep=0.5, time_period=1,
 
 portfolio.visualize()
 """
-
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List, Any

@@ -43,20 +43,17 @@ LotkaVolterraSimulation: Stochastic version of the Lotka-Volterra predator-prey 
 
 Each simulation function is decorated to handle time stepping, data storage, and optional plotting.
 """
-
-# here we will put selected processes used in finance etc.
 import ergodicity.process.definitions as definitions
-from ergodicity.process.increments import *
-from ergodicity.process.increments import dL_1
-from ergodicity.process.default_values import *
+from ergodicity.process.increments import WP, LP15, LP05, LP15, LPL, LPC
 from ergodicity.configurations import *
 from ergodicity.process.definitions import simulation_decorator
 from typing import List, Any, Type, Callable
 import numpy as np
 from ergodicity.tools.helper import plot
 from ergodicity.tools.helper import plot_system
+from ergodicity.configurations import *
 
-params = {'t': 100, 'timestep': 0.01, 'num_instances': 1, 'save': True, 'plot': True}
+params = {'t': 10, 'timestep': 0.01, 'num_instances': 1, 'save': True, 'plot': True}
 
 def custom_simulate(simulate_func: Callable) -> Callable:
     """
@@ -98,7 +95,8 @@ def custom_simulate(simulate_func: Callable) -> Callable:
                     print(f"Simulating instance {i}, step {step}, X = {X}")
 
         data = np.concatenate((times.reshape(1, -1), data), axis=0)
-        plot(data, num_instances, save=params['save'], plot=params['plot'])
+        if lib_plot:
+            plot(data, num_instances, save=params['save'], plot=params['plot'])
         return data
 
     return wrapper

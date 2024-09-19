@@ -86,17 +86,17 @@ import importlib
 # Get the current directory
 current_dir = os.path.dirname(__file__)
 
-# from ergodicity.process.default_values import *
-# from ergodicity.configurations import *
-
 from .default_values import *
 from ..configurations import *
 
-# # Get all Python files in the current directory
-# modules = glob.glob(os.path.join(current_dir, "*.py"))
-#
-# # Import all modules dynamically
-# for module in modules:
-#     module_name = os.path.basename(module)[:-3]
-#     if module_name != "__init__":
-#         importlib.import_module(f".{module_name}", package="ergodicity.process")
+# Get all Python files in the current directory
+modules = glob.glob(os.path.join(current_dir, "*.py"))
+
+# Remove the increments file
+modules.remove(os.path.join(current_dir, "increments.py"))
+
+# Import all modules dynamically
+for module in modules:
+    module_name = os.path.basename(module)[:-3]
+    if module_name != "__init__":
+        importlib.import_module(f".{module_name}", package="ergodicity.process")

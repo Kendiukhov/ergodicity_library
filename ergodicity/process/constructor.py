@@ -107,38 +107,38 @@ def create_custom_process():
     name = input("What will be the name of the process? ")
     is_ito = input("Is this an Ito process? (yes/no) ").strip().lower() == 'yes'
     params = input("What are the parameters of the process? (comma separated, e.g., 'alpha, beta') ").split(',')
-    if is_ito == True:
+    if is_ito:
         drift_term = float(input("What is the drift term of the process? "))
         stochastic_term = float(input("What is the stochastic term of the process? "))
-    dW_code = input("What is the increment of the process? (e.g., 'dW = dt**0.5 * np.random.norma(0,1)') ")
+    dW_code = input("What is the increment of the process? (e.g., 'dW = dt**0.5 * np.random.normal(0,1)') ")
     increment_code = input("What is the increment of the process? (e.g., 'dX = mu * X * dt + sigma * X * dW') ")
 
+    param_assignments = '\n        '.join([f'self._{param.strip()} = {param.strip()}' for param in params])
 
     if is_ito:
         class_code = f"""
-        class {name}({'ItoProcess'}):
-            def __init__(self, {', '.join(params)}):
-                super().__init__(name='{name}', process_class=None, drift_term={drift_term}, stochastic_term={stochastic_term})
-                {''.join([f'self._{param.strip()} = {param.strip()}\n        ' for param in params])}
+    class {name}(ItoProcess):
+        def __init__(self, {', '.join(params)}):
+            super().__init__(name='{name}', process_class=None, drift_term={drift_term}, stochastic_term={stochastic_term})
+            {param_assignments}
 
-            def custom_increment(self, X: float, timestep: float = timestep_default) -> Any:
-                {dW_code}
-                dX = {increment_code}
-                return dX
-        """
-
+        def custom_increment(self, X: float, timestep: float = timestep_default) -> Any:
+            {dW_code}
+            dX = {increment_code}
+            return dX
+    """
     else:
         class_code = f"""
-        class {name}({'NonItoProcess'}):
-            def __init__(self, {', '.join(params)}):
-                super().__init__(name='{name}', process_class=None)
-                {''.join([f'self._{param.strip()} = {param.strip()}\n        ' for param in params])}
+    class {name}(NonItoProcess):
+        def __init__(self, {', '.join(params)}):
+            super().__init__(name='{name}', process_class=None)
+            {param_assignments}
 
-            def custom_increment(self, X: float, timestep: float = timestep_default) -> Any:
-                {dW_code}
-                dX = {increment_code}
-                return dX
-        """
+        def custom_increment(self, X: float, timestep: float = timestep_default) -> Any:
+            {dW_code}
+            dX = {increment_code}
+            return dX
+    """
 
     print("Generated class definition:")
     print(class_code)

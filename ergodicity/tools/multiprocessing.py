@@ -76,7 +76,6 @@ if __name__ == "__main__":
 
     print(results1)
 """
-
 import concurrent.futures
 import inspect
 import json
@@ -92,7 +91,6 @@ from warnings import warn
 import functools
 from multiprocessing import freeze_support
 from concurrent.futures import ProcessPoolExecutor
-
 
 def get_object_name(obj):
     """
@@ -432,10 +430,10 @@ def parallel_processor(func: Callable):
 
     return multi_data_processor
 
-@initial_tasks_wrapper('simulate', {'t': 10, 'timestep': 0.0001, 'num_instances': 1000, 'plot': True})
+@initial_tasks_wrapper('simulate', {'t': t_default, 'timestep': timestep_default, 'num_instances': num_instances_default, 'plot': True})
 def multi_simulations(process_class, param_ranges):
     """
-    Run multiple simulations in parallel for different parameter combinations.
+    Run multiple simulations of stochastic processes in parallel for different parameter combinations.
 
     :param process_class: The stochastic process class
     :type process_class: type
@@ -721,7 +719,6 @@ def growth_rate_of_average_pipeline(process_class, process_params, t, timestep):
 
     return results
 
-
 # Create a new parallel processor function to take functions as input and return outputs of these functions that are run in parallel
 
 class Parallel:
@@ -787,25 +784,6 @@ class Parallel:
             return results
 
         return wrapper
-
-
-# def example2(x: int, y: int) -> int:
-#     return x + y
-#
-# def run_example():
-#     parallel_example_function = Parallel.wrapp(example2)
-#
-#     data_arrays = [np.random.rand(10, 100) for _ in range(5)]  # Create 5 random data arrays
-#     # make sure to provide the arguments as a list of tuples - convert from data_arrays to list of tuples
-#     for i in range(len(data_arrays)):
-#         data_arrays[i] = (data_arrays[i])
-#
-#     print(data_arrays)
-#
-#     # Using the parallelized function
-#     arg_sets = [(1, 2), (3, 4), (5, 6)]
-#     results = parallel_example_function(data_arrays)
-#     print(results)  # Expected output: [3, 7, 11]
 
 
 def parallel(func: Callable, data, **kwargs) -> int:
