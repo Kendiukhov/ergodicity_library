@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ergodicity.process.with_memory &#8212; Ergodicity Library 0.3.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ergodicity.process.with_memory</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">with_memory Submodule</span>
+
+<span class="sd">The `With Memory` Submodule focuses on stochastic processes that retain and utilize historical information to influence their future behavior. These processes deviate from classical Markovian models, which rely solely on the current state, by incorporating **memory mechanisms** that adjust their dynamics based on past states or increments. This submodule provides a framework for modeling **non-Markovian processes** with varying types of memory effects.</span>
+
+<span class="sd">Key Features:</span>
+
+<span class="sd">1. **Non-Markovian Dynamics**:</span>
+
+<span class="sd">    - Unlike Markovian processes where future behavior is independent of the past (given the present), processes in this submodule leverage historical data to influence their future states. This makes them suitable for modeling phenomena with long-range dependence or adaptive behavior.</span>
+
+<span class="sd">2. **Adaptive Drift and Volatility**:</span>
+
+<span class="sd">    - The processes typically feature **adaptive drift** or volatility, which changes based on the process&#39;s past trajectory. This allows for more complex and realistic modeling of systems where trends evolve over time, such as financial markets, physical systems, or biological processes.</span>
+
+<span class="sd">3. **Memory Update Mechanism**:</span>
+
+<span class="sd">    - A core aspect of these processes is the **memory update mechanism**, which adjusts key parameters like drift or volatility based on historical increments or states. This can lead to a variety of interesting behaviors, such as mean reversion, long-term memory, or even self-learning dynamics.</span>
+
+<span class="sd">4. **Wide Applications**:</span>
+
+<span class="sd">    - Processes with memory are particularly useful in areas where past behavior significantly impacts the future, including:</span>
+
+<span class="sd">      - **Financial markets**: Modeling asset prices with trends influenced by historical performance.</span>
+
+<span class="sd">      - **Control systems**: Adapting control mechanisms based on past errors or deviations.</span>
+
+<span class="sd">      - **Environmental science**: Modeling systems with long-term dependencies, such as climate data.</span>
+
+<span class="sd">      - **Machine learning**: Adaptive stochastic optimization methods that incorporate past performance into their future decisions.</span>
+
+<span class="sd">## Illustrative Example: Brownian Motion With Mean Memory</span>
+
+<span class="sd">The **BrownianMotionWithMeanMemory** class provides a concrete example of a process with memory, where the drift term dynamically adjusts based on the process&#39;s history. This process evolves according to the following dynamics:</span>
+
+<span class="sd">\[ dX_t = \mu_t dt + \left( \frac{\sigma}{\mu_t} \right) dW_t \]</span>
+
+<span class="sd">Where:</span>
+
+<span class="sd">- \( \mu_t \) is the **time-varying drift** that updates based on the process&#39;s history.</span>
+
+<span class="sd">- \( \sigma \) is a **scale parameter** controlling the magnitude of random fluctuations.</span>
+
+<span class="sd">- \( W_t \) is a standard **Brownian motion**.</span>
+
+<span class="sd">Key Characteristics:</span>
+
+<span class="sd">1. **Adaptive Drift**: The drift term \( \mu_t \) is adjusted based on past increments, allowing the process to learn from its own behavior.</span>
+
+<span class="sd">2. **Memory Mechanism**: A **memory update function** dynamically modifies the drift using an exponential moving average of the past increments.</span>
+
+<span class="sd">3. **Scale Modulation**: The volatility is inversely proportional to the drift, introducing a unique coupling between the random and deterministic parts of the process.</span>
+
+<span class="sd">Code Example:</span>
+
+<span class="sd">class BrownianMotionWithMeanMemory(NonItoProcess):</span>
+
+<span class="sd">    def __init__(self, name: str = &quot;Brownian Motion With Mean Memory&quot;, process_class: Type[Any] = None,</span>
+<span class="sd">                 drift: float = drift_term_default, scale: float = stochastic_term_default):</span>
+
+<span class="sd">        super().__init__(name, process_class)</span>
+
+<span class="sd">        self._memory = drift</span>
+
+<span class="sd">        self._drift = drift</span>
+
+<span class="sd">        self._scale = scale if scale &gt; 0 else ValueError(&quot;The scale parameter must be positive.&quot;)</span>
+
+<span class="sd">        self._dx = 0</span>
+
+<span class="sd">    def custom_increment(self, X: float, timestep: float = timestep_default) -&gt; Any:</span>
+
+<span class="sd">        dX = timestep * self._drift + (timestep ** 0.5) * self._scale * np.random.normal(0, 1) / self._memory</span>
+
+<span class="sd">        self._dx = dX</span>
+
+<span class="sd">        return dX</span>
+
+<span class="sd">    def memory_update(self, step):</span>
+
+<span class="sd">        step += 1</span>
+
+<span class="sd">        delta1, delta2 = 1 / step, (step - 1) / step</span>
+
+<span class="sd">        new_memory = self._memory * delta2 + delta1 * self._dx</span>
+
+<span class="sd">        return new_memory</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">ergodicity.process.basic</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ergodicity.process.definitions</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ergodicity.process.multiplicative</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="BrownianMotionWithMeanMemory">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.BrownianMotionWithMeanMemory">[docs]</a>
+<span class="k">class</span> <span class="nc">BrownianMotionWithMeanMemory</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    BrownianMotionWithMeanMemory is an illustrative example of a process with memory which represents an extension of standard Brownian motion,</span>
+<span class="sd">    incorporating a dynamic, self-adjusting drift based on the process&#39;s history. This continuous-time</span>
+<span class="sd">    stochastic process, denoted as (X_t)_{t≥0}, evolves according to the following dynamics:</span>
+
+<span class="sd">    dX_t = μ_t dt + (σ / μ_t) dW_t</span>
+
+<span class="sd">    where:</span>
+
+<span class="sd">    - μ_t is the time-varying drift, updated based on the process&#39;s history</span>
+
+<span class="sd">    - σ is the scale parameter, controlling the magnitude of random fluctuations</span>
+
+<span class="sd">    - W_t is a standard Brownian motion</span>
+
+<span class="sd">    Key features:</span>
+
+<span class="sd">    1. Adaptive Drift: The drift term μ_t is dynamically updated, reflecting the process&#39;s mean behavior</span>
+<span class="sd">       over time. This adaptation allows the process to &quot;learn&quot; from its past trajectory.</span>
+
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of its increments, used to adjust the drift.</span>
+<span class="sd">       This feature introduces a form of long-range dependence not present in standard Brownian motion.</span>
+
+<span class="sd">    3. Scale Modulation: The stochastic term is modulated by the inverse of the current drift, creating</span>
+<span class="sd">       a unique interplay between the deterministic and random components.</span>
+
+<span class="sd">    The process is initialized with a name, optional process class, initial drift, and scale parameters.</span>
+<span class="sd">    It inherits the core functionality of BrownianMotion while implementing custom increment generation</span>
+<span class="sd">    and memory update mechanisms.</span>
+
+<span class="sd">    Key methods:</span>
+
+<span class="sd">    1. custom_increment: Generates the next increment of the process, incorporating the memory-adjusted</span>
+<span class="sd">       drift and scale modulation.</span>
+
+<span class="sd">    2. memory_update: Updates the memory (drift) based on the most recent increment, using an exponential</span>
+<span class="sd">       moving average approach.</span>
+
+<span class="sd">    Researchers and practitioners should note several important considerations:</span>
+
+<span class="sd">    1. Non-Markovian nature: The dependence on history makes this process non-Markovian, requiring</span>
+<span class="sd">       specialized analysis techniques.</span>
+
+<span class="sd">    2. Parameter sensitivity: The interplay between drift updates and scale modulation can lead to</span>
+<span class="sd">       complex dynamics, necessitating careful parameter calibration.</span>
+
+<span class="sd">    3. Computational considerations: The continuous updating of the drift parameter may increase</span>
+<span class="sd">       computational overhead in simulations.</span>
+
+<span class="sd">    4. Theoretical implications: The process&#39;s unique structure may require the development of new</span>
+<span class="sd">       mathematical tools for rigorous analysis.</span>
+
+<span class="sd">    While BrownianMotionWithMeanMemory offers a novel approach to modeling adaptive stochastic processes,</span>
+<span class="sd">    its use should be carefully considered in the context of specific applications. The memory mechanism</span>
+<span class="sd">    introduces a form of &quot;learning&quot; into the process, potentially capturing more complex behaviors than</span>
+<span class="sd">    standard Brownian motion, but also introducing additional complexity in analysis and interpretation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Brownian Motion With Mean Memory&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">drift</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">drift_term_default</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">stochastic_term_default</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the Brownian Motion With Mean Memory class.</span>
+
+<span class="sd">        :param name: The name of the process</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        :param process_class: The class of the process</span>
+<span class="sd">        :type process_class: Type[Any]</span>
+<span class="sd">        :param drift: The initial drift term</span>
+<span class="sd">        :type drift: float</span>
+<span class="sd">        :param scale: The scale parameter for the stochastic term</span>
+<span class="sd">        :type scale: float</span>
+<span class="sd">        :raises ValueError: If the scale parameter is non-positive</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Call the parent class constructor to initialize inherited attributes</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="n">drift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_drift</span> <span class="o">=</span> <span class="n">drift</span>
+        <span class="k">if</span> <span class="n">scale</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The scale parameter must be positive.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="n">scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dx</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="BrownianMotionWithMeanMemory.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.BrownianMotionWithMeanMemory.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the next increment of the process, incorporating memory-adjusted drift and scale modulation.</span>
+
+<span class="sd">        :param X: The current value of the process</span>
+<span class="sd">        :type X: float</span>
+<span class="sd">        :param timestep: The time step for the increment generation</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :return: The next increment of the process</span>
+<span class="sd">        :rtype: Any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">timestep</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drift</span> <span class="o">+</span> <span class="p">(</span><span class="n">timestep</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dx</span> <span class="o">=</span> <span class="n">dX</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="BrownianMotionWithMeanMemory.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.BrownianMotionWithMeanMemory.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the memory based on the most recent increment.</span>
+
+<span class="sd">        :param step: The current step number</span>
+<span class="sd">        :type step: int</span>
+<span class="sd">        :return: The updated memory value</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="n">step</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">delta1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">step</span>
+        <span class="n">delta2</span> <span class="o">=</span> <span class="p">(</span><span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">step</span>
+        <span class="n">new_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">*</span> <span class="n">delta2</span> <span class="o">+</span> <span class="n">delta1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dx</span>
+        <span class="k">return</span> <span class="n">new_memory</span></div>
+</div>
+
+
+<div class="viewcode-block" id="OrnsteinUhlenbeckWithAdaptiveRate">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.OrnsteinUhlenbeckWithAdaptiveRate">[docs]</a>
+<span class="k">class</span> <span class="nc">OrnsteinUhlenbeckWithAdaptiveRate</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    OrnsteinUhlenbeckWithAdaptiveRate is a process with memory that extends the standard Ornstein-Uhlenbeck process.</span>
+<span class="sd">    It incorporates an adaptive mean-reversion rate based on the process&#39;s history. This continuous-time</span>
+<span class="sd">    stochastic process, denoted as (X_t)_{t≥0}, evolves according to the following dynamics:</span>
+
+<span class="sd">    dX_t = θ_t (μ - X_t) dt + σ dW_t</span>
+
+<span class="sd">    where:</span>
+
+<span class="sd">    - θ_t is the time-varying mean-reversion rate, updated based on the process&#39;s history</span>
+<span class="sd">    - μ is the long-term mean level</span>
+<span class="sd">    - σ is the volatility parameter</span>
+<span class="sd">    - W_t is a standard Brownian motion</span>
+
+<span class="sd">    Key features:</span>
+
+<span class="sd">    1. Adaptive Mean-Reversion: The mean-reversion rate θ_t is dynamically updated, reflecting the</span>
+<span class="sd">       process&#39;s tendency to return to its mean over time. This adaptation allows the process to</span>
+<span class="sd">       &quot;learn&quot; from its past trajectory and adjust its mean-reversion speed.</span>
+
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of its past states, used to adjust the</span>
+<span class="sd">       mean-reversion rate. This feature introduces a form of long-range dependence not present</span>
+<span class="sd">       in the standard Ornstein-Uhlenbeck process.</span>
+
+<span class="sd">    3. Constant Volatility: Unlike the mean-reversion rate, the volatility σ remains constant,</span>
+<span class="sd">       providing a stable measure of random fluctuations.</span>
+
+<span class="sd">    The process is initialized with a name, optional process class, long-term mean, initial</span>
+<span class="sd">    mean-reversion rate, and volatility parameters. It inherits the core functionality of NonItoProcess</span>
+<span class="sd">    while implementing custom increment generation and memory update mechanisms.</span>
+
+<span class="sd">    Key methods:</span>
+
+<span class="sd">    1. custom_increment: Generates the next increment of the process, incorporating the memory-adjusted</span>
+<span class="sd">       mean-reversion rate.</span>
+
+<span class="sd">    2. memory_update: Updates the memory (mean-reversion rate) based on the most recent state and increment,</span>
+<span class="sd">       using an exponential moving average approach.</span>
+
+<span class="sd">    Researchers and practitioners should note several important considerations:</span>
+
+<span class="sd">    1. Non-Markovian nature: The dependence on history makes this process non-Markovian, requiring</span>
+<span class="sd">       specialized analysis techniques.</span>
+
+<span class="sd">    2. Parameter sensitivity: The adaptive mean-reversion rate can lead to complex dynamics,</span>
+<span class="sd">       necessitating careful parameter calibration.</span>
+
+<span class="sd">    3. Computational considerations: The continuous updating of the mean-reversion rate parameter may</span>
+<span class="sd">       increase computational overhead in simulations.</span>
+
+<span class="sd">    4. Theoretical implications: The process&#39;s unique structure may require the development of new</span>
+<span class="sd">       mathematical tools for rigorous analysis, particularly in understanding the long-term behavior</span>
+<span class="sd">       and stationary distribution (if it exists).</span>
+
+<span class="sd">    While OrnsteinUhlenbeckWithAdaptiveRate offers a novel approach to modeling adaptive mean-reverting</span>
+<span class="sd">    processes, its use should be carefully considered in the context of specific applications. The memory</span>
+<span class="sd">    mechanism introduces a form of &quot;learning&quot; into the process, potentially capturing more complex behaviors</span>
+<span class="sd">    than the standard Ornstein-Uhlenbeck process, but also introducing additional complexity in analysis</span>
+<span class="sd">    and interpretation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Ornstein-Uhlenbeck With Adaptive Rate&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">initial_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">volatility</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">stochastic_term_default</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the Ornstein-Uhlenbeck With Adaptive Rate class.</span>
+
+<span class="sd">        :param name: The name of the process</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        :param process_class: The class of the process</span>
+<span class="sd">        :type process_class: Type[Any]</span>
+<span class="sd">        :param mean: The long-term mean level</span>
+<span class="sd">        :type mean: float</span>
+<span class="sd">        :param initial_rate: The initial mean-reversion rate</span>
+<span class="sd">        :type initial_rate: float</span>
+<span class="sd">        :param volatility: The volatility parameter</span>
+<span class="sd">        :type volatility: float</span>
+<span class="sd">        :raises ValueError: If the volatility parameter is non-positive</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mean</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;rate&#39;</span><span class="p">:</span> <span class="n">initial_rate</span><span class="p">,</span> <span class="s1">&#39;state_history&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">if</span> <span class="n">volatility</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The volatility parameter must be positive.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_volatility</span> <span class="o">=</span> <span class="n">volatility</span>
+
+<div class="viewcode-block" id="OrnsteinUhlenbeckWithAdaptiveRate.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.OrnsteinUhlenbeckWithAdaptiveRate.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the next increment of the process, incorporating memory-adjusted mean-reversion rate.</span>
+
+<span class="sd">        :param X: The current value of the process</span>
+<span class="sd">        :type X: float</span>
+<span class="sd">        :param timestep: The time step for the increment generation</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :return: The next increment of the process</span>
+<span class="sd">        :rtype: Any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;rate&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mean</span> <span class="o">-</span> <span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volatility</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="OrnsteinUhlenbeckWithAdaptiveRate.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.OrnsteinUhlenbeckWithAdaptiveRate.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the memory based on the most recent state and increment.</span>
+
+<span class="sd">        :param step: The current step number</span>
+<span class="sd">        :type step: int</span>
+<span class="sd">        :return: The updated memory value</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">current_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;state_history&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;state_history&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mean</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">step</span>
+        <span class="n">new_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;rate&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">delta</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mean</span> <span class="o">-</span> <span class="n">current_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;state_history&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_state</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;state_history&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>  <span class="c1"># Keep only last 100 states</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;state_history&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;state_history&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">100</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span></div>
+</div>
+
+
+<div class="viewcode-block" id="GeometricBrownianMotionWithVolatilityMemory">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.GeometricBrownianMotionWithVolatilityMemory">[docs]</a>
+<span class="k">class</span> <span class="nc">GeometricBrownianMotionWithVolatilityMemory</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    GeometricBrownianMotionWithVolatilityMemory is a process with memory that extends the standard Geometric Brownian Motion.</span>
+<span class="sd">    It incorporates an adaptive volatility parameter based on the process&#39;s recent history. This continuous-time</span>
+<span class="sd">    stochastic process, denoted as (X_t)_{t≥0}, evolves according to the following dynamics:</span>
+
+<span class="sd">    dX_t = μ X_t dt + σ_t X_t dW_t</span>
+
+<span class="sd">    where:</span>
+
+<span class="sd">    - μ is the constant drift parameter</span>
+<span class="sd">    - σ_t is the time-varying volatility, updated based on the process&#39;s recent historical volatility</span>
+<span class="sd">    - W_t is a standard Brownian motion</span>
+
+<span class="sd">    Key features:</span>
+
+<span class="sd">    1. Adaptive Volatility: The volatility σ_t is dynamically updated, reflecting the process&#39;s recent</span>
+<span class="sd">       historical volatility. This adaptation allows the process to adjust its randomness based on</span>
+<span class="sd">       recent market conditions or system behavior.</span>
+
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of its recent logarithmic returns, used to</span>
+<span class="sd">       estimate and adjust the current volatility. This feature introduces a form of short-term</span>
+<span class="sd">       dependence not present in the standard Geometric Brownian Motion.</span>
+
+<span class="sd">    3. Constant Drift: Unlike the volatility, the drift μ remains constant, providing a stable</span>
+<span class="sd">       long-term growth rate.</span>
+
+<span class="sd">    The process is initialized with a name, optional process class, drift, initial volatility, and</span>
+<span class="sd">    memory length parameters. It inherits the core functionality of NonItoProcess while implementing</span>
+<span class="sd">    custom increment generation and memory update mechanisms.</span>
+
+<span class="sd">    Key methods:</span>
+
+<span class="sd">    1. custom_increment: Generates the next increment of the process, incorporating the memory-adjusted</span>
+<span class="sd">       volatility.</span>
+
+<span class="sd">    2. memory_update: Updates the memory (recent returns and current volatility estimate) based on</span>
+<span class="sd">       the most recent increment, using an exponential moving average approach for volatility estimation.</span>
+
+<span class="sd">    Researchers and practitioners should note several important considerations:</span>
+
+<span class="sd">    1. Non-Markovian nature: The dependence on recent history makes this process non-Markovian, requiring</span>
+<span class="sd">       specialized analysis techniques.</span>
+
+<span class="sd">    2. Parameter sensitivity: The adaptive volatility can lead to complex dynamics, potentially</span>
+<span class="sd">       exhibiting volatility clustering similar to observed in financial markets.</span>
+
+<span class="sd">    3. Computational considerations: The continuous updating of the volatility parameter and</span>
+<span class="sd">       maintenance of recent returns may increase computational overhead in simulations.</span>
+
+<span class="sd">    4. Theoretical implications: The process&#39;s unique structure may require the development of new</span>
+<span class="sd">       mathematical tools for rigorous analysis, particularly in understanding the long-term behavior</span>
+<span class="sd">       and moments of the process.</span>
+
+<span class="sd">    While GeometricBrownianMotionWithVolatilityMemory offers a novel approach to modeling adaptive volatility</span>
+<span class="sd">    in growth processes, its use should be carefully considered in the context of specific applications.</span>
+<span class="sd">    The memory mechanism introduces a form of &quot;market feedback&quot; into the process, potentially capturing</span>
+<span class="sd">    more realistic behaviors than the standard Geometric Brownian Motion, but also introducing additional</span>
+<span class="sd">    complexity in analysis and interpretation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Geometric Brownian Motion With Volatility Memory&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">drift</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">drift_term_default</span><span class="p">,</span> <span class="n">initial_volatility</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">stochastic_term_default</span><span class="p">,</span>
+                 <span class="n">memory_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the Geometric Brownian Motion With Volatility Memory class.</span>
+
+<span class="sd">        :param name: The name of the process</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        :param process_class: The class of the process</span>
+<span class="sd">        :type process_class: Type[Any]</span>
+<span class="sd">        :param drift: The constant drift parameter</span>
+<span class="sd">        :type drift: float</span>
+<span class="sd">        :param initial_volatility: The initial volatility parameter</span>
+<span class="sd">        :type initial_volatility: float</span>
+<span class="sd">        :param memory_length: The number of recent returns to consider for volatility estimation</span>
+<span class="sd">        :type memory_length: int</span>
+<span class="sd">        :raises ValueError: If the initial volatility parameter is non-positive or memory_length is less than 2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_drift</span> <span class="o">=</span> <span class="n">drift</span>
+        <span class="k">if</span> <span class="n">initial_volatility</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The initial volatility parameter must be positive.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">memory_length</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The memory length must be at least 2.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;volatility&#39;</span><span class="p">:</span> <span class="n">initial_volatility</span><span class="p">,</span>
+            <span class="s1">&#39;returns&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="n">memory_length</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="GeometricBrownianMotionWithVolatilityMemory.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.GeometricBrownianMotionWithVolatilityMemory.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the next increment of the process, incorporating memory-adjusted volatility.</span>
+
+<span class="sd">        :param X: The current value of the process</span>
+<span class="sd">        :type X: float</span>
+<span class="sd">        :param timestep: The time step for the increment generation</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :return: The next increment of the process</span>
+<span class="sd">        :rtype: Any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drift</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;volatility&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">X</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="GeometricBrownianMotionWithVolatilityMemory.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.GeometricBrownianMotionWithVolatilityMemory.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the memory based on the most recent increment, adjusting the volatility estimate.</span>
+
+<span class="sd">        :param step: The current step number</span>
+<span class="sd">        :type step: int</span>
+<span class="sd">        :return: The updated memory value</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">current_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dx</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="p">)</span>  <span class="c1"># Calculate log return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_return</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Remove oldest return if we exceed memory length</span>
+
+            <span class="c1"># Update volatility estimate using exponential moving average</span>
+            <span class="n">lambda_param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Smoothing factor</span>
+            <span class="n">new_volatility</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">timestep</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;volatility&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_param</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;volatility&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="n">new_volatility</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span></div>
+</div>
+
+
+<div class="viewcode-block" id="LevyStableProcessWithMemory">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithMemory">[docs]</a>
+<span class="k">class</span> <span class="nc">LevyStableProcessWithMemory</span><span class="p">(</span><span class="n">LevyStableProcess</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    LevyStableProcessWithMemory extends the LevyStableProcess by incorporating a memory mechanism</span>
+<span class="sd">    that adjusts the scale parameter based on recent process behavior. This adaptation allows</span>
+<span class="sd">    the process to exhibit time-varying volatility while maintaining the heavy-tailed characteristics</span>
+<span class="sd">    of Lévy stable processes.</span>
+
+<span class="sd">    The process evolves according to the following dynamics:</span>
+
+<span class="sd">    dX_t = μ dt + σ_t^(1/α) dL_t^(α,β)</span>
+
+<span class="sd">    where:</span>
+<span class="sd">    - μ is the location parameter (drift)</span>
+<span class="sd">    - σ_t is the time-varying scale parameter, updated based on recent process increments</span>
+<span class="sd">    - α is the stability parameter (0 &lt; α ≤ 2)</span>
+<span class="sd">    - β is the skewness parameter (-1 ≤ β ≤ 1)</span>
+<span class="sd">    - L_t^(α,β) is a standard α-stable Lévy process</span>
+
+<span class="sd">    The memory mechanism adjusts σ_t based on an exponential moving average of recent</span>
+<span class="sd">    absolute increments, allowing the process to adapt its scale to recent volatility levels.</span>
+
+<span class="sd">    Key features:</span>
+<span class="sd">    1. Adaptive Scale: The scale parameter σ_t is dynamically updated, reflecting recent</span>
+<span class="sd">       volatility in the process.</span>
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of recent absolute increments,</span>
+<span class="sd">       used to adjust the scale parameter.</span>
+<span class="sd">    3. Lévy Stable Properties: Inherits the heavy-tailed and potentially skewed nature of</span>
+<span class="sd">       Lévy stable processes, while incorporating adaptive behavior.</span>
+
+<span class="sd">    This process can be particularly useful in modeling systems with varying levels of</span>
+<span class="sd">    volatility or risk, such as financial markets during periods of calm and turbulence,</span>
+<span class="sd">    or physical systems with regime changes in their random fluctuations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Levy Stable Process with Memory&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">alpha_default</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">beta_default</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">scale_default</span><span class="p">,</span>
+                 <span class="n">loc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">loc_default</span><span class="p">,</span> <span class="n">memory_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="n">scale</span><span class="p">,</span>
+            <span class="s1">&#39;increments&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="n">memory_length</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="LevyStableProcessWithMemory.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithMemory.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the next increment of the process, using the memory-adjusted scale parameter.</span>
+
+<span class="sd">        :param X: The current value of the process</span>
+<span class="sd">        :type X: float</span>
+<span class="sd">        :param timestep: The time step for the simulation</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :return: The increment value</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempered</span><span class="p">:</span>
+            <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">+</span> <span class="p">(</span><span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">))</span> <span class="o">*</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tempered_stable_rvs</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_truncated</span><span class="p">:</span>
+            <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">dX</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="LevyStableProcessWithMemory.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithMemory.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the memory based on the most recent increment, adjusting the scale parameter.</span>
+
+<span class="sd">        :param step: The current step number</span>
+<span class="sd">        :type step: int</span>
+<span class="sd">        :return: The updated memory value</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Store the absolute value of the most recent increment</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dx</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Remove oldest increment if we exceed memory length</span>
+
+            <span class="c1"># Update scale parameter using exponential moving average</span>
+            <span class="n">lambda_param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Smoothing factor</span>
+            <span class="n">new_scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_param</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="n">new_scale</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span></div>
+</div>
+
+
+<div class="viewcode-block" id="LevyStableProcessWithAdaptiveSkewness">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithAdaptiveSkewness">[docs]</a>
+<span class="k">class</span> <span class="nc">LevyStableProcessWithAdaptiveSkewness</span><span class="p">(</span><span class="n">LevyStableProcess</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    LevyStableProcessWithAdaptiveSkewness extends the LevyStableProcess by incorporating a memory mechanism</span>
+<span class="sd">    that adjusts the skewness parameter (beta) based on recent process behavior. This adaptation allows</span>
+<span class="sd">    the process to exhibit time-varying asymmetry while maintaining the heavy-tailed characteristics</span>
+<span class="sd">    of Lévy stable processes.</span>
+
+<span class="sd">    The process evolves according to the following dynamics:</span>
+
+<span class="sd">    dX_t = μ dt + σ^(1/α) dL_t^(α,β_t)</span>
+
+<span class="sd">    where:</span>
+<span class="sd">    - μ is the location parameter (drift)</span>
+<span class="sd">    - σ is the scale parameter</span>
+<span class="sd">    - α is the stability parameter (0 &lt; α ≤ 2)</span>
+<span class="sd">    - β_t is the time-varying skewness parameter (-1 ≤ β_t ≤ 1), updated based on recent process increments</span>
+<span class="sd">    - L_t^(α,β_t) is a standard α-stable Lévy process with time-varying skewness</span>
+
+<span class="sd">    The memory mechanism adjusts β_t based on an exponential moving average of recent</span>
+<span class="sd">    increments, allowing the process to adapt its asymmetry to recent trends in the data.</span>
+
+<span class="sd">    Key features:</span>
+<span class="sd">    1. Adaptive Skewness: The skewness parameter β_t is dynamically updated, reflecting recent</span>
+<span class="sd">       trends in the process.</span>
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of recent increments, used to adjust</span>
+<span class="sd">       the skewness parameter.</span>
+<span class="sd">    3. Lévy Stable Properties: Inherits the heavy-tailed nature of Lévy stable processes,</span>
+<span class="sd">       while incorporating adaptive asymmetry.</span>
+
+<span class="sd">    This process can be particularly useful in modeling systems with varying levels of</span>
+<span class="sd">    asymmetry, such as financial markets during bull and bear periods, or physical systems</span>
+<span class="sd">    with changing directional biases in their random fluctuations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Levy Stable Process with Adaptive Skewness&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">alpha_default</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">beta_default</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">scale_default</span><span class="p">,</span>
+                 <span class="n">loc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">loc_default</span><span class="p">,</span> <span class="n">memory_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="n">beta</span><span class="p">,</span>
+            <span class="s1">&#39;increments&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="n">memory_length</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="LevyStableProcessWithAdaptiveSkewness.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithAdaptiveSkewness.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the next increment of the process, using the memory-adjusted skewness parameter.</span>
+
+<span class="sd">        :param X: The current value of the process</span>
+<span class="sd">        :type X: float</span>
+<span class="sd">        :param timestep: The time step for the simulation</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :return: The increment value</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempered</span><span class="p">:</span>
+            <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">+</span> <span class="p">(</span><span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">))</span> <span class="o">*</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">],</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># For tempered version, we use the memory-adjusted beta</span>
+            <span class="n">levy_sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">+</span> <span class="p">(</span><span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">))</span> <span class="o">*</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">],</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">)</span>
+            <span class="n">dX</span> <span class="o">=</span> <span class="n">levy_sample</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_tempering</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">levy_sample</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_truncated</span><span class="p">:</span>
+            <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">dX</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="LevyStableProcessWithAdaptiveSkewness.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithAdaptiveSkewness.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the memory based on the most recent increment, adjusting the skewness parameter.</span>
+
+<span class="sd">        :param step: The current step number</span>
+<span class="sd">        :type step: int</span>
+<span class="sd">        :return: The updated memory value</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Store the normalized increment</span>
+            <span class="n">normalized_increment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dx</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">normalized_increment</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Remove oldest increment if we exceed memory length</span>
+
+            <span class="c1"># Update beta parameter using exponential moving average of the sign of increments</span>
+            <span class="n">lambda_param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Smoothing factor</span>
+            <span class="n">avg_sign</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]))</span>
+            <span class="n">new_beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">avg_sign</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Ensure beta stays in [-1, 1]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_param</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="n">new_beta</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span></div>
+
+
+<div class="viewcode-block" id="LevyStableProcessWithAdaptiveSkewness.differential">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithAdaptiveSkewness.differential">[docs]</a>
+    <span class="k">def</span> <span class="nf">differential</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Express the Levy process with adaptive skewness as a differential equation.</span>
+
+<span class="sd">        :return: The differential equation of the process</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">truncation_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; with truncation level </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_truncation_level</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_truncation_type</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_truncated</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">tempering_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; tempered by exp(-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_tempering</span><span class="si">}</span><span class="s2"> * |X|)&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempered</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;dX(t) = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="si">}</span><span class="s2"> * dt + dt^(1/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="si">}</span><span class="s2">) * </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="si">}</span><span class="s2"> * levy_stable(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="si">}</span><span class="s2">, β_t, 0, 1)</span><span class="si">{</span><span class="n">tempering_str</span><span class="si">}{</span><span class="n">truncation_str</span><span class="si">}</span><span class="s2">, where β_t is adaptive&quot;</span></div>
+</div>
+
+
+<div class="viewcode-block" id="MultivariateGBMWithAdaptiveDrift">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveDrift">[docs]</a>
+<span class="k">class</span> <span class="nc">MultivariateGBMWithAdaptiveDrift</span><span class="p">(</span><span class="n">MultivariateGeometricBrownianMotion</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MultivariateGBMWithAdaptiveDrift extends the MultivariateGeometricBrownianMotion by incorporating</span>
+<span class="sd">    a memory mechanism that adjusts the drift vector based on recent process behavior. This adaptation</span>
+<span class="sd">    allows the process to exhibit time-varying growth rates while maintaining the core properties of</span>
+<span class="sd">    a multivariate geometric Brownian motion.</span>
+
+<span class="sd">    The process evolves according to the following dynamics:</span>
+
+<span class="sd">    dS_i(t) = μ_i(t) S_i(t) dt + Σ_ij S_i(t) dW_j(t)  for i = 1, ..., n</span>
+
+<span class="sd">    where:</span>
+<span class="sd">    - μ_i(t) is the time-varying drift for the i-th component</span>
+<span class="sd">    - Σ_ij and W_j(t) remain as in the parent class</span>
+
+<span class="sd">    The memory mechanism adjusts μ(t) based on an exponential moving average of recent returns,</span>
+<span class="sd">    allowing the process to adapt its growth rates to recent trends in the data.</span>
+
+<span class="sd">    Key features:</span>
+<span class="sd">    1. Adaptive Drift: The drift vector μ(t) is dynamically updated, reflecting recent</span>
+<span class="sd">       growth patterns in each component of the process.</span>
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of recent returns for each component,</span>
+<span class="sd">       used to adjust the drift vector.</span>
+<span class="sd">    3. Preserved Correlation Structure: The scale matrix Σ remains constant, preserving the</span>
+<span class="sd">       correlation structure between components while allowing for adaptive growth rates.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Multivariate GBM with Adaptive Drift&quot;</span><span class="p">,</span>
+                 <span class="n">drift</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_list_default</span><span class="p">,</span>
+                 <span class="n">scale</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="n">variance_matrix_default</span><span class="p">,</span>
+                 <span class="n">memory_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">drift</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;drift&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">drift</span><span class="p">),</span>
+            <span class="s1">&#39;returns&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="n">memory_length</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="MultivariateGBMWithAdaptiveDrift.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveDrift.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drift</span><span class="p">),</span> <span class="n">cov</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">*</span> <span class="n">timestep</span><span class="p">)</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;drift&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">dW</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="MultivariateGBMWithAdaptiveDrift.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveDrift.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">lambda_param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">avg_returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">new_drift</span> <span class="o">=</span> <span class="n">avg_returns</span> <span class="o">/</span> <span class="n">timestep_default</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;drift&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_param</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;drift&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="n">new_drift</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MultivariateGBMWithAdaptiveCorrelation">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveCorrelation">[docs]</a>
+<span class="k">class</span> <span class="nc">MultivariateGBMWithAdaptiveCorrelation</span><span class="p">(</span><span class="n">MultivariateGeometricBrownianMotion</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MultivariateGBMWithAdaptiveCorrelation extends the MultivariateGeometricBrownianMotion by incorporating</span>
+<span class="sd">    a memory mechanism that adjusts the correlation structure (and thus the scale matrix) based on recent</span>
+<span class="sd">    process behavior. This adaptation allows the process to exhibit time-varying correlations between</span>
+<span class="sd">    components while maintaining the core properties of a multivariate geometric Brownian motion.</span>
+
+<span class="sd">    The process evolves according to the following dynamics:</span>
+
+<span class="sd">    dS_i(t) = μ_i S_i(t) dt + Σ_ij(t) S_i(t) dW_j(t)  for i = 1, ..., n</span>
+
+<span class="sd">    where:</span>
+<span class="sd">    - μ_i remains constant as in the parent class</span>
+<span class="sd">    - Σ_ij(t) is the time-varying scale matrix, reflecting changing correlations</span>
+<span class="sd">    - W_j(t) remains as in the parent class</span>
+
+<span class="sd">    The memory mechanism adjusts Σ(t) based on an exponential moving average of recent cross-products</span>
+<span class="sd">    of returns, allowing the process to adapt its correlation structure to recent patterns in the data.</span>
+
+<span class="sd">    Key features:</span>
+<span class="sd">    1. Adaptive Correlation: The scale matrix Σ(t) is dynamically updated, reflecting recent</span>
+<span class="sd">       correlation patterns between components of the process.</span>
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of recent returns for each component,</span>
+<span class="sd">       used to adjust the scale matrix.</span>
+<span class="sd">    3. Preserved Drift: The drift vector μ remains constant, preserving the average growth rates</span>
+<span class="sd">       while allowing for adaptive correlations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Multivariate GBM with Adaptive Correlation&quot;</span><span class="p">,</span>
+                 <span class="n">drift</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_list_default</span><span class="p">,</span>
+                 <span class="n">scale</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="n">variance_matrix_default</span><span class="p">,</span>
+                 <span class="n">memory_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">drift</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scale</span><span class="p">),</span>
+            <span class="s1">&#39;returns&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="n">memory_length</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="MultivariateGBMWithAdaptiveCorrelation.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveCorrelation.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drift</span><span class="p">),</span> <span class="n">cov</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">timestep</span><span class="p">)</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drift</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">dW</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="MultivariateGBMWithAdaptiveCorrelation.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveCorrelation.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">lambda_param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">returns_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;returns&#39;</span><span class="p">])</span>
+            <span class="n">new_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">returns_array</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_param</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="n">new_cov</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span></div>
+</div>
+
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveAlpha">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveAlpha">[docs]</a>
+<span class="k">class</span> <span class="nc">MultivariateGeometricLevyWithAdaptiveAlpha</span><span class="p">(</span><span class="n">MultivariateGeometricLevy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MultivariateGeometricLevyWithAdaptiveAlpha extends the MultivariateGeometricLevy by incorporating</span>
+<span class="sd">    a memory mechanism that adjusts the stability parameter (alpha) based on recent process behavior.</span>
+<span class="sd">    This adaptation allows the process to exhibit time-varying tail behavior while maintaining the</span>
+<span class="sd">    core properties of a multivariate geometric Lévy process.</span>
+
+<span class="sd">    The process evolves similarly to its parent class, but with a time-varying alpha:</span>
+
+<span class="sd">    S_i(t) = S_i(0) * exp(X_i(t))  for i = 1, ..., n</span>
+
+<span class="sd">    where X(t) = (X_1(t), ..., X_n(t)) is a multivariate Lévy stable process with time-varying α(t).</span>
+
+<span class="sd">    Key features:</span>
+<span class="sd">    1. Adaptive Stability: The stability parameter α(t) is dynamically updated, reflecting recent</span>
+<span class="sd">       extreme value behavior in the process.</span>
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of recent increments, used to adjust the</span>
+<span class="sd">       stability parameter.</span>
+<span class="sd">    3. Preserved Correlation Structure: Other parameters (β, scale, correlation) remain constant,</span>
+<span class="sd">       preserving the overall structure while allowing for adaptive tail behavior.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Multivariate Geometric Levy with Adaptive Alpha&quot;</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">loc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">pseudovariances</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">memory_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">pseudovariances</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="n">alpha</span><span class="p">,</span>
+            <span class="s1">&#39;increments&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="n">memory_length</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveAlpha.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveAlpha.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="c1"># Generate Levy increments with adaptive alpha</span>
+        <span class="n">dL</span> <span class="o">=</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">],</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span>
+                             <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dims</span><span class="p">)</span>
+        <span class="n">dL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="p">,</span> <span class="n">dL</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">])</span>
+
+        <span class="n">drift_term</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">*</span> <span class="n">timestep</span>
+        <span class="n">variance_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">*</span> <span class="n">timestep</span>
+
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">drift_term</span> <span class="o">-</span> <span class="n">variance_term</span> <span class="o">+</span> <span class="n">dL</span><span class="p">)</span> <span class="o">-</span> <span class="n">X</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveAlpha.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveAlpha.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">increment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">increment</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Estimate new alpha based on the kurtosis of recent increments</span>
+            <span class="n">increments_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span>
+            <span class="n">kurtosis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">(</span><span class="n">increments_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">new_alpha</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">kurtosis</span> <span class="o">/</span> <span class="mi">3</span><span class="p">))))</span>
+
+            <span class="n">lambda_param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_param</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="n">new_alpha</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveCorrelation">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveCorrelation">[docs]</a>
+<span class="k">class</span> <span class="nc">MultivariateGeometricLevyWithAdaptiveCorrelation</span><span class="p">(</span><span class="n">MultivariateGeometricLevy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MultivariateGeometricLevyWithAdaptiveCorrelation extends the MultivariateGeometricLevy by incorporating</span>
+<span class="sd">    a memory mechanism that adjusts the correlation structure based on recent process behavior. This</span>
+<span class="sd">    adaptation allows the process to exhibit time-varying dependencies between components while</span>
+<span class="sd">    maintaining the core properties of a multivariate geometric Lévy process.</span>
+
+<span class="sd">    The process evolves similarly to its parent class, but with a time-varying correlation structure:</span>
+
+<span class="sd">    S_i(t) = S_i(0) * exp(X_i(t))  for i = 1, ..., n</span>
+
+<span class="sd">    where X(t) = (X_1(t), ..., X_n(t)) is a multivariate Lévy stable process with time-varying</span>
+<span class="sd">    correlation matrix R(t).</span>
+
+<span class="sd">    Key features:</span>
+<span class="sd">    1. Adaptive Correlation: The correlation matrix R(t) is dynamically updated, reflecting recent</span>
+<span class="sd">       dependency patterns between components of the process.</span>
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of recent increments, used to adjust the</span>
+<span class="sd">       correlation structure.</span>
+<span class="sd">    3. Preserved Marginal Behavior: Other parameters (α, β, scale) remain constant, preserving the</span>
+<span class="sd">       marginal distributions while allowing for adaptive dependencies.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Multivariate Geometric Levy with Adaptive Correlation&quot;</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">loc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">pseudovariances</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">memory_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">pseudovariances</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;correlation&#39;</span><span class="p">:</span> <span class="n">correlation_matrix</span><span class="p">,</span>
+            <span class="s1">&#39;increments&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="n">memory_length</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveCorrelation.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveCorrelation.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="c1"># Recalculate A matrix based on updated correlation</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;correlation&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pseudovariances</span><span class="p">)),</span> <span class="n">L</span><span class="p">)</span>
+
+        <span class="n">dL</span> <span class="o">=</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span>
+                             <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dims</span><span class="p">)</span>
+        <span class="n">dL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="p">,</span> <span class="n">dL</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">)</span>
+
+        <span class="n">drift_term</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">*</span> <span class="n">timestep</span>
+        <span class="n">variance_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">*</span> <span class="n">timestep</span>
+
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">drift_term</span> <span class="o">-</span> <span class="n">variance_term</span> <span class="o">+</span> <span class="n">dL</span><span class="p">)</span> <span class="o">-</span> <span class="n">X</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveCorrelation.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveCorrelation.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">increment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">increment</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Estimate new correlation based on recent increments</span>
+            <span class="n">increments_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span>
+            <span class="n">new_correlation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">increments_array</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+            <span class="n">lambda_param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;correlation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_param</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span>
+                <span class="s1">&#39;correlation&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="n">new_correlation</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span></div>
+</div>
+
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveScale">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveScale">[docs]</a>
+<span class="k">class</span> <span class="nc">MultivariateGeometricLevyWithAdaptiveScale</span><span class="p">(</span><span class="n">MultivariateGeometricLevy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MultivariateGeometricLevyWithAdaptiveScale extends the MultivariateGeometricLevy by incorporating</span>
+<span class="sd">    a memory mechanism that adjusts the scale parameter based on recent process volatility. This</span>
+<span class="sd">    adaptation allows the process to exhibit time-varying volatility while maintaining the core</span>
+<span class="sd">    properties of a multivariate geometric Lévy process.</span>
+
+<span class="sd">    The process evolves similarly to its parent class, but with a time-varying scale:</span>
+
+<span class="sd">    S_i(t) = S_i(0) * exp(X_i(t))  for i = 1, ..., n</span>
+
+<span class="sd">    where X(t) = (X_1(t), ..., X_n(t)) is a multivariate Lévy stable process with time-varying</span>
+<span class="sd">    scale parameter σ(t).</span>
+
+<span class="sd">    Key features:</span>
+<span class="sd">    1. Adaptive Scale: The scale parameter σ(t) is dynamically updated, reflecting recent</span>
+<span class="sd">       volatility in the process.</span>
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of recent absolute increments, used to</span>
+<span class="sd">       adjust the scale parameter.</span>
+<span class="sd">    3. Preserved Distribution Shape: Other parameters (α, β, correlation) remain constant,</span>
+<span class="sd">       preserving the overall shape of the distribution while allowing for adaptive volatility.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Multivariate Geometric Levy with Adaptive Scale&quot;</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">loc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">pseudovariances</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">memory_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">pseudovariances</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;scale&#39;</span><span class="p">:</span> <span class="n">scale</span><span class="p">,</span>
+            <span class="s1">&#39;increments&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="n">memory_length</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveScale.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveScale.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">dL</span> <span class="o">=</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span>
+                             <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dims</span><span class="p">)</span>
+        <span class="n">dL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="p">,</span> <span class="n">dL</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">)</span>
+
+        <span class="n">drift_term</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">*</span> <span class="n">timestep</span>
+        <span class="n">variance_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">*</span> <span class="n">timestep</span>
+
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">drift_term</span> <span class="o">-</span> <span class="n">variance_term</span> <span class="o">+</span> <span class="n">dL</span><span class="p">)</span> <span class="o">-</span> <span class="n">X</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveScale.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveScale.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">increment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">increment</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Estimate new scale based on recent absolute increments</span>
+            <span class="n">new_scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">timestep_default</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">)</span>
+
+            <span class="n">lambda_param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_param</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;scale&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="n">new_scale</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveBeta">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveBeta">[docs]</a>
+<span class="k">class</span> <span class="nc">MultivariateGeometricLevyWithAdaptiveBeta</span><span class="p">(</span><span class="n">MultivariateGeometricLevy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MultivariateGeometricLevyWithAdaptiveBeta extends the MultivariateGeometricLevy by incorporating</span>
+<span class="sd">    a memory mechanism that adjusts the skewness parameter (beta) based on recent process behavior.</span>
+<span class="sd">    This adaptation allows the process to exhibit time-varying asymmetry while maintaining the core</span>
+<span class="sd">    properties of a multivariate geometric Lévy process.</span>
+
+<span class="sd">    The process evolves similarly to its parent class, but with a time-varying beta:</span>
+
+<span class="sd">    S_i(t) = S_i(0) * exp(X_i(t))  for i = 1, ..., n</span>
+
+<span class="sd">    where X(t) = (X_1(t), ..., X_n(t)) is a multivariate Lévy stable process with time-varying</span>
+<span class="sd">    skewness parameter β(t).</span>
+
+<span class="sd">    Key features:</span>
+<span class="sd">    1. Adaptive Skewness: The skewness parameter β(t) is dynamically updated, reflecting recent</span>
+<span class="sd">       asymmetry in the process increments.</span>
+<span class="sd">    2. Memory Mechanism: The process maintains a memory of recent increments, used to adjust the</span>
+<span class="sd">       skewness parameter.</span>
+<span class="sd">    3. Preserved Stability and Scale: Other parameters (α, σ, correlation) remain constant,</span>
+<span class="sd">       preserving the overall stability and scale while allowing for adaptive asymmetry.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Multivariate Geometric Levy with Adaptive Beta&quot;</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">loc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">pseudovariances</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">memory_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">pseudovariances</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="n">beta</span><span class="p">,</span>
+            <span class="s1">&#39;increments&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="n">memory_length</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveBeta.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveBeta.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">dL</span> <span class="o">=</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">],</span>
+                             <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dims</span><span class="p">)</span>
+        <span class="n">dL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="p">,</span> <span class="n">dL</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">*</span> <span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">)</span>
+
+        <span class="n">drift_term</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">*</span> <span class="n">timestep</span>
+        <span class="n">variance_term</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_A</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="o">*</span> <span class="n">timestep</span>
+
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">drift_term</span> <span class="o">-</span> <span class="n">variance_term</span> <span class="o">+</span> <span class="n">dL</span><span class="p">)</span> <span class="o">-</span> <span class="n">X</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+
+<div class="viewcode-block" id="MultivariateGeometricLevyWithAdaptiveBeta.memory_update">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveBeta.memory_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">increment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">increment</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Estimate new beta based on the skewness of recent increments</span>
+            <span class="n">increments_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span>
+            <span class="n">skewness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">skew</span><span class="p">(</span><span class="n">increments_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">new_beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">skewness</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Ensure beta stays in [-1, 1]</span>
+
+            <span class="n">lambda_param</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;increments&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda_param</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">lambda_param</span> <span class="o">*</span> <span class="n">new_beta</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Ergodicity Library</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Ihor Kendiukhov.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
