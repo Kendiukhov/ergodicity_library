@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ergodicity.tools.evaluate &#8212; Ergodicity Library 0.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=e259d695"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ergodicity.tools.evaluate</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">evaluate Submodule</span>
+
+<span class="sd">The `evaluate` submodule provides tools for assessing the statistical properties and characteristics of stochastic processes. This includes methods for testing ergodicity, self-similarity, fat-tailedness, and more. It offers a variety of functions for time series analysis, focusing on stochastic processes commonly used in finance, physics, and other fields requiring statistical modeling.</span>
+
+<span class="sd">Key Features:</span>
+
+<span class="sd">1. **Ergodicity Testing**:</span>
+
+<span class="sd">   - `test_ergodicity_increments`: Tests ergodicity by comparing time and ensemble averages of a process&#39;s increments. It also checks for stationarity and normality of the increments.</span>
+
+<span class="sd">2. **Self-Similarity Analysis**:</span>
+
+<span class="sd">   - `hurst_exponent`: Estimates the Hurst exponent using the Rescaled Range (R/S) method, a key indicator of self-similarity and long-term memory.</span>
+
+<span class="sd">   - `aggregate_variance`: Uses the aggregate variance method to estimate the scaling parameter.</span>
+
+<span class="sd">   - `test_self_similarity`: Combines multiple methods to test for self-similarity, including Hurst exponent estimation and scaling parameter analysis.</span>
+
+<span class="sd">   - `test_self_similarity_wavelet`: Uses wavelet analysis to estimate the Hurst exponent, offering an alternative method for testing self-similarity.</span>
+
+<span class="sd">3. **Fat-Tailedness Testing**:</span>
+
+<span class="sd">   - `test_fat_tailedness`: Performs multiple tests to detect fat-tailedness in data, including kurtosis tests, Jarque-Bera tests, and tail index estimation using the Hill estimator. It also generates Q-Q plots for visual analysis.</span>
+
+<span class="sd">   - `kurtosis_test`, `jarque_bera_test`, `tail_index_hill`: Individual functions to test for fat tails in distributions.</span>
+
+<span class="sd">4. **Wavelet-Based Analysis**:</span>
+
+<span class="sd">   - `wavelet_estimation`: Estimates the Hurst exponent using wavelet-based techniques. This is particularly useful for processes with fractal or self-similar properties.</span>
+
+<span class="sd">   - `plot_wavelet_analysis`: Provides visual analysis of wavelet decomposition, allowing users to assess the variance of wavelet coefficients across scales.</span>
+
+<span class="sd">5. **Visualization**:</span>
+
+<span class="sd">   - The submodule includes multiple plotting functions such as `plot_ergodicity_results` and `qqplot_analysis`, which help visualize important statistical properties of time series data.</span>
+
+<span class="sd">Applications:</span>
+
+<span class="sd">This submodule is highly applicable in fields such as:</span>
+
+<span class="sd">- **Financial Modeling**: Understanding stock prices, asset returns, and market dynamics through ergodicity and self-similarity testing.</span>
+
+<span class="sd">- **Physics**: Analyzing systems governed by stochastic dynamics, such as diffusion processes.</span>
+
+<span class="sd">- **Environmental Science**: Studying long-range dependence in environmental data (e.g., temperature, rainfall).</span>
+
+<span class="sd">- **Machine Learning**: Utilizing statistical tools to evaluate the properties of learning algorithms that incorporate random processes.</span>
+
+<span class="sd">The `evaluate` submodule serves as a powerful toolkit for researchers and practitioners who need to test key statistical properties of their models or real-world data. By providing a range of methods, it simplifies complex evaluations and enhances the understanding of stochastic processes.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">from</span> <span class="nn">statsmodels.tsa.stattools</span> <span class="kn">import</span> <span class="n">adfuller</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">linregress</span>
+<span class="kn">import</span> <span class="nn">pywt</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">stats</span>
+<span class="kn">from</span> <span class="nn">ergodicity.tools.helper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ergodicity.tools.compute</span> <span class="kn">import</span> <span class="n">relative_increments</span> <span class="k">as</span> <span class="n">ri</span>
+
+<div class="viewcode-block" id="test_ergodicity_increments">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.test_ergodicity_increments">[docs]</a>
+<span class="k">def</span> <span class="nf">test_ergodicity_increments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">relative_increments</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test the ergodicity of a stochastic process based on its increments.</span>
+
+<span class="sd">    :param data: Array of shape (num_time_steps, num_instances + 1) where the first row is time reprsenting the time steps and subsequent rows are instances of the process</span>
+<span class="sd">    :type data: numpy.ndarray</span>
+<span class="sd">    :param dt:vTime step size (1/number of steps in a time unit)</span>
+<span class="sd">    :type dt: float</span>
+<span class="sd">    :return: Dictionary containing test results and metrics</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">times</span><span class="p">,</span> <span class="n">process_data</span> <span class="o">=</span> <span class="n">separate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">relative_increments</span><span class="p">:</span>
+        <span class="n">increments</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">process_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">increments</span> <span class="o">=</span> <span class="n">ri</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">times</span><span class="p">,</span> <span class="n">increments</span> <span class="o">=</span> <span class="n">separate</span><span class="p">(</span><span class="n">increments</span><span class="p">)</span>
+
+    <span class="n">num_instances</span><span class="p">,</span> <span class="n">num_time_steps</span> <span class="o">=</span> <span class="n">process_data</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">num_time_steps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># 1. Test stationarity of increments (ADF test)</span>
+    <span class="n">adf_results</span> <span class="o">=</span> <span class="p">[</span><span class="n">adfuller</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span> <span class="k">for</span> <span class="n">inc</span> <span class="ow">in</span> <span class="n">increments</span><span class="p">]</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;stationarity_p_values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">adf_results</span><span class="p">]</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;increments_stationary&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;stationarity_p_values&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">0.05</span>
+
+    <span class="c1"># 2. Calculate time averages</span>
+    <span class="k">if</span> <span class="n">relative_increments</span><span class="p">:</span>
+        <span class="n">process_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">process_data</span><span class="p">)</span>
+    <span class="n">time_averages</span> <span class="o">=</span> <span class="p">(</span><span class="n">process_data</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">process_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">num_time_steps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">time_averages_per_unit</span> <span class="o">=</span> <span class="n">time_averages</span> <span class="o">/</span> <span class="n">dt</span>
+
+    <span class="c1"># 3. Calculate ensemble averages of increments</span>
+    <span class="n">ensemble_averages</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">increments</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">ensemble_average_per_step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ensemble_averages</span><span class="p">)</span>
+    <span class="n">ensemble_average_per_unit</span> <span class="o">=</span> <span class="n">ensemble_average_per_step</span> <span class="o">/</span> <span class="n">dt</span>
+
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;time_average_per_unit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">time_averages_per_unit</span><span class="p">)</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;ensemble_average_per_unit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ensemble_average_per_unit</span>
+
+    <span class="c1"># 4. Compare time and ensemble averages</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;average_relative_difference&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+        <span class="n">results</span><span class="p">[</span><span class="s1">&#39;time_average_per_unit&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;ensemble_average_per_unit&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;ensemble_average_per_unit&#39;</span><span class="p">]</span>
+
+    <span class="c1"># 5. Test normality of increments</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">normality_p_value</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">normaltest</span><span class="p">(</span><span class="n">increments</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;increments_normality_p_value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">normality_p_value</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+
+<div class="viewcode-block" id="plot_ergodicity_results">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.plot_ergodicity_results">[docs]</a>
+<span class="k">def</span> <span class="nf">plot_ergodicity_results</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot visualizations to help assess ergodicity of increments.</span>
+
+<span class="sd">    :param data: Array of shape (num_time_steps, num_instances + 1) where the first row is time and subsequent rows are instances of the process</span>
+<span class="sd">    :type data: numpy.ndarray</span>
+<span class="sd">    :param results: Dictionary containing test results from test_ergodicity_increments function</span>
+<span class="sd">    :type results: dict</span>
+<span class="sd">    :return: None</span>
+<span class="sd">    :rtype: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">process_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">increments</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">process_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+
+    <span class="c1"># Plot 1: Sample paths</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">process_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">process_data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Sample Paths&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Plot 2: Increment distribution</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">increments</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Increment Distribution</span><span class="se">\n</span><span class="s2">Normality p-value: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;increments_normality_p_value&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Increment Value&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Density&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Plot 3: QQ plot of increments</span>
+    <span class="n">stats</span><span class="o">.</span><span class="n">probplot</span><span class="p">(</span><span class="n">increments</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">dist</span><span class="o">=</span><span class="s2">&quot;norm&quot;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Q-Q Plot of Increments&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Plot 4: Autocorrelation of increments</span>
+    <span class="n">lag_max</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">increments</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">acf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span><span class="n">inc</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">)[</span><span class="n">lag_max</span><span class="p">:]</span> <span class="k">for</span> <span class="n">inc</span> <span class="ow">in</span> <span class="n">increments</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">acf</span> <span class="o">/=</span> <span class="n">acf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">acf</span><span class="p">[:</span><span class="n">lag_max</span><span class="p">])</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Mean Autocorrelation of Increments&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Lag&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Autocorrelation&quot;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+
+<span class="c1"># Example usage</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Generate some example data (replace this with your actual process data)</span>
+    <span class="n">num_instances</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">num_time_steps</span> <span class="o">=</span> <span class="mi">1001</span>  <span class="c1"># Odd number to have 1000 increments</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.01</span>
+
+    <span class="c1"># Example: Brownian motion (which has stationary, ergodic increments)</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">num_time_steps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="p">,</span> <span class="n">num_time_steps</span><span class="p">)</span>
+    <span class="n">increments</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">),</span> <span class="p">(</span><span class="n">num_instances</span><span class="p">,</span> <span class="n">num_time_steps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">process_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">increments</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">process_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">process_data</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Start at 0</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">times</span><span class="p">,</span> <span class="n">process_data</span><span class="p">))</span>
+
+    <span class="c1"># Test ergodicity</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">test_ergodicity_increments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+
+    <span class="c1"># Print results</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ergodicity Test Results:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Plot results</span>
+    <span class="n">plot_ergodicity_results</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="detrended_fluctuation_analysis">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.detrended_fluctuation_analysis">[docs]</a>
+<span class="k">def</span> <span class="nf">detrended_fluctuation_analysis</span><span class="p">(</span><span class="n">time_series</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimate the Hurst exponent using Detrended Fluctuation Analysis (DFA).</span>
+
+<span class="sd">    :param time_series: The time series to analyze</span>
+<span class="sd">    :type time_series: array_like</span>
+<span class="sd">    :return: Estimated Hurst exponent</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+    <span class="c1"># Cumulative sum of deviations from the mean</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">time_series</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">time_series</span><span class="p">))</span>
+
+    <span class="c1"># Define scales (window sizes)</span>
+    <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">N</span> <span class="o">//</span> <span class="mi">4</span><span class="p">),</span> <span class="n">num</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+
+    <span class="n">flucts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">scale</span> <span class="ow">in</span> <span class="n">scales</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">scale</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># Number of non-overlapping windows</span>
+        <span class="n">n_windows</span> <span class="o">=</span> <span class="n">N</span> <span class="o">//</span> <span class="n">scale</span>
+        <span class="k">if</span> <span class="n">n_windows</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">F_nu</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_windows</span><span class="p">):</span>
+            <span class="n">segment</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">scale</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span><span class="p">]</span>
+            <span class="c1"># Fit a polynomial of order 1 (linear detrending)</span>
+            <span class="n">coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">scale</span><span class="p">),</span> <span class="n">segment</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
+            <span class="c1"># Calculate the fluctuation (standard deviation) after detrending</span>
+            <span class="n">F_nu</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">segment</span> <span class="o">-</span> <span class="n">fit</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+        <span class="c1"># Average fluctuation over all segments of this scale</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">F_nu</span><span class="p">)</span>
+        <span class="n">flucts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">scale</span><span class="p">,</span> <span class="n">F</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">flucts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="n">scales</span><span class="p">,</span> <span class="n">Fs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">flucts</span><span class="p">)</span>
+    <span class="n">log_scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+    <span class="n">log_Fs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Fs</span><span class="p">)</span>
+    <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">r_value</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">std_err</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">log_scales</span><span class="p">,</span> <span class="n">log_Fs</span><span class="p">)</span>
+    <span class="n">hurst</span> <span class="o">=</span> <span class="n">slope</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">return</span> <span class="n">hurst</span></div>
+
+
+
+<div class="viewcode-block" id="test_self_similarity">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.test_self_similarity">[docs]</a>
+<span class="k">def</span> <span class="nf">test_self_similarity</span><span class="p">(</span><span class="n">time_series</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test the self-similarity of a given time series.</span>
+
+<span class="sd">    :param time_series: The time series to analyze</span>
+<span class="sd">    :type time_series: array_like</span>
+<span class="sd">    :return: Dictionary containing the estimated Hurst exponents</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hurst_dfa</span> <span class="o">=</span> <span class="n">detrended_fluctuation_analysis</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Hurst Exponent (DFA)&quot;</span><span class="p">:</span> <span class="n">hurst_dfa</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<span class="c1"># Example usage</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Generate a sample time series (fractional Brownian motion with H=0.7)</span>
+    <span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">RandomState</span>
+
+    <span class="k">def</span> <span class="nf">fbm</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">H</span><span class="p">):</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">RandomState</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">**</span> <span class="n">H</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span>
+
+    <span class="n">n_points</span> <span class="o">=</span> <span class="mi">10000</span>
+    <span class="n">H_true</span> <span class="o">=</span> <span class="mf">0.7</span>
+    <span class="n">time_series</span> <span class="o">=</span> <span class="n">fbm</span><span class="p">(</span><span class="n">n_points</span><span class="p">,</span> <span class="n">H_true</span><span class="p">)</span>
+
+    <span class="c1"># Test self-similarity</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">test_self_similarity</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Self-similarity test results:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">True Hurst exponent: </span><span class="si">{</span><span class="n">H_true</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;True alpha: </span><span class="si">{</span><span class="mi">1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">H_true</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Plot the time series</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sample Time Series (Fractional Brownian Motion, H=</span><span class="si">{</span><span class="n">H_true</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<div class="viewcode-block" id="wavelet_estimation">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.wavelet_estimation">[docs]</a>
+<span class="k">def</span> <span class="nf">wavelet_estimation</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">wavelet</span><span class="o">=</span><span class="s1">&#39;db4&#39;</span><span class="p">,</span> <span class="n">max_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimate the Hurst exponent using wavelet-based method.</span>
+
+<span class="sd">    :param time_series: The time series to analyze</span>
+<span class="sd">    :type time_series: array_like</span>
+<span class="sd">    :param wavelet: The wavelet to use for the analysis (default is &#39;db4&#39;)</span>
+<span class="sd">    :type wavelet: str, optional</span>
+<span class="sd">    :param max_level: The maximum decomposition level (default is None, which means it will be automatically determined)</span>
+<span class="sd">    :type max_level: int, optional</span>
+<span class="sd">    :return: Estimated Hurst exponent</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+
+    <span class="c1"># Determine the maximum decomposition level if not provided</span>
+    <span class="k">if</span> <span class="n">max_level</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">max_level</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c1"># Perform the wavelet transform</span>
+    <span class="n">coeffs</span> <span class="o">=</span> <span class="n">pywt</span><span class="o">.</span><span class="n">wavedec</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">wavelet</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">max_level</span><span class="p">)</span>
+
+    <span class="c1"># Compute the variance of the wavelet coefficients at each level</span>
+    <span class="n">variances</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">coeff</span><span class="p">)</span> <span class="k">for</span> <span class="n">coeff</span> <span class="ow">in</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>  <span class="c1"># Exclude the approximation coefficients</span>
+
+    <span class="c1"># Compute the scales</span>
+    <span class="n">scales</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span> <span class="o">**</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">variances</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+
+    <span class="c1"># Perform linear regression</span>
+    <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">r_value</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">std_err</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">variances</span><span class="p">))</span>
+
+    <span class="c1"># The Hurst exponent is related to the slope</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">slope</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">H</span></div>
+
+
+
+<div class="viewcode-block" id="test_self_similarity_wavelet">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.test_self_similarity_wavelet">[docs]</a>
+<span class="k">def</span> <span class="nf">test_self_similarity_wavelet</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">wavelet</span><span class="o">=</span><span class="s1">&#39;db4&#39;</span><span class="p">,</span> <span class="n">max_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test the self-similarity of a given time series using wavelet-based method.</span>
+
+<span class="sd">    :param time_series: The time series to analyze</span>
+<span class="sd">    :type time_series: array_like</span>
+<span class="sd">    :param wavelet: The wavelet to use for the analysis (default is &#39;db4&#39;)</span>
+<span class="sd">    :type wavelet: str, optional</span>
+<span class="sd">    :param max_level: The maximum decomposition level (default is None, which means it will be automatically determined)</span>
+<span class="sd">    :type max_level: int, optional</span>
+<span class="sd">    :return: Dictionary containing the estimated Hurst exponent and scaling parameter</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">wavelet_estimation</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">wavelet</span><span class="p">,</span> <span class="n">max_level</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Hurst Exponent (Wavelet)&quot;</span><span class="p">:</span> <span class="n">H</span><span class="p">,</span>
+        <span class="s2">&quot;Estimated Alpha (Wavelet)&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">H</span> <span class="k">if</span> <span class="n">H</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+
+<div class="viewcode-block" id="plot_wavelet_analysis">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.plot_wavelet_analysis">[docs]</a>
+<span class="k">def</span> <span class="nf">plot_wavelet_analysis</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">wavelet</span><span class="o">=</span><span class="s1">&#39;db4&#39;</span><span class="p">,</span> <span class="n">max_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform wavelet analysis and plot the results.</span>
+
+<span class="sd">    :param time_series: The time series to analyze</span>
+<span class="sd">    :type time_series: array_like</span>
+<span class="sd">    :param wavelet: The wavelet to use for the analysis (default is &#39;db4&#39;)</span>
+<span class="sd">    :type wavelet: str, optional</span>
+<span class="sd">    :param max_level: The maximum decomposition level (default is None, which means it will be automatically determined)</span>
+<span class="sd">    :type max_level: int, optional</span>
+<span class="sd">    :return: None</span>
+<span class="sd">    :rtype: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">max_level</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">max_level</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="n">coeffs</span> <span class="o">=</span> <span class="n">pywt</span><span class="o">.</span><span class="n">wavedec</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">wavelet</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">max_level</span><span class="p">)</span>
+    <span class="n">variances</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">coeff</span><span class="p">)</span> <span class="k">for</span> <span class="n">coeff</span> <span class="ow">in</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+    <span class="n">scales</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span> <span class="o">**</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">variances</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+
+    <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">r_value</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">std_err</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">variances</span><span class="p">))</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">slope</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">scales</span><span class="p">,</span> <span class="n">variances</span><span class="p">,</span> <span class="s1">&#39;bo-&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">scales</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="n">intercept</span> <span class="o">+</span> <span class="n">slope</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span> <span class="k">for</span> <span class="n">scale</span> <span class="ow">in</span> <span class="n">scales</span><span class="p">],</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wavelet Variance Plot (Estimated H = </span><span class="si">{</span><span class="n">H</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Scale&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Variance of Wavelet Coefficients&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;Data&#39;</span><span class="p">,</span> <span class="s1">&#39;Fitted Line&#39;</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<span class="c1"># Example usage</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Generate a sample time series (fractional Brownian motion with H=0.7)</span>
+    <span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">RandomState</span>
+
+
+    <span class="k">def</span> <span class="nf">fbm</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">H</span><span class="p">):</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">RandomState</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">**</span> <span class="n">H</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span>
+
+    <span class="n">n_points</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">14</span>  <span class="c1"># Use a power of 2 for efficiency in wavelet transform</span>
+    <span class="n">H_true</span> <span class="o">=</span> <span class="mf">0.7</span>
+    <span class="n">time_series</span> <span class="o">=</span> <span class="n">fbm</span><span class="p">(</span><span class="n">n_points</span><span class="p">,</span> <span class="n">H_true</span><span class="p">)</span>
+
+    <span class="c1"># Test self-similarity using wavelet method</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">test_self_similarity_wavelet</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Wavelet-based self-similarity test results:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">True Hurst exponent: </span><span class="si">{</span><span class="n">H_true</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;True alpha: </span><span class="si">{</span><span class="mi">1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">H_true</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Plot wavelet analysis</span>
+    <span class="n">plot_wavelet_analysis</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+
+    <span class="c1"># Plot the time series</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sample Time Series (Fractional Brownian Motion, H=</span><span class="si">{</span><span class="n">H_true</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<div class="viewcode-block" id="kurtosis_test">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.kurtosis_test">[docs]</a>
+<span class="k">def</span> <span class="nf">kurtosis_test</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test for fat-tailedness using excess kurtosis.</span>
+
+<span class="sd">    :param data: The data to analyze</span>
+<span class="sd">    :type data: array_like</span>
+<span class="sd">    :return: Dictionary containing the kurtosis and its interpretation</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kurt</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Excess Kurtosis&quot;</span><span class="p">:</span> <span class="n">kurt</span><span class="p">,</span>
+        <span class="s2">&quot;Interpretation&quot;</span><span class="p">:</span> <span class="s2">&quot;Fat-tailed&quot;</span> <span class="k">if</span> <span class="n">kurt</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;Not fat-tailed&quot;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="jarque_bera_test">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.jarque_bera_test">[docs]</a>
+<span class="k">def</span> <span class="nf">jarque_bera_test</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform Jarque-Bera test for normality.</span>
+
+<span class="sd">    :param data: The data to analyze</span>
+<span class="sd">    :type data: array_like</span>
+<span class="sd">    :return: Dictionary containing the test statistic, p-value, and interpretation</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">statistic</span><span class="p">,</span> <span class="n">p_value</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">jarque_bera</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;JB Statistic&quot;</span><span class="p">:</span> <span class="n">statistic</span><span class="p">,</span>
+        <span class="s2">&quot;p-value&quot;</span><span class="p">:</span> <span class="n">p_value</span><span class="p">,</span>
+        <span class="s2">&quot;Interpretation&quot;</span><span class="p">:</span> <span class="s2">&quot;Likely fat-tailed&quot;</span> <span class="k">if</span> <span class="n">p_value</span> <span class="o">&lt;</span> <span class="mf">0.05</span> <span class="k">else</span> <span class="s2">&quot;Not enough evidence for fat-tailedness&quot;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="tail_index_hill">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.tail_index_hill">[docs]</a>
+<span class="k">def</span> <span class="nf">tail_index_hill</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tail_fraction</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimate the tail index using Hill estimator.</span>
+
+<span class="sd">    :param data: The data to analyze</span>
+<span class="sd">    :type data: array_like</span>
+<span class="sd">    :param tail_fraction: Fraction of the data to consider as the tail</span>
+<span class="sd">    :type tail_fraction: float</span>
+<span class="sd">    :return: Dictionary containing the tail index and its interpretation</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sorted_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_data</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">tail_fraction</span><span class="p">)</span>
+    <span class="n">tail_index</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sorted_data</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">:])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sorted_data</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">]))</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Tail Index&quot;</span><span class="p">:</span> <span class="n">tail_index</span><span class="p">,</span>
+        <span class="s2">&quot;Interpretation&quot;</span><span class="p">:</span> <span class="s2">&quot;Fat-tailed&quot;</span> <span class="k">if</span> <span class="n">tail_index</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="s2">&quot;Not fat-tailed&quot;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="qqplot_analysis">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.qqplot_analysis">[docs]</a>
+<span class="k">def</span> <span class="nf">qqplot_analysis</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform Q-Q plot analysis against normal distribution.</span>
+
+<span class="sd">    :param data: The data to analyze</span>
+<span class="sd">    :type data: array_like</span>
+<span class="sd">    :return: None (displays the Q-Q plot)</span>
+<span class="sd">    :rtype: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">stats</span><span class="o">.</span><span class="n">probplot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dist</span><span class="o">=</span><span class="s2">&quot;norm&quot;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Q-Q Plot against Normal Distribution&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="test_fat_tailedness">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.test_fat_tailedness">[docs]</a>
+<span class="k">def</span> <span class="nf">test_fat_tailedness</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform a comprehensive test for fat-tailedness.</span>
+
+<span class="sd">    :param data: The data to analyze</span>
+<span class="sd">    :type data: array_like</span>
+<span class="sd">    :return: Dictionary containing results from various tests</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;Kurtosis Test&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kurtosis_test</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;Jarque-Bera Test&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jarque_bera_test</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;Tail Index (Hill Estimator)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tail_index_hill</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fat-tailedness Test Results:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">test_name</span><span class="p">,</span> <span class="n">test_results</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">test_name</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">test_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Generating Q-Q Plot...&quot;</span><span class="p">)</span>
+    <span class="n">qqplot_analysis</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<span class="c1"># Example usage</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Generate sample data from a fat-tailed distribution (Student&#39;s t with 3 degrees of freedom)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">fat_tailed_data</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+
+    <span class="c1"># Test for fat-tailedness</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">test_fat_tailedness</span><span class="p">(</span><span class="n">fat_tailed_data</span><span class="p">)</span>
+
+    <span class="c1"># Generate and test normal distribution for comparison</span>
+    <span class="n">normal_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">For comparison, results for normal distribution:&quot;</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">test_fat_tailedness</span><span class="p">(</span><span class="n">normal_data</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Ergodicity Library</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Ihor Kendiukhov.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

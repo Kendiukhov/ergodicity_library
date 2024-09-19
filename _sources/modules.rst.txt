@@ -1,0 +1,7 @@
+ergodicity
+==========
+
+.. toctree::
+   :maxdepth: 4
+
+   ergodicity
