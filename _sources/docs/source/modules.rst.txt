@@ -1,9 +1,0 @@
-ergodicity
-==========
-
-.. toctree::
-   :maxdepth: 4
-
-   conf
-   ergodicity
-   setup
