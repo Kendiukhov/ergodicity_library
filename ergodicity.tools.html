@@ -334,7 +334,7 @@ mu*t - 0.5*sigma^2*t</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ergodicity.tools.compute.generate_levy_process">
-<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.compute.</span></span><span class="sig-name descname"><span class="pre">generate_levy_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/compute.html#generate_levy_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.compute.generate_levy_process" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.compute.</span></span><span class="sig-name descname"><span class="pre">generate_levy_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/compute.html#generate_levy_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.compute.generate_levy_process" title="Link to this definition">¶</a></dt>
 <dd><p>A Function to generate a Lévy process with the given parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -432,7 +432,7 @@ mu*t - 0.5*sigma^2*t</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ergodicity.tools.compute.random_variable_from_pdf">
-<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.compute.</span></span><span class="sig-name descname"><span class="pre">random_variable_from_pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/compute.html#random_variable_from_pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.compute.random_variable_from_pdf" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.compute.</span></span><span class="sig-name descname"><span class="pre">random_variable_from_pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/compute.html#random_variable_from_pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.compute.random_variable_from_pdf" title="Link to this definition">¶</a></dt>
 <dd><p>Generate random variable samples from a given probability density function (pdf).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -440,6 +440,7 @@ mu*t - 0.5*sigma^2*t</p>
 <li><p><strong>pdf</strong> (<em>sympy.core.add.Add</em>) – Probability density function.</p></li>
 <li><p><strong>x</strong> (<em>sympy.core.symbol.Symbol</em>) – Symbolic variable for the random variable.</p></li>
 <li><p><strong>num_samples</strong> (<em>int</em>) – Number of random variable samples to generate.</p></li>
+<li><p><strong>t</strong> (<em>float</em>) – Time parameter for the PDF (default is 1).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -608,26 +609,9 @@ This function is intended to work with the outputs of the other functions in thi
 </ul>
 <p>The <cite>evaluate</cite> submodule serves as a powerful toolkit for researchers and practitioners who need to test key statistical properties of their models or real-world data. By providing a range of methods, it simplifies complex evaluations and enhances the understanding of stochastic processes.</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="ergodicity.tools.evaluate.aggregate_variance">
-<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.evaluate.</span></span><span class="sig-name descname"><span class="pre">aggregate_variance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_series</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/evaluate.html#aggregate_variance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.evaluate.aggregate_variance" title="Link to this definition">¶</a></dt>
-<dd><p>Estimate the scaling parameter using the aggregate variance method.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>time_series</strong> (<em>array_like</em>) – The time series to analyze</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Estimated scaling parameter</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ergodicity.tools.evaluate.hurst_exponent">
-<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.evaluate.</span></span><span class="sig-name descname"><span class="pre">hurst_exponent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_series</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/evaluate.html#hurst_exponent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.evaluate.hurst_exponent" title="Link to this definition">¶</a></dt>
-<dd><p>Estimate the Hurst exponent using the rescaled range (R/S) method.</p>
+<dt class="sig sig-object py" id="ergodicity.tools.evaluate.detrended_fluctuation_analysis">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.evaluate.</span></span><span class="sig-name descname"><span class="pre">detrended_fluctuation_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_series</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/evaluate.html#detrended_fluctuation_analysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.evaluate.detrended_fluctuation_analysis" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate the Hurst exponent using Detrended Fluctuation Analysis (DFA).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>time_series</strong> (<em>array_like</em>) – The time series to analyze</p>
@@ -755,7 +739,7 @@ This function is intended to work with the outputs of the other functions in thi
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ergodicity.tools.evaluate.test_ergodicity_increments">
-<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.evaluate.</span></span><span class="sig-name descname"><span class="pre">test_ergodicity_increments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/evaluate.html#test_ergodicity_increments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.evaluate.test_ergodicity_increments" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.evaluate.</span></span><span class="sig-name descname"><span class="pre">test_ergodicity_increments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relative_increments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/evaluate.html#test_ergodicity_increments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.evaluate.test_ergodicity_increments" title="Link to this definition">¶</a></dt>
 <dd><p>Test the ergodicity of a stochastic process based on its increments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -794,7 +778,7 @@ This function is intended to work with the outputs of the other functions in thi
 <dd class="field-odd"><p><strong>time_series</strong> (<em>array_like</em>) – The time series to analyze</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dictionary containing the estimated Hurst exponent and scaling parameter</p>
+<dd class="field-even"><p>Dictionary containing the estimated Hurst exponents</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
@@ -845,8 +829,209 @@ This function is intended to work with the outputs of the other functions in thi
 </dd></dl>
 
 </section>
-<section id="ergodicity-tools-fit-module">
-<h2>ergodicity.tools.fit module<a class="headerlink" href="#ergodicity-tools-fit-module" title="Link to this heading">¶</a></h2>
+<section id="module-ergodicity.tools.fit">
+<span id="ergodicity-tools-fit-module"></span><h2>ergodicity.tools.fit module<a class="headerlink" href="#module-ergodicity.tools.fit" title="Link to this heading">¶</a></h2>
+<p>fit Submodule</p>
+<p>The <cite>fit</cite> submodule provides a set of tools for fitting various stochastic processes and probability distributions to data. It leverages techniques such as maximum likelihood estimation (MLE) and optimization to find the best parameters that describe the observed data. This submodule is particularly useful in research and simulations that involve probabilistic models and stochastic processes.</p>
+<p>Key Features:</p>
+<ol class="arabic simple">
+<li><p><strong>Lévy Stable Distribution Fitting</strong>:</p>
+<ul class="simple">
+<li><p>The function <cite>levy_stable_fit</cite> performs maximum likelihood estimation for fitting Lévy stable distributions to data, a family of distributions used in finance, physics, and other fields that involve heavy tails and skewness.</p></li>
+</ul>
+</li>
+<li><p><strong>Distribution Fitting and Model Comparison</strong>:</p>
+<ul class="simple">
+<li><p><cite>fit_distributions</cite>: Fits various probability distributions (e.g., normal, lognormal, exponential, Lévy stable) to a given dataset and provides goodness-of-fit measures like the Kolmogorov-Smirnov test, AIC (Akaike Information Criterion), and BIC (Bayesian Information Criterion).</p></li>
+<li><p><cite>print_results</cite>: Summarizes and compares the fitted distributions based on their AIC and BIC values to help identify the best model.</p></li>
+</ul>
+</li>
+<li><p><strong>Visualization of Fitted Distributions</strong>:</p>
+<ul class="simple">
+<li><p><cite>plot_fitted_distributions</cite>: Visualizes the fitted distributions by overlaying them on the histogram of the data, providing a clear comparison between the data and the fitted models.</p></li>
+</ul>
+</li>
+<li><p><strong>Stochastic Process Parameter Fitting</strong>:</p>
+<ul class="simple">
+<li><p><cite>fit_stochastic_process</cite>: Fits the parameters of a given stochastic process to observed data using optimization techniques. This is particularly useful when simulating stochastic processes like Ornstein-Uhlenbeck or Brownian motion and comparing them to real-world or simulated data.</p></li>
+</ul>
+</li>
+<li><p><strong>Fitting Success Testing</strong>:</p>
+<ul class="simple">
+<li><p><cite>test_fitting_success</cite>: Generates synthetic data using known parameters and tests the success of fitting the process to the data, evaluating the accuracy of the fitted parameters across multiple tests.</p></li>
+</ul>
+</li>
+<li><p><strong>Distribution Comparison</strong>:</p>
+<ul class="simple">
+<li><p><cite>compare_distributions</cite>: Generates data from a specified probability distribution and compares the fitted parameters with the original generating parameters. This function is helpful for understanding the reliability of different fitting techniques.</p></li>
+</ul>
+</li>
+</ol>
+<p>Typical Use Cases:</p>
+<ul>
+<li><p><strong>Research and Data Analysis</strong>:</p>
+<p>Provides tools for fitting complex stochastic models to experimental or observed data, enabling researchers to validate theoretical models.</p>
+</li>
+<li><p><strong>Simulation Studies</strong>:</p>
+<p>Enables parameter fitting for stochastic simulations, especially when simulating processes like Lévy flights, Brownian motion, or other random walks.</p>
+</li>
+<li><p><strong>Model Selection</strong>:</p>
+<p>Facilitates the selection of the best probabilistic model using AIC, BIC, and goodness-of-fit tests.</p>
+</li>
+</ul>
+<p>Example Usage:</p>
+<p>data = np.random.normal(0, 1, 1000)  # Example data</p>
+<p># Fit various distributions</p>
+<p>fitted_dists = fit_distributions(data)</p>
+<p># Print the results</p>
+<p>print_results(fitted_dists)</p>
+<p># Plot the fitted distributions</p>
+<p>plot_fitted_distributions(data, fitted_dists)</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ergodicity.tools.fit.compare_distributions">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.fit.</span></span><span class="sig-name descname"><span class="pre">compare_distributions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dist_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/fit.html#compare_distributions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.fit.compare_distributions" title="Link to this definition">¶</a></dt>
+<dd><p>Generates a dataset from a specified probability distribution, fits the dataset back to the distribution,
+and compares the fitted distribution with the generating distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dist_name</strong> (<em>str</em>) – Name of the probability distribution (e.g., ‘norm’, ‘expon’, ‘gamma’)</p></li>
+<li><p><strong>params</strong> (<em>tuple</em>) – Parameters for the generating distribution (e.g., (mean, std) for ‘norm’)</p></li>
+<li><p><strong>size</strong> (<em>int</em>) – Number of samples to generate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ergodicity.tools.fit.fit_distributions">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.fit.</span></span><span class="sig-name descname"><span class="pre">fit_distributions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/fit.html#fit_distributions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.fit.fit_distributions" title="Link to this definition">¶</a></dt>
+<dd><p>Fit various probability distributions to the given data, including Lévy stable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>array</em>) – The data to fit the distributions to</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the fitted distributions, parameters, and goodness-of-fit measures</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ergodicity.tools.fit.fit_stochastic_process">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.fit.</span></span><span class="sig-name descname"><span class="pre">fit_stochastic_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">process_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_fits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/fit.html#fit_stochastic_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.fit.fit_stochastic_process" title="Link to this definition">¶</a></dt>
+<dd><p>Fit parameters for a given stochastic process function to external data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>process_func</strong> (<em>callable</em>) – The stochastic process function decorated with &#64;custom_simulate</p></li>
+<li><p><strong>external_data</strong> (<em>array</em>) – External observed data points</p></li>
+<li><p><strong>initial_params</strong> (<em>dict</em>) – Initial guess for the parameters</p></li>
+<li><p><strong>param_names</strong> (<em>list</em>) – Names of the parameters to fit</p></li>
+<li><p><strong>bounds</strong> (<em>list</em><em> of </em><em>tuples</em><em>, </em><em>optional</em>) – Bounds for the parameters [(low1, high1), (low2, high2), …]</p></li>
+<li><p><strong>num_fits</strong> (<em>int</em>) – Number of fitting attempts with different initial conditions</p></li>
+<li><p><strong>t</strong> (<em>float</em>) – Total simulation time</p></li>
+<li><p><strong>timestep</strong> (<em>float</em>) – Time step for the simulation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optimized parameters and the plot figure</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict, matplotlib.figure.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ergodicity.tools.fit.levy_stable_fit">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.fit.</span></span><span class="sig-name descname"><span class="pre">levy_stable_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/fit.html#levy_stable_fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.fit.levy_stable_fit" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate the parameters of a stable distribution using the Empirical Characteristic Function method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>array-like</em>) – The data to fit the stable distribution to</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The estimated parameters of the stable distribution</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ergodicity.tools.fit.plot_fitted_distributions">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.fit.</span></span><span class="sig-name descname"><span class="pre">plot_fitted_distributions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitted_dists</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/fit.html#plot_fitted_distributions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.fit.plot_fitted_distributions" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the histogram of the data with fitted distributions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>array</em><em> or </em><em>list</em><em> of </em><em>arrays</em>) – The data to plot the histogram of</p></li>
+<li><p><strong>fitted_dists</strong> (<em>dict</em>) – A dictionary containing the fitted distributions and their parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ergodicity.tools.fit.print_results">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.fit.</span></span><span class="sig-name descname"><span class="pre">print_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitted_dists</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/fit.html#print_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.fit.print_results" title="Link to this definition">¶</a></dt>
+<dd><p>Print the results of distribution fitting, including goodness-of-fit and information criteria.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fitted_dists</strong> (<em>dict</em>) – A dictionary containing the fitted distributions and their information</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ergodicity.tools.fit.test_fitting_success">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.fit.</span></span><span class="sig-name descname"><span class="pre">test_fitting_success</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">process_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_tests</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/ergodicity/tools/fit.html#test_fitting_success"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.fit.test_fitting_success" title="Link to this definition">¶</a></dt>
+<dd><p>Test the success of fitting by generating data with known parameters and then fitting it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>process_func</strong> (<em>callable</em>) – The stochastic process function decorated with &#64;custom_simulate</p></li>
+<li><p><strong>true_params</strong> (<em>dict</em>) – The true parameters of the process to generate data</p></li>
+<li><p><strong>param_names</strong> (<em>list</em>) – Names of the parameters to fit</p></li>
+<li><p><strong>bounds</strong> (<em>list</em><em> of </em><em>tuples</em><em>, </em><em>optional</em>) – Bounds for the parameters [(low1, high1), (low2, high2), …]</p></li>
+<li><p><strong>num_tests</strong> (<em>int</em>) – Number of tests to run</p></li>
+<li><p><strong>t</strong> (<em>float</em>) – Total time for each simulation</p></li>
+<li><p><strong>timestep</strong> (<em>float</em>) – Time step for simulations</p></li>
+<li><p><strong>initial_value</strong> (<em>float</em>) – Initial value for the process</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with lists of true and fitted values for each parameter</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-ergodicity.tools.helper">
 <span id="ergodicity-tools-helper-module"></span><h2>ergodicity.tools.helper module<a class="headerlink" href="#module-ergodicity.tools.helper" title="Link to this heading">¶</a></h2>
@@ -1060,6 +1245,23 @@ It is used in the submodules ‘multiprocessing’ and ‘automate’ of the ‘
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ergodicity.tools.helper.covariance_to_correlation">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.helper.</span></span><span class="sig-name descname"><span class="pre">covariance_to_correlation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariance_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/helper.html#covariance_to_correlation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.helper.covariance_to_correlation" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a covariance matrix to a correlation matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>covariance_matrix</strong> (<em>numpy.ndarray</em>) – The covariance matrix to convert</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The correlation matrix</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -1552,7 +1754,7 @@ They do not require any input data.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ergodicity.tools.multiprocessing.multi_simulations">
 <span class="sig-prename descclassname"><span class="pre">ergodicity.tools.multiprocessing.</span></span><span class="sig-name descname"><span class="pre">multi_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">process_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_ranges</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/multiprocessing.html#multi_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.multiprocessing.multi_simulations" title="Link to this definition">¶</a></dt>
-<dd><p>Run multiple simulations in parallel for different parameter combinations.</p>
+<dd><p>Run multiple simulations of stochastic processes in parallel for different parameter combinations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1817,7 +2019,7 @@ nt=1000</p>
 </div></blockquote>
 <dl class="py class">
 <dt class="sig sig-object py" id="ergodicity.tools.partial_sde.PSDESimulator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ergodicity.tools.partial_sde.</span></span><span class="sig-name descname"><span class="pre">PSDESimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drift:</span> <span class="pre">~typing.Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diffusion:</span> <span class="pre">~typing.Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_condition:</span> <span class="pre">~typing.Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_range:</span> <span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_range:</span> <span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nx:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nt:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_condition:</span> <span class="pre">~typing.Tuple[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Callable]</span> <span class="pre">=</span> <span class="pre">('dirichlet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">PSDESimulator.&lt;lambda&gt;&gt;)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/partial_sde.html#PSDESimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.partial_sde.PSDESimulator" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ergodicity.tools.partial_sde.</span></span><span class="sig-name descname"><span class="pre">PSDESimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drift:</span> <span class="pre">~typing.Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diffusion:</span> <span class="pre">~typing.Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_condition:</span> <span class="pre">~typing.Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_range:</span> <span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_range:</span> <span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nx:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nt:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_condition:</span> <span class="pre">~typing.Tuple[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Callable]</span> <span class="pre">=</span> <span class="pre">('dirichlet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">PSDESimulator.&lt;lambda&gt;&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">wiener_increment_function&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/partial_sde.html#PSDESimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.partial_sde.PSDESimulator" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Partial Stochastic Differential Equation (PSDE) Simulator.
 This class provides functionality to simulate and visualize the stochastic evolution of a spatially distributed quantity</p>
@@ -2053,6 +2255,25 @@ This plot shows the surface of u(t,x) over time and space.</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ergodicity.tools.partial_sde.wiener_increment_function">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.partial_sde.</span></span><span class="sig-name descname"><span class="pre">wiener_increment_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestep_increment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/partial_sde.html#wiener_increment_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.partial_sde.wiener_increment_function" title="Link to this definition">¶</a></dt>
+<dd><p>Function to generate Wiener process increments.
+This is a default increment function for the PSDE simulator.
+It can be changed to use different increments, such as for example Levy increments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestep_increment</strong> (<em>float</em>) – The time step of the discrete increment</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Wiener process increment</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -2941,7 +3162,8 @@ This basiscally allows to calculate time average behavior of the expression.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ergodicity.tools.solve.calculate_time_average_dynamics">
 <span class="sig-prename descclassname"><span class="pre">ergodicity.tools.solve.</span></span><span class="sig-name descname"><span class="pre">calculate_time_average_dynamics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/solve.html#calculate_time_average_dynamics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.solve.calculate_time_average_dynamics" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the time average dynamics using the ergodicity transform.</p>
+<dd><p>Calculate the time average dynamics using the ergodicity transform.
+It is done by inverting the ergodicity transform and applying the inverse to a_u * t.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2965,22 +3187,21 @@ This basiscally allows to calculate time average behavior of the expression.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ergodicity.tools.solve.check_novikov_condition">
-<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.solve.</span></span><span class="sig-name descname"><span class="pre">check_novikov_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/solve.html#check_novikov_condition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.solve.check_novikov_condition" title="Link to this definition">¶</a></dt>
-<dd><p>Checks Novikov’s condition for the applicability of Girsanov’s theorem.
-Novikov’s condition requires that:
-E[exp(1/2 * integral(theta_t^2 dt))] &lt; infinity.</p>
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.solve.</span></span><span class="sig-name descname"><span class="pre">check_novikov_condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/solve.html#check_novikov_condition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.solve.check_novikov_condition" title="Link to this definition">¶</a></dt>
+<dd><p>Checks Novikov’s condition over a finite time horizon T.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>theta_t</strong> (<em>sympy expression</em>) – The adjustment to the drift (Radon-Nikodym derivative)</p></li>
 <li><p><strong>t</strong> (<em>sympy symbol</em>) – The time variable</p></li>
+<li><p><strong>T</strong> (<em>float</em><em> or </em><em>sympy expression</em>) – The finite time horizon</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Whether Novikov’s condition holds</p>
+<dd class="field-even"><p>Whether Novikov’s condition holds over [0, T]</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>sympy boolean</p>
+<dd class="field-odd"><p>boolean</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3031,7 +3252,9 @@ A helper function for asymptotic approximation.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ergodicity.tools.solve.dynamic_from_utility">
 <span class="sig-prename descclassname"><span class="pre">ergodicity.tools.solve.</span></span><span class="sig-name descname"><span class="pre">dynamic_from_utility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_u</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/solve.html#dynamic_from_utility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.solve.dynamic_from_utility" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the dynamics of the ergodicity transform u(t,x) using Ito calculus.</p>
+<dd><p>Calculate the dynamics of the ergodicity transform u(t,x) using Ito calculus.
+It finds a stochastic dynamic corresponding to the given ergodicity transform.
+Hence, it allows to estimate what stochastic dynamics corresponds to the given “utility” function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -3079,7 +3302,7 @@ by replacing W(t) with a standard normal distribution N(0,1).</p>
 <dt class="sig sig-object py" id="ergodicity.tools.solve.ergodicity_transform">
 <span class="sig-prename descclassname"><span class="pre">ergodicity.tools.solve.</span></span><span class="sig-name descname"><span class="pre">ergodicity_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/solve.html#ergodicity_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.solve.ergodicity_transform" title="Link to this definition">¶</a></dt>
 <dd><p>Check the consistency condition for ergodicity and find the ergodicity transform if consistent.
-b_u from the ergodicity economics book (page 57) is set to 1.Then, a_u = c.
+b_u from the ergodicity economics book (page 57) is set to 1. Then, a_u = c.
 The function is implemented only for the case when mu ang sigma are only functions of x.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -3437,31 +3660,33 @@ and substitute them with 1.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ergodicity.tools.solve.solve_fokker_planck">
-<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.solve.</span></span><span class="sig-name descname"><span class="pre">solve_fokker_planck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu_expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_condition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_conditions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/solve.html#solve_fokker_planck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.solve.solve_fokker_planck" title="Link to this definition">¶</a></dt>
-<dd><p>Solve the Fokker-Planck equation symbolically with initial and boundary conditions.</p>
+<dt class="sig sig-object py" id="ergodicity.tools.solve.time_average">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.solve.</span></span><span class="sig-name descname"><span class="pre">time_average</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/solve.html#time_average"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.solve.time_average" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the time average of a stochastic process x(t, W(t)) using the ergodicity transform.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mu_expr</strong> (<em>sympy expression</em>) – The drift term as a SymPy expression of x and t (e.g., x + t).</p></li>
-<li><p><strong>sigma_expr</strong> (<em>sympy expression</em>) – The diffusion term as a SymPy expression of x and t (e.g., x**2 + t).</p></li>
-<li><p><strong>initial_condition</strong> (<em>tuple</em>) – A tuple (x0, P0_expr) where P(x0, 0) = P0_expr defines the initial condition.</p></li>
-<li><p><strong>boundary_conditions</strong> (<em>list</em>) – A list of tuples specifying boundary conditions in the form:
-[(x_val1, P_expr1), (x_val2, P_expr2), …] for Dirichlet conditions.</p></li>
+<li><p><strong>mu</strong> (<em>sympy expression</em>) – The drift term mu(x,t)</p></li>
+<li><p><strong>sigma</strong> (<em>sympy expression</em>) – The diffusion term sigma(x,t)</p></li>
+<li><p><strong>x</strong> (<em>sympy symbol</em>) – The symbol representing the stochastic variable x</p></li>
+<li><p><strong>t</strong> (<em>sympy symbol</em>) – The symbol representing time t</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The symbolic solution of the Fokker-Planck equation with the given conditions if solvable.</p>
+<dd class="field-even"><p>The time average of x(t, W(t))</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>sympy expression or str</p>
+<dd class="field-odd"><p>sympy expression</p>
+</dd>
+<dt class="field-even">Exception<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns None if an error occurs during the calculation</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ergodicity.tools.solve.time_average">
-<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.solve.</span></span><span class="sig-name descname"><span class="pre">time_average</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/solve.html#time_average"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.solve.time_average" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ergodicity.tools.solve.time_average_limit">
+<span class="sig-prename descclassname"><span class="pre">ergodicity.tools.solve.</span></span><span class="sig-name descname"><span class="pre">time_average_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ergodicity/tools/solve.html#time_average_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ergodicity.tools.solve.time_average_limit" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the time average of a stochastic process x(t, W(t))
 by expressing W(t) as sqrt(t) * N(0,1) and finding the limit of x/t as t -&gt; infinity.</p>
 <dl class="field-list simple">

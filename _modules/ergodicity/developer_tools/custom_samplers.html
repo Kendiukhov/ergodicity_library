@@ -120,7 +120,7 @@
 <span class="kn">from</span> <span class="nn">ergodicity</span> <span class="kn">import</span> <span class="n">custom_warnings</span> <span class="k">as</span> <span class="n">cw</span>
 
 <div class="viewcode-block" id="create_sampler_from_cdf">
-<a class="viewcode-back" href="../../../ergodicity.developer_tools.html#ergodicity.developer_tools.custom_samplers.create_sampler_from_cdf">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.developer_tools.html#ergodicity.developer_tools.custom_samplers.create_sampler_from_cdf">[docs]</a>
 <span class="k">def</span> <span class="nf">create_sampler_from_cdf</span><span class="p">(</span><span class="n">cdf</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">initial_upper_bound</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">max_iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">warning</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a sampler function for a given distribution using its CDF.</span>
@@ -220,7 +220,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">exponential_sampler</span><span class="p">(</span><span class="n">lam</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 
 <div class="viewcode-block" id="characteristic_function_to_pdf">
-<a class="viewcode-back" href="../../../ergodicity.developer_tools.html#ergodicity.developer_tools.custom_samplers.characteristic_function_to_pdf">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.developer_tools.html#ergodicity.developer_tools.custom_samplers.characteristic_function_to_pdf">[docs]</a>
 <span class="k">def</span> <span class="nf">characteristic_function_to_pdf</span><span class="p">(</span><span class="n">cf</span><span class="p">,</span> <span class="n">t_values</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Numerically invert the characteristic function to obtain the PDF.</span>
@@ -264,7 +264,7 @@
 
 
 <div class="viewcode-block" id="create_sampler_from_cf">
-<a class="viewcode-back" href="../../../ergodicity.developer_tools.html#ergodicity.developer_tools.custom_samplers.create_sampler_from_cf">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.developer_tools.html#ergodicity.developer_tools.custom_samplers.create_sampler_from_cf">[docs]</a>
 <span class="k">def</span> <span class="nf">create_sampler_from_cf</span><span class="p">(</span><span class="n">cf</span><span class="p">,</span> <span class="n">t_min</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">t_max</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_points</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">warning</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a sampler function for a given distribution using its characteristic function.</span>

@@ -93,6 +93,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ergodicity.agents.html#module-ergodicity.agents.evaluation">ergodicity.agents.evaluation module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.AgentEvaluation"><code class="docutils literal notranslate"><span class="pre">AgentEvaluation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.AgentEvaluation.select_process"><code class="docutils literal notranslate"><span class="pre">AgentEvaluation.select_process()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL"><code class="docutils literal notranslate"><span class="pre">MaxEntIRL</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.n_features"><code class="docutils literal notranslate"><span class="pre">MaxEntIRL.n_features</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.n_actions"><code class="docutils literal notranslate"><span class="pre">MaxEntIRL.n_actions</span></code></a></li>
@@ -131,10 +135,11 @@
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.analyze_feature_interactions"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.analyze_feature_interactions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.bayesian_fit_utility_functions"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.bayesian_fit_utility_functions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.fit_utility_functions"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.fit_utility_functions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.generate_choices"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.generate_choices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.generate_dataset"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.generate_dataset()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.get_agent_choices"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.get_agent_choices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.get_process_type"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.get_process_type()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.load_model_safely"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.load_model_safely()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.load_model"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.load_model()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.metropolis_hastings"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.metropolis_hastings()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.negative_log_likelihood"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.negative_log_likelihood()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.perform_irl"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionInference.perform_irl()</span></code></a></li>
@@ -165,6 +170,7 @@
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.test_utility_functions"><code class="docutils literal notranslate"><span class="pre">UtilityFunctionTester.test_utility_functions()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.evaluate_utility_functions"><code class="docutils literal notranslate"><span class="pre">evaluate_utility_functions()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.utility_arctan"><code class="docutils literal notranslate"><span class="pre">utility_arctan()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.utility_cobb_douglas"><code class="docutils literal notranslate"><span class="pre">utility_cobb_douglas()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evaluation.utility_exp"><code class="docutils literal notranslate"><span class="pre">utility_exp()</span></code></a></li>
@@ -265,12 +271,17 @@
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.calculate_reward"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.calculate_reward()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.crossover"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.crossover()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.initialize_population"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.initialize_population()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.log"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.log()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.mutate"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.mutate()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.reinforce"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.reinforce()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.save_best_weights"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.save_best_weights()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.save_performance_metrics"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.save_performance_metrics()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.select_elite"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.select_elite()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.select_process"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.select_process()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.simulate_process"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.simulate_process()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.train"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.train()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.visualize_neural_network_evolution"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.visualize_neural_network_evolution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.visualize_performance"><code class="docutils literal notranslate"><span class="pre">ReinforcementEvolutionaryTrainer.visualize_performance()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -314,7 +325,8 @@
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.sml.save_model"><code class="docutils literal notranslate"><span class="pre">save_model()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.sml.save_model_weights"><code class="docutils literal notranslate"><span class="pre">save_model_weights()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.sml.simulate_process"><code class="docutils literal notranslate"><span class="pre">simulate_process()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.sml.train_agent"><code class="docutils literal notranslate"><span class="pre">train_agent()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.sml.train_agent_time"><code class="docutils literal notranslate"><span class="pre">train_agent_time()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.sml.train_agent_value"><code class="docutils literal notranslate"><span class="pre">train_agent_value()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.sml.visualize_results"><code class="docutils literal notranslate"><span class="pre">visualize_results()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.sml.worker"><code class="docutils literal notranslate"><span class="pre">worker()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.agents.html#ergodicity.agents.sml.x_reach_2"><code class="docutils literal notranslate"><span class="pre">x_reach_2()</span></code></a></li>
@@ -356,18 +368,24 @@
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.a"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.a</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.alpha"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.alpha</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.apply_time_scaling"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.apply_time_scaling()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.b"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.b</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.beta"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.beta</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.custom_increment"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.delta"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.delta</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.differential"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.differential()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.express_as_elementary"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.express_as_elementary()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.loc"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.loc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.plambda"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.plambda</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.scale"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.scale</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.t_scaling"><code class="docutils literal notranslate"><span class="pre">GeneralizedHyperbolicProcess.t_scaling</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.InverseGaussianProcess"><code class="docutils literal notranslate"><span class="pre">InverseGaussianProcess</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.LevyStableProcess"><code class="docutils literal notranslate"><span class="pre">LevyStableProcess</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.alpha"><code class="docutils literal notranslate"><span class="pre">LevyStableProcess.alpha</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.beta"><code class="docutils literal notranslate"><span class="pre">LevyStableProcess.beta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.characteristic_function"><code class="docutils literal notranslate"><span class="pre">LevyStableProcess.characteristic_function()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.custom_increment"><code class="docutils literal notranslate"><span class="pre">LevyStableProcess.custom_increment()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.differential"><code class="docutils literal notranslate"><span class="pre">LevyStableProcess.differential()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.express_as_elementary"><code class="docutils literal notranslate"><span class="pre">LevyStableProcess.express_as_elementary()</span></code></a></li>
@@ -397,13 +415,13 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.correlation_matrix"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.correlation_matrix</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.custom_increment"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.custom_increment()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.loc"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.loc</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.plot()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot_2d"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.plot_2d()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot_2dt"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.plot_2dt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot_3d"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.plot_3d()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.pseudocorrelation_matrix"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.pseudocorrelation_matrix</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.pseudovariances"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.pseudovariances</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.simulate()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_2d"><code class="docutils literal notranslate"><span class="pre">MultivariateLevy.simulate_2d()</span></code></a></li>
@@ -438,7 +456,10 @@
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.basic.WienerProcess"><code class="docutils literal notranslate"><span class="pre">WienerProcess</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="ergodicity.process.html#ergodicity-process-constructor-module">ergodicity.process.constructor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ergodicity.process.html#module-ergodicity.process.constructor">ergodicity.process.constructor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.constructor.create_custom_process"><code class="docutils literal notranslate"><span class="pre">create_custom_process()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="ergodicity.process.html#module-ergodicity.process.custom_classes">ergodicity.process.custom_classes module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.custom_classes.ConstantElasticityOfVarianceProcess"><code class="docutils literal notranslate"><span class="pre">ConstantElasticityOfVarianceProcess</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.custom_classes.ConstantElasticityOfVarianceProcess.custom_increment"><code class="docutils literal notranslate"><span class="pre">ConstantElasticityOfVarianceProcess.custom_increment()</span></code></a></li>
@@ -455,10 +476,13 @@
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.ItoProcess"><code class="docutils literal notranslate"><span class="pre">ItoProcess</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.ItoProcess.drift_term"><code class="docutils literal notranslate"><span class="pre">ItoProcess.drift_term</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.ItoProcess.stochastic_term"><code class="docutils literal notranslate"><span class="pre">ItoProcess.stochastic_term</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.ItoProcess.closed_formula"><code class="docutils literal notranslate"><span class="pre">ItoProcess.closed_formula()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.ItoProcess.differential"><code class="docutils literal notranslate"><span class="pre">ItoProcess.differential()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#id0"><code class="docutils literal notranslate"><span class="pre">ItoProcess.drift_term</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.ItoProcess.solve"><code class="docutils literal notranslate"><span class="pre">ItoProcess.solve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.ItoProcess.ergodicity_transform"><code class="docutils literal notranslate"><span class="pre">ItoProcess.ergodicity_transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.ItoProcess.expected_value_expression"><code class="docutils literal notranslate"><span class="pre">ItoProcess.expected_value_expression()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#id15"><code class="docutils literal notranslate"><span class="pre">ItoProcess.stochastic_term</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.ItoProcess.time_average_expression"><code class="docutils literal notranslate"><span class="pre">ItoProcess.time_average_expression()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.NonItoProcess"><code class="docutils literal notranslate"><span class="pre">NonItoProcess</span></code></a></li>
@@ -524,7 +548,6 @@
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.Process.simulate_2d"><code class="docutils literal notranslate"><span class="pre">Process.simulate_2d()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.Process.simulate_3d"><code class="docutils literal notranslate"><span class="pre">Process.simulate_3d()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.Process.simulate_distribution"><code class="docutils literal notranslate"><span class="pre">Process.simulate_distribution()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.Process.simulate_ensemble"><code class="docutils literal notranslate"><span class="pre">Process.simulate_ensemble()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.Process.simulate_ensembles"><code class="docutils literal notranslate"><span class="pre">Process.simulate_ensembles()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.Process.simulate_live"><code class="docutils literal notranslate"><span class="pre">Process.simulate_live()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.definitions.Process.simulate_live_2d"><code class="docutils literal notranslate"><span class="pre">Process.simulate_live_2d()</span></code></a></li>
@@ -547,7 +570,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ergodicity.process.html#module-ergodicity.process.discrete">ergodicity.process.discrete module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ergodicity.process.html#module-ergodicity.process.increments">ergodicity.process.increments module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ergodicity.process.html#module-ergodicity.process.increments">ergodicity.process.increments module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.increments.dependent_increments"><code class="docutils literal notranslate"><span class="pre">dependent_increments()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="ergodicity.process.html#module-ergodicity.process.lib">ergodicity.process.lib module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.lib.CauchyOrnsteinUlehnbeckSimulation"><code class="docutils literal notranslate"><span class="pre">CauchyOrnsteinUlehnbeckSimulation()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.lib.ConstantElasticityOfVarianceSimulation"><code class="docutils literal notranslate"><span class="pre">ConstantElasticityOfVarianceSimulation()</span></code></a></li>
@@ -580,11 +606,14 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ergodicity.process.html#module-ergodicity.process.multiplicative">ergodicity.process.multiplicative module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricBesselProcess"><code class="docutils literal notranslate"><span class="pre">GeometricBesselProcess</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricBesselProcess.custom_increment"><code class="docutils literal notranslate"><span class="pre">GeometricBesselProcess.custom_increment()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotion</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.closed_formula"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotion.closed_formula()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.custom_increment"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotion.custom_increment()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.plot_growth_rate"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotion.plot_growth_rate()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.relative_variance_pea"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotion.relative_variance_pea()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.relative_variance_pea_theory"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotion.relative_variance_pea_theory()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.self_averaging_time_theory"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotion.self_averaging_time_theory()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.simulate_growth_rate"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotion.simulate_growth_rate()</span></code></a></li>
 </ul>
@@ -594,10 +623,18 @@
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricFractionalBrownianMotion.custom_increment"><code class="docutils literal notranslate"><span class="pre">GeometricFractionalBrownianMotion.custom_increment()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricGeneralizedHyperbolicProcess"><code class="docutils literal notranslate"><span class="pre">GeometricGeneralizedHyperbolicProcess</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricGeneralizedHyperbolicProcess.custom_increment"><code class="docutils literal notranslate"><span class="pre">GeometricGeneralizedHyperbolicProcess.custom_increment()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess"><code class="docutils literal notranslate"><span class="pre">GeometricLevyProcess</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess.custom_increment"><code class="docutils literal notranslate"><span class="pre">GeometricLevyProcess.custom_increment()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess.implied_correction"><code class="docutils literal notranslate"><span class="pre">GeometricLevyProcess.implied_correction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess.sigma_divergence"><code class="docutils literal notranslate"><span class="pre">GeometricLevyProcess.sigma_divergence()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricSquaredBesselProcess"><code class="docutils literal notranslate"><span class="pre">GeometricSquaredBesselProcess</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.GeometricSquaredBesselProcess.custom_increment"><code class="docutils literal notranslate"><span class="pre">GeometricSquaredBesselProcess.custom_increment()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricBrownianMotion</span></code></a><ul>
@@ -624,6 +661,57 @@
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.BrownianMotionWithMeanMemory"><code class="docutils literal notranslate"><span class="pre">BrownianMotionWithMeanMemory</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.BrownianMotionWithMeanMemory.custom_increment"><code class="docutils literal notranslate"><span class="pre">BrownianMotionWithMeanMemory.custom_increment()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.BrownianMotionWithMeanMemory.memory_update"><code class="docutils literal notranslate"><span class="pre">BrownianMotionWithMeanMemory.memory_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.GeometricBrownianMotionWithVolatilityMemory"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotionWithVolatilityMemory</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.GeometricBrownianMotionWithVolatilityMemory.custom_increment"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotionWithVolatilityMemory.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.GeometricBrownianMotionWithVolatilityMemory.memory_update"><code class="docutils literal notranslate"><span class="pre">GeometricBrownianMotionWithVolatilityMemory.memory_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithAdaptiveSkewness"><code class="docutils literal notranslate"><span class="pre">LevyStableProcessWithAdaptiveSkewness</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithAdaptiveSkewness.custom_increment"><code class="docutils literal notranslate"><span class="pre">LevyStableProcessWithAdaptiveSkewness.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithAdaptiveSkewness.differential"><code class="docutils literal notranslate"><span class="pre">LevyStableProcessWithAdaptiveSkewness.differential()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithAdaptiveSkewness.memory_update"><code class="docutils literal notranslate"><span class="pre">LevyStableProcessWithAdaptiveSkewness.memory_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithMemory"><code class="docutils literal notranslate"><span class="pre">LevyStableProcessWithMemory</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithMemory.custom_increment"><code class="docutils literal notranslate"><span class="pre">LevyStableProcessWithMemory.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.LevyStableProcessWithMemory.memory_update"><code class="docutils literal notranslate"><span class="pre">LevyStableProcessWithMemory.memory_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveCorrelation"><code class="docutils literal notranslate"><span class="pre">MultivariateGBMWithAdaptiveCorrelation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveCorrelation.custom_increment"><code class="docutils literal notranslate"><span class="pre">MultivariateGBMWithAdaptiveCorrelation.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveCorrelation.memory_update"><code class="docutils literal notranslate"><span class="pre">MultivariateGBMWithAdaptiveCorrelation.memory_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveDrift"><code class="docutils literal notranslate"><span class="pre">MultivariateGBMWithAdaptiveDrift</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveDrift.custom_increment"><code class="docutils literal notranslate"><span class="pre">MultivariateGBMWithAdaptiveDrift.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGBMWithAdaptiveDrift.memory_update"><code class="docutils literal notranslate"><span class="pre">MultivariateGBMWithAdaptiveDrift.memory_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveAlpha"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveAlpha</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveAlpha.custom_increment"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveAlpha.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveAlpha.memory_update"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveAlpha.memory_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveBeta"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveBeta</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveBeta.custom_increment"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveBeta.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveBeta.memory_update"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveBeta.memory_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveCorrelation"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveCorrelation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveCorrelation.custom_increment"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveCorrelation.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveCorrelation.memory_update"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveCorrelation.memory_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveScale"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveScale</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveScale.custom_increment"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveScale.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.MultivariateGeometricLevyWithAdaptiveScale.memory_update"><code class="docutils literal notranslate"><span class="pre">MultivariateGeometricLevyWithAdaptiveScale.memory_update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.OrnsteinUhlenbeckWithAdaptiveRate"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeckWithAdaptiveRate</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.OrnsteinUhlenbeckWithAdaptiveRate.custom_increment"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeckWithAdaptiveRate.custom_increment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ergodicity.process.html#ergodicity.process.with_memory.OrnsteinUhlenbeckWithAdaptiveRate.memory_update"><code class="docutils literal notranslate"><span class="pre">OrnsteinUhlenbeckWithAdaptiveRate.memory_update()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -660,8 +748,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ergodicity.tools.html#module-ergodicity.tools.evaluate">ergodicity.tools.evaluate module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.evaluate.aggregate_variance"><code class="docutils literal notranslate"><span class="pre">aggregate_variance()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.evaluate.hurst_exponent"><code class="docutils literal notranslate"><span class="pre">hurst_exponent()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.evaluate.detrended_fluctuation_analysis"><code class="docutils literal notranslate"><span class="pre">detrended_fluctuation_analysis()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.evaluate.jarque_bera_test"><code class="docutils literal notranslate"><span class="pre">jarque_bera_test()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.evaluate.kurtosis_test"><code class="docutils literal notranslate"><span class="pre">kurtosis_test()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.evaluate.plot_ergodicity_results"><code class="docutils literal notranslate"><span class="pre">plot_ergodicity_results()</span></code></a></li>
@@ -675,7 +762,16 @@
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.evaluate.wavelet_estimation"><code class="docutils literal notranslate"><span class="pre">wavelet_estimation()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="ergodicity.tools.html#ergodicity-tools-fit-module">ergodicity.tools.fit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ergodicity.tools.html#module-ergodicity.tools.fit">ergodicity.tools.fit module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.fit.compare_distributions"><code class="docutils literal notranslate"><span class="pre">compare_distributions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.fit.fit_distributions"><code class="docutils literal notranslate"><span class="pre">fit_distributions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.fit.fit_stochastic_process"><code class="docutils literal notranslate"><span class="pre">fit_stochastic_process()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.fit.levy_stable_fit"><code class="docutils literal notranslate"><span class="pre">levy_stable_fit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.fit.plot_fitted_distributions"><code class="docutils literal notranslate"><span class="pre">plot_fitted_distributions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.fit.print_results"><code class="docutils literal notranslate"><span class="pre">print_results()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.fit.test_fitting_success"><code class="docutils literal notranslate"><span class="pre">test_fitting_success()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="ergodicity.tools.html#module-ergodicity.tools.helper">ergodicity.tools.helper module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.helper.ProcessEncoder"><code class="docutils literal notranslate"><span class="pre">ProcessEncoder</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.helper.ProcessEncoder.process_types"><code class="docutils literal notranslate"><span class="pre">ProcessEncoder.process_types</span></code></a></li>
@@ -690,6 +786,7 @@
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.helper.ProcessEncoder.pad_encoded_process"><code class="docutils literal notranslate"><span class="pre">ProcessEncoder.pad_encoded_process()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.helper.covariance_to_correlation"><code class="docutils literal notranslate"><span class="pre">covariance_to_correlation()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.helper.plot"><code class="docutils literal notranslate"><span class="pre">plot()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.helper.plot_simulate_ensemble"><code class="docutils literal notranslate"><span class="pre">plot_simulate_ensemble()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.helper.plot_system"><code class="docutils literal notranslate"><span class="pre">plot_system()</span></code></a></li>
@@ -753,6 +850,7 @@
 <li class="toctree-l4"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.simulate"><code class="docutils literal notranslate"><span class="pre">PSDESimulator.simulate()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.partial_sde.wiener_increment_function"><code class="docutils literal notranslate"><span class="pre">wiener_increment_function()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ergodicity.tools.html#module-ergodicity.tools.preasymptotics">ergodicity.tools.preasymptotics module</a><ul>
@@ -837,8 +935,8 @@
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.solve.mean_convergence_rate_alpha_stable"><code class="docutils literal notranslate"><span class="pre">mean_convergence_rate_alpha_stable()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.solve.replace_integration_constants"><code class="docutils literal notranslate"><span class="pre">replace_integration_constants()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.solve.solve"><code class="docutils literal notranslate"><span class="pre">solve()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.solve.solve_fokker_planck"><code class="docutils literal notranslate"><span class="pre">solve_fokker_planck()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.solve.time_average"><code class="docutils literal notranslate"><span class="pre">time_average()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ergodicity.tools.html#ergodicity.tools.solve.time_average_limit"><code class="docutils literal notranslate"><span class="pre">time_average_limit()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ergodicity.tools.html#module-ergodicity.tools">Module contents</a></li>
@@ -1197,14 +1295,14 @@ analysis pipelines with parameters optimized for Levy processes and computationa
 </section>
 <section id="module-ergodicity">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ergodicity" title="Link to this heading">¶</a></h2>
-<p>Ergodicity Library: A Python toolkit for stochastic processes and ergodicity economics
-The Ergodicity Library is a comprehensive Python package designed for analyzing stochastic processes, with a particular focus on ergodicity economics. It provides tools for:</p>
-<p>Simulating and visualizing various stochastic processes, including Brownian motion, Lévy processes, and custom processes.
-Analyzing time averages and ensemble averages of stochastic processes.
-Implementing ergodic transformations and other key concepts from ergodicity economics.
-Fitting stochastic models to empirical data and estimating process parameters.
-Creating and training artificial agents for decision-making under uncertainty.
-Performing multi-core computations for efficient large-scale simulations.</p>
+<p>Ergodicity Library: A Python toolkit for stochastic processes and ergodicity economics.</p>
+<p>The Ergodicity Library is a comprehensive Python package designed for analyzing stochastic processes, with a particular focus on ergodicity economics. It provides tools for:</p>
+<p>Simulating and visualizing various stochastic processes, including Brownian motion, Lévy processes, and custom processes. It is focused on:</p>
+<p>Analyzing time averages and ensemble averages of stochastic processes.</p>
+<p>Implementing ergodic transformations and other key concepts from ergodicity economics.</p>
+<p>Fitting stochastic models to empirical data and estimating process parameters.</p>
+<p>Creating and training artificial agents for decision-making under uncertainty.</p>
+<p>Performing multi-core computations for efficient large-scale simulations.</p>
 <p>Key features:</p>
 <p>Object-oriented design with a flexible class hierarchy for stochastic processes</p>
 <p>Integration with popular scientific Python libraries (NumPy, SciPy, SymPy, Matplotlib)</p>
@@ -1213,7 +1311,7 @@ Performing multi-core computations for efficient large-scale simulations.</p>
 <p>Support for both Itô and non-Itô processes</p>
 <p>Customizable configurations and default parameters</p>
 <p>The library is suitable for researchers, students, and practitioners in fields such as economics, finance, physics, and applied mathematics. It aims to bridge the gap between theoretical concepts in ergodicity economics and practical computational tools.
-For more information, visit: [insert library website]
+For more information, visit: www.ergodicitylibrary.com
 Version: 0.3.0</p>
 </section>
 </section>

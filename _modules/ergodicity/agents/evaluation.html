@@ -107,7 +107,6 @@
 <span class="sd">ufi.plot_utility_functions()</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">tensorflow.python.framework.ops</span> <span class="kn">import</span> <span class="n">strip_name_scope</span>
-
 <span class="kn">from</span> <span class="nn">ergodicity.agents.sml</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">ergodicity.tools.helper</span> <span class="kn">import</span> <span class="n">ProcessEncoder</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -123,9 +122,10 @@
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 <span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">PCA</span>
 <span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">from</span> <span class="nn">ergodicity.tools.compute</span> <span class="kn">import</span> <span class="o">*</span>
 
 <div class="viewcode-block" id="UtilityFunction">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunction">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunction">[docs]</a>
 <span class="k">class</span> <span class="nc">UtilityFunction</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    UtilityFunction Class</span>
@@ -202,7 +202,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference">[docs]</a>
 <span class="k">class</span> <span class="nc">UtilityFunctionInference</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    UtilityFunctionInference Class</span>
@@ -253,7 +253,7 @@
 <span class="sd">    economics, decision theory, and reinforcement learning, where understanding the underlying</span>
 <span class="sd">    utility functions driving agent behavior is crucial.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">param_ranges</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">param_ranges</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]],</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the UtilityFunctionInference class with a trained model and parameter ranges.</span>
 
@@ -261,8 +261,13 @@
 <span class="sd">        :type model_path: str</span>
 <span class="sd">        :param param_ranges: Dictionary of process types and their parameter ranges</span>
 <span class="sd">        :type param_ranges: Dict[str, Dict[str, Tuple[float, float]]]</span>
+<span class="sd">        :param model: Optional Keras model instance to use instead of loading from file. If None, the model is loaded from the file.</span>
+<span class="sd">        :type model: tf.keras.Model or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_model_safely</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">agent</span> <span class="o">=</span> <span class="n">NeuralNetworkAgent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_encoder</span> <span class="o">=</span> <span class="n">ProcessEncoder</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">utility_functions</span> <span class="o">=</span> <span class="p">[]</span>
@@ -270,10 +275,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mcmc_samples</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regression_model</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regression_history</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="UtilityFunctionInference.load_model_safely">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.load_model_safely">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_model_safely</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="UtilityFunctionInference.load_model">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.load_model">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load a Keras model from a file, handling potential compatibility issues.</span>
 
@@ -322,7 +329,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.add_utility_function">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.add_utility_function">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.add_utility_function">[docs]</a>
     <span class="k">def</span> <span class="nf">add_utility_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">utility_function</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a utility function to the collection for analysis.</span>
@@ -336,72 +343,88 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.generate_dataset">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.generate_dataset">[docs]</a>
-    <span class="k">def</span> <span class="nf">generate_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_processes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.generate_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_processes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_options</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">simulate_method</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate a dataset of stochastic processes for analysis.</span>
 
-<span class="sd">        :param n_processes: Number of processes to generate</span>
+<span class="sd">        :param n_processes: Number of datasets to generate (i.e., number of decision instances)</span>
 <span class="sd">        :type n_processes: int</span>
-<span class="sd">        :return:  List of datasets, each containing process trajectories</span>
-<span class="sd">        :rtype: List[np.ndarray]</span>
+<span class="sd">        :param n_options: Number of process options per decision instance</span>
+<span class="sd">        :type n_options: int</span>
+<span class="sd">        :return:  List of datasets, each containing process options</span>
+<span class="sd">        :rtype: List[List[np.ndarray]]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">process_types</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_processes</span><span class="p">):</span>
-            <span class="n">process_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">process_types</span><span class="p">)</span>
-            <span class="n">process_type_code</span> <span class="o">=</span> <span class="n">process_types</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">process_type</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># 1-indexed</span>
+            <span class="n">process_options</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_options</span><span class="p">):</span>
+                <span class="n">process_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">process_types</span><span class="p">)</span>
+                <span class="n">process_type_code</span> <span class="o">=</span> <span class="n">process_types</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">process_type</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># 1-indexed</span>
 
-            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">param</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
-                      <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">param</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+                          <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
-            <span class="c1"># Create a process instance</span>
-            <span class="c1"># print(process_type)</span>
-            <span class="n">process_type</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">process_type</span><span class="p">]</span>
-            <span class="n">process</span> <span class="o">=</span> <span class="n">process_type</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+                <span class="c1"># Create a process instance</span>
+                <span class="n">process_class</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">process_type</span><span class="p">]</span>
+                <span class="n">process</span> <span class="o">=</span> <span class="n">process_class</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
 
-            <span class="c1"># Simulate the process</span>
-            <span class="n">trajectory</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">simulate_until</span><span class="p">(</span><span class="n">timestep</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">X</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">X0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                                <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="c1"># Simulate the process</span>
+                <span class="k">if</span> <span class="n">simulate_method</span><span class="p">:</span>
+                    <span class="n">trajectory</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+                        <span class="n">t</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">trajectory</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">simulate_until</span><span class="p">(</span>
+                        <span class="n">timestep</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">X</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">X0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-            <span class="c1"># Prepare data: [time, process_type_code, param1, param2, ..., trajectory_value]</span>
-            <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">trajectory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.1</span>
-            <span class="n">param_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">times</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span>
-                                    <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">trajectory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="n">process_type_code</span><span class="p">),</span>
-                                    <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">param_values</span><span class="p">,</span> <span class="p">(</span><span class="n">trajectory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)),</span>
-                                    <span class="n">trajectory</span><span class="p">))</span>
+                <span class="c1"># Prepare data: trajectory values</span>
+                <span class="c1"># Assuming trajectory is of shape (num_time_steps, num_instances)</span>
+                <span class="c1"># We take the final values for each instance</span>
+                <span class="n">final_values</span> <span class="o">=</span> <span class="n">trajectory</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
 
-            <span class="n">dataset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">process_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">final_values</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">process_type_code</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="p">(</span><span class="n">final_values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)),</span>
+                    <span class="n">final_values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">))</span>
+
+                <span class="n">process_options</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">process_data</span><span class="p">)</span>
+
+            <span class="n">dataset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">process_options</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">dataset</span></div>
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.get_agent_choices">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.get_agent_choices">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_agent_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.get_agent_choices">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_agent_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the agent&#39;s choices based on the dataset of processes.</span>
+<span class="sd">        Get the agent&#39;s choice based on a dataset of process options.</span>
 
-<span class="sd">        :param dataset: List of datasets, each containing process trajectories</span>
-<span class="sd">        :type dataset: List[np.ndarray]</span>
-<span class="sd">        :return: List of agent choices</span>
-<span class="sd">        :rtype: List[int]</span>
+<span class="sd">        :param data: A list of process options, each containing process data (np.ndarray)</span>
+<span class="sd">        :type data: List[np.ndarray]</span>
+<span class="sd">        :return: The index of the agent&#39;s choice</span>
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">all_encoded_processes</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">process_data</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">process_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_type</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-                <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
-                                               <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">2</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">])])}</span>
-                <span class="n">process_type</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">process_type</span><span class="p">]</span>
-                <span class="n">process</span> <span class="o">=</span> <span class="n">process_type</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+                <span class="c1"># Extract process_type_code and parameters from the first row</span>
+                <span class="n">first_row</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">process_type_code</span> <span class="o">=</span> <span class="n">first_row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">process_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_type</span><span class="p">(</span><span class="n">process_type_code</span><span class="p">)</span>
+                <span class="n">num_params</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">])</span>
+                <span class="n">params_values</span> <span class="o">=</span> <span class="n">first_row</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span> <span class="o">+</span> <span class="n">num_params</span><span class="p">]</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">params_values</span><span class="p">)}</span>
+                <span class="n">process_class</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">process_type</span><span class="p">]</span>
+                <span class="n">process</span> <span class="o">=</span> <span class="n">process_class</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
                 <span class="n">encoded_process</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_encoder</span><span class="o">.</span><span class="n">encode_process_with_time</span><span class="p">(</span><span class="n">process</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
                 <span class="n">all_encoded_processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">encoded_process</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error processing data point: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="c1"># Skip this data point</span>
+                <span class="c1"># Skip this process option</span>
                 <span class="k">continue</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">all_encoded_processes</span><span class="p">:</span>
@@ -412,11 +435,11 @@
         <span class="n">choice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">select_process</span><span class="p">(</span><span class="n">all_encoded_processes</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Agent&#39;s choice: </span><span class="si">{</span><span class="n">choice</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">choice</span><span class="p">]</span>  <span class="c1"># Return as a list to maintain consistency with previous implementation</span></div>
+        <span class="k">return</span> <span class="n">choice</span>  <span class="c1"># Return the index of the chosen process</span></div>
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.get_process_type">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.get_process_type">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.get_process_type">[docs]</a>
     <span class="k">def</span> <span class="nf">get_process_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_code</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the process type name based on the type code.</span>
@@ -438,54 +461,94 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid type_code: </span><span class="si">{</span><span class="n">type_code</span><span class="si">}</span><span class="s2">. Valid codes are </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">type_mapping</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="UtilityFunctionInference.generate_choices">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.generate_choices">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_options</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_choices</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate agent choices among stochastic processes for testing utility functions with the corresponding dataset of processes to choose from.</span>
+
+<span class="sd">        :param n_options: Number of process options per decision instance</span>
+<span class="sd">        :param n_choices: Number of choices to generate (number of decision instances)</span>
+<span class="sd">        :return dataset: A list of datasets, each containing process options</span>
+<span class="sd">        :rtype dataset: List[List[np.ndarray]]</span>
+<span class="sd">        :return: A list of choices where each choice is an index of the selected process</span>
+<span class="sd">        :rtype: List[int]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">choices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_choices</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_dataset</span><span class="p">(</span><span class="n">n_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_options</span><span class="o">=</span><span class="n">n_options</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Since generate_dataset returns a list of datasets</span>
+            <span class="n">choice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_agent_choices</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">choice</span><span class="p">)</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span></div>
+
+
 <div class="viewcode-block" id="UtilityFunctionInference.negative_log_likelihood">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.negative_log_likelihood">[docs]</a>
-    <span class="k">def</span> <span class="nf">negative_log_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">utility_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.negative_log_likelihood">[docs]</a>
+    <span class="k">def</span> <span class="nf">negative_log_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">utility_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
                                 <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate the negative log-likelihood of the utility function given the dataset and choices.</span>
-<span class="sd">        It is needed for maximum likelihood estimation (MLE) optimization.</span>
+<span class="sd">        Calculate the negative log-likelihood of the utility function given the dataset and choices,</span>
+<span class="sd">        assuming the agent maximizes expected utility.</span>
 
 <span class="sd">        :param params: Utility function parameters</span>
 <span class="sd">        :type params: List[float]</span>
 <span class="sd">        :param utility_func: Utility function to evaluate</span>
 <span class="sd">        :type utility_func: Callable</span>
-<span class="sd">        :param dataset: List of datasets, each containing process trajectories</span>
-<span class="sd">        :type dataset: List[np.ndarray]</span>
+<span class="sd">        :param dataset: List of datasets, each containing lists of process trajectories</span>
+<span class="sd">        :type dataset: List[List[np.ndarray]]</span>
 <span class="sd">        :param choices: List of agent choices</span>
 <span class="sd">        :type choices: List[int]</span>
 <span class="sd">        :return: Negative log-likelihood value</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">utility_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">utility_func</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">])</span>  <span class="c1"># Use first parameter as input</span>
-        <span class="n">probs</span> <span class="o">=</span> <span class="n">utility_values</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">utility_values</span><span class="p">)</span>
-        <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">probs</span><span class="p">[</span><span class="n">choices</span><span class="p">]))</span></div>
+        <span class="n">total_nll</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">choice</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span><span class="p">):</span>
+            <span class="n">expected_utilities</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">process_data</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">final_values</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Final values of trajectories</span>
+                <span class="n">utilities</span> <span class="o">=</span> <span class="n">utility_func</span><span class="p">(</span><span class="n">final_values</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span>
+                <span class="n">expected_utility</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">utilities</span><span class="p">)</span>
+                <span class="n">expected_utilities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">expected_utility</span><span class="p">)</span>
+            <span class="n">expected_utilities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">expected_utilities</span><span class="p">)</span>
+            <span class="c1"># Softmax over expected utilities</span>
+            <span class="n">exp_utilities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">expected_utilities</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">expected_utilities</span><span class="p">))</span>
+            <span class="n">probs</span> <span class="o">=</span> <span class="n">exp_utilities</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">exp_utilities</span><span class="p">)</span>
+            <span class="n">total_nll</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">probs</span><span class="p">[</span><span class="n">choice</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">total_nll</span></div>
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.fit_utility_functions">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.fit_utility_functions">[docs]</a>
-    <span class="k">def</span> <span class="nf">fit_utility_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.fit_utility_functions">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit_utility_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Fit the utility functions to the observed choices using maximum likelihood estimation (MLE).</span>
+<span class="sd">        Fit the utility functions to the observed choices using maximum likelihood estimation (MLE),</span>
+<span class="sd">        assuming the agent maximizes expected utility.</span>
 
-<span class="sd">        :param dataset: List of datasets, each containing process trajectories</span>
-<span class="sd">        :type dataset: List[np.ndarray]</span>
+<span class="sd">        :param dataset: List of datasets, each containing lists of process trajectories</span>
+<span class="sd">        :type dataset: List[List[np.ndarray]]</span>
 <span class="sd">        :param choices: List of agent choices</span>
 <span class="sd">        :type choices: List[int]</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">utility_function</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">utility_functions</span><span class="p">:</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">negative_log_likelihood</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">utility_function</span><span class="o">.</span><span class="n">initial_params</span><span class="p">,</span>
-                           <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">utility_function</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span><span class="p">),</span>
-                           <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Nelder-Mead&#39;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">})</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">negative_log_likelihood</span><span class="p">,</span>
+                <span class="n">x0</span><span class="o">=</span><span class="n">utility_function</span><span class="o">.</span><span class="n">initial_params</span><span class="p">,</span>
+                <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">utility_function</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span><span class="p">),</span>
+                <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Nelder-Mead&#39;</span><span class="p">,</span>
+                <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">}</span>
+            <span class="p">)</span>
             <span class="n">utility_function</span><span class="o">.</span><span class="n">fitted_params</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
             <span class="n">utility_function</span><span class="o">.</span><span class="n">nll</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">fun</span></div>
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.print_results">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.print_results">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.print_results">[docs]</a>
     <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print the fitted utility functions and their parameters, including negative log-likelihood.</span>
@@ -501,7 +564,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.plot_utility_functions">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_utility_functions">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_utility_functions">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_utility_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the fitted utility functions for visualization.</span>
@@ -516,7 +579,7 @@
         <span class="k">for</span> <span class="n">utility_function</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">utility_functions</span><span class="p">:</span>
             <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">utility_function</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">utility_function</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;First Parameter (e.g., μ for Brownian Motion)&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Process value&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Utility&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Fitted Utility Functions&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
@@ -525,16 +588,16 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.bayesian_fit_utility_functions">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.bayesian_fit_utility_functions">[docs]</a>
-    <span class="k">def</span> <span class="nf">bayesian_fit_utility_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.bayesian_fit_utility_functions">[docs]</a>
+    <span class="k">def</span> <span class="nf">bayesian_fit_utility_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
                                        <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span> <span class="n">burn_in</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform Bayesian inference on utility functions using Metropolis-Hastings sampling.</span>
 <span class="sd">        It generates samples from the posterior distribution of the utility function parameters.</span>
-<span class="sd">        In the result, it provides a distribution of parameter values instead of a single point estimate.</span>
+<span class="sd">        Provides a distribution of parameter values instead of a single point estimate.</span>
 
-<span class="sd">        :param dataset: List of datasets, each containing process trajectories</span>
-<span class="sd">        :type dataset: List[np.ndarray]</span>
+<span class="sd">        :param dataset: List of datasets, each containing lists of process trajectories</span>
+<span class="sd">        :type dataset: List[List[np.ndarray]]</span>
 <span class="sd">        :param choices: List of agent choices</span>
 <span class="sd">        :type choices: List[int]</span>
 <span class="sd">        :param n_samples: Number of MCMC samples to generate</span>
@@ -544,24 +607,27 @@
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Store dataset and choices as instance variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">choices</span>
+
         <span class="k">for</span> <span class="n">utility_function</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">utility_functions</span><span class="p">:</span>
             <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metropolis_hastings</span><span class="p">(</span><span class="n">utility_function</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">burn_in</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mcmc_samples</span><span class="p">[</span><span class="n">utility_function</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">samples</span></div>
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.metropolis_hastings">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.metropolis_hastings">[docs]</a>
-    <span class="k">def</span> <span class="nf">metropolis_hastings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">utility_function</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.metropolis_hastings">[docs]</a>
+    <span class="k">def</span> <span class="nf">metropolis_hastings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">utility_function</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
                             <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">burn_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform Metropolis-Hastings sampling for Bayesian inference on utility functions.</span>
-<span class="sd">        It generates samples from the posterior distribution of the utility function parameters.</span>
-<span class="sd">        It returns an array of MCMC samples for the utility function parameters.</span>
+<span class="sd">        Generates samples from the posterior distribution of the utility function parameters.</span>
 
 <span class="sd">        :param utility_function: Utility function to fit</span>
 <span class="sd">        :type utility_function: UtilityFunction</span>
-<span class="sd">        :param dataset: List of datasets, each containing process trajectories</span>
-<span class="sd">        :type dataset: List[np.ndarray]</span>
+<span class="sd">        :param dataset: List of datasets, each containing lists of process trajectories</span>
+<span class="sd">        :type dataset: List[List[np.ndarray]]</span>
 <span class="sd">        :param choices: List of agent choices</span>
 <span class="sd">        :type choices: List[int]</span>
 <span class="sd">        :param n_samples: Number of samples to generate</span>
@@ -579,14 +645,18 @@
             <span class="c1"># Propose new parameters</span>
             <span class="n">proposal_params</span> <span class="o">=</span> <span class="n">current_params</span> <span class="o">+</span> <span class="n">norm</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_params</span><span class="p">)</span>
 
-            <span class="c1"># Calculate log likelihood ratio</span>
-            <span class="n">current_ll</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">negative_log_likelihood</span><span class="p">(</span><span class="n">current_params</span><span class="p">,</span> <span class="n">utility_function</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span><span class="p">)</span>
-            <span class="n">proposal_ll</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">negative_log_likelihood</span><span class="p">(</span><span class="n">proposal_params</span><span class="p">,</span> <span class="n">utility_function</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span><span class="p">)</span>
+            <span class="c1"># Calculate log likelihoods</span>
+            <span class="n">current_nll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">negative_log_likelihood</span><span class="p">(</span><span class="n">current_params</span><span class="p">,</span> <span class="n">utility_function</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span><span class="p">)</span>
+            <span class="n">proposal_nll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">negative_log_likelihood</span><span class="p">(</span><span class="n">proposal_params</span><span class="p">,</span> <span class="n">utility_function</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span><span class="p">)</span>
 
-            <span class="c1"># Accept or reject</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span> <span class="o">&lt;</span> <span class="n">proposal_ll</span> <span class="o">-</span> <span class="n">current_ll</span><span class="p">:</span>
+            <span class="c1"># Calculate acceptance probability</span>
+            <span class="n">acceptance_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">proposal_nll</span> <span class="o">-</span> <span class="n">current_nll</span><span class="p">))</span>
+
+            <span class="c1"># Accept or reject the new parameters</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">acceptance_prob</span><span class="p">:</span>
                 <span class="n">current_params</span> <span class="o">=</span> <span class="n">proposal_params</span>
 
+            <span class="c1"># Store the sample after burn-in period</span>
             <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">burn_in</span><span class="p">:</span>
                 <span class="n">samples</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">burn_in</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_params</span>
 
@@ -594,7 +664,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.print_bayesian_results">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.print_bayesian_results">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.print_bayesian_results">[docs]</a>
     <span class="k">def</span> <span class="nf">print_bayesian_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print the mean and standard deviation of the fitted parameters from Bayesian inference.</span>
@@ -611,16 +681,26 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.plot_bayesian_results">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_bayesian_results">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot_bayesian_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_bayesian_results">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_bayesian_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the fitted utility functions based on Bayesian inference.</span>
 
-<span class="sd">        :param x_range: Range of x values to plot</span>
-<span class="sd">        :type x_range: Tuple[float, float]</span>
+<span class="sd">        :param x_range: Range of x values to plot. If None, it will be determined based on the data.</span>
+<span class="sd">        :type x_range: Tuple[float, float] or None</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">x_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Determine x_range based on the final values in the dataset</span>
+            <span class="n">all_final_values</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">process_data</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="n">final_values</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">all_final_values</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">final_values</span><span class="p">)</span>
+            <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">all_final_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">all_final_values</span><span class="p">)</span>
+            <span class="n">x_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span>
+
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">100</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
 
@@ -638,7 +718,7 @@
             <span class="n">y_95</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">y_samples</span><span class="p">,</span> <span class="mi">95</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_5</span><span class="p">,</span> <span class="n">y_95</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
-        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;First Parameter (e.g., μ for Brownian Motion)&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Process Value&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Utility&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Fitted Utility Functions (Bayesian Inference)&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
@@ -647,7 +727,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.plot_parameter_distributions">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_parameter_distributions">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_parameter_distributions">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_parameter_distributions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the distributions of fitted parameters from Bayesian inference.</span>
@@ -672,15 +752,18 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.regression_fit">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.regression_fit">[docs]</a>
-    <span class="k">def</span> <span class="nf">regression_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_processes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span> <span class="n">test_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.regression_fit">[docs]</a>
+    <span class="k">def</span> <span class="nf">regression_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_processes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span> <span class="n">n_options</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">test_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
                        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Train a regression model to predict agent preferences based on process parameters.</span>
-<span class="sd">        The model is trained using a dataset of stochastic processes and agent choices.</span>
+<span class="sd">        The model is trained using a dataset of stochastic processes and agent choices,</span>
+<span class="sd">        assuming the agent maximizes expected utility.</span>
 
-<span class="sd">        :param n_processes: Number of processes to generate for training</span>
+<span class="sd">        :param n_processes: Number of decision instances to generate for training</span>
 <span class="sd">        :type n_processes: int</span>
+<span class="sd">        :param n_options: Number of process options per decision instance</span>
+<span class="sd">        :type n_options: int</span>
 <span class="sd">        :param test_size: Fraction of data to use for testing</span>
 <span class="sd">        :type test_size: float</span>
 <span class="sd">        :param epochs: Number of training epochs</span>
@@ -691,30 +774,48 @@
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">test_size</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">test_size</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Input Validation</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;</span> <span class="n">test_size</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;test_size must be between 0 and 1&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">epochs</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;epochs must be a positive integer&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">batch_size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;batch_size must be a positive integer&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Generate dataset and get agent choice</span>
-        <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_dataset</span><span class="p">(</span><span class="n">n_processes</span><span class="p">)</span>
-        <span class="n">choice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_agent_choices</span><span class="p">(</span><span class="n">dataset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Get the single choice</span>
+        <span class="c1"># Generate dataset and get agent choices</span>
+        <span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_choices</span><span class="p">(</span><span class="n">n_options</span><span class="o">=</span><span class="n">n_options</span><span class="p">,</span> <span class="n">n_choices</span><span class="o">=</span><span class="n">n_processes</span><span class="p">)</span>
+
+        <span class="c1"># Assign dataset and choices to instance variables for potential use in plotting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">choices</span>
 
         <span class="c1"># Prepare input data (process type code and parameters) and output data (choice)</span>
         <span class="n">X</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
-            <span class="n">process_type_code</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="n">params</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">2</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">])]</span>
-            <span class="n">X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="n">process_type_code</span><span class="p">],</span> <span class="n">params</span><span class="p">)))</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">choice</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">process_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                <span class="c1"># Extract process_type_code and parameters from the first row</span>
+                <span class="n">first_row</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">process_type_code</span> <span class="o">=</span> <span class="n">first_row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">process_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_type</span><span class="p">(</span><span class="n">process_type_code</span><span class="p">)</span>
+                <span class="n">num_params</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">])</span>
+                <span class="n">params_values</span> <span class="o">=</span> <span class="n">first_row</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span> <span class="o">+</span> <span class="n">num_params</span><span class="p">]</span>
+                <span class="n">process_params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">params_values</span><span class="p">)</span>
+
+                <span class="c1"># Create feature vector: [process_type_code, param1, param2, ...]</span>
+                <span class="n">feature_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="n">process_type_code</span><span class="p">],</span> <span class="n">params_values</span><span class="p">))</span>
+                <span class="n">X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature_vector</span><span class="p">)</span>
+
+                <span class="c1"># Create label: 1 if this process option is the chosen one, else 0</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="n">choice</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
         <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
-        <span class="n">y</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Set the chosen process to 1, all others to 0</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 
         <span class="c1"># Print shapes for debugging</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X shape: </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;y shape: </span><span class="si">{</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X shape: </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (n_processes * n_options, num_features)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;y shape: </span><span class="si">{</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Should be (n_processes * n_options,)</span>
 
         <span class="c1"># Split data into training and testing sets</span>
         <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="n">test_size</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
@@ -722,16 +823,18 @@
         <span class="c1"># Print final shapes for debugging</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X_train shape: </span><span class="si">{</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X_test shape: </span><span class="si">{</span><span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;y_train shape: </span><span class="si">{</span><span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;y_test shape: </span><span class="si">{</span><span class="n">y_test</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Create and compile the model</span>
+        <span class="c1"># Create and compile the regression model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regression_model</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
             <span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],)),</span>
             <span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">),</span>
-            <span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">)</span>
+            <span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">)</span>  <span class="c1"># Binary classification</span>
         <span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regression_model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;binary_crossentropy&#39;</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
 
-        <span class="c1"># Train the model</span>
+        <span class="c1"># Train the regression model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regression_history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">regression_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
             <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span>
             <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
@@ -742,7 +845,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.plot_regression_results">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_regression_results">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_regression_results">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_regression_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the results of the regression model training.</span>
@@ -780,7 +883,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.predict_preference">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.predict_preference">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.predict_preference">[docs]</a>
     <span class="k">def</span> <span class="nf">predict_preference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Predict the agent&#39;s preference for a given process type and parameters.</span>
@@ -805,7 +908,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.plot_preference_heatmap">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_preference_heatmap">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_preference_heatmap">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_preference_heatmap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">param1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">param2</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot a heatmap of agent preferences for different parameter values of a process type.</span>
@@ -850,7 +953,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.analyze_feature_importance">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.analyze_feature_importance">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.analyze_feature_importance">[docs]</a>
     <span class="k">def</span> <span class="nf">analyze_feature_importance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Analyze the importance of different features in the regression model.</span>
@@ -897,7 +1000,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.analyze_feature_interactions">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.analyze_feature_interactions">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.analyze_feature_interactions">[docs]</a>
     <span class="k">def</span> <span class="nf">analyze_feature_interactions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Analyze the interaction strength between features in the regression model.</span>
@@ -933,7 +1036,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.plot_partial_dependence">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_partial_dependence">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.plot_partial_dependence">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_partial_dependence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_index</span><span class="p">,</span> <span class="n">num_points</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the partial dependence of the predicted preference on a selected feature.</span>
@@ -983,40 +1086,69 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionInference.perform_irl">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.perform_irl">[docs]</a>
-    <span class="k">def</span> <span class="nf">perform_irl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_processes</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionInference.perform_irl">[docs]</a>
+    <span class="k">def</span> <span class="nf">perform_irl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_processes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">n_options</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform Inverse Reinforcement Learning (IRL) to infer the reward function from agent choices.</span>
 <span class="sd">        It uses the MaxEntIRL algorithm to learn the reward weights based on agent behavior.</span>
 <span class="sd">        It is designed to understand the underlying reward structure that drives the agent&#39;s decisions.</span>
 
-<span class="sd">        :param n_processes: Number of processes to generate for IRL</span>
+<span class="sd">        :param n_processes: Number of decision instances to generate for IRL</span>
 <span class="sd">        :type n_processes: int</span>
+<span class="sd">        :param n_options: Number of process options per decision instance</span>
+<span class="sd">        :type n_options: int</span>
 <span class="sd">        :return: Inferred reward weights</span>
 <span class="sd">        :rtype: np.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_dataset</span><span class="p">(</span><span class="n">n_processes</span><span class="p">)</span>
-        <span class="n">choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_agent_choices</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="c1"># Generate dataset and agent choices</span>
+        <span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_choices</span><span class="p">(</span><span class="n">n_options</span><span class="o">=</span><span class="n">n_options</span><span class="p">,</span> <span class="n">n_choices</span><span class="o">=</span><span class="n">n_processes</span><span class="p">)</span>
+
+        <span class="c1"># Assign dataset and choices to instance variables for potential use in plotting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">choices</span>
 
         <span class="c1"># Prepare trajectories for IRL</span>
         <span class="n">trajectories</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">choice</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">choices</span><span class="p">):</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">2</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">])]))</span>
-            <span class="n">trajectories</span><span class="o">.</span><span class="n">append</span><span class="p">([(</span><span class="n">state</span><span class="p">,</span> <span class="n">choice</span><span class="p">)])</span>
+            <span class="n">trajectory</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">process_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                <span class="c1"># Extract process features from the first trajectory (all trajectories have the same features)</span>
+                <span class="n">first_row</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">process_type_code</span> <span class="o">=</span> <span class="n">first_row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">process_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_process_type</span><span class="p">(</span><span class="n">process_type_code</span><span class="p">)</span>
+                <span class="n">num_params</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">])</span>
+                <span class="n">params_values</span> <span class="o">=</span> <span class="n">first_row</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span> <span class="o">+</span> <span class="n">num_params</span><span class="p">]</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="n">process_type_code</span><span class="p">],</span> <span class="n">params_values</span><span class="p">))</span>
+
+                <span class="c1"># Define action: 1 if chosen, 0 otherwise</span>
+                <span class="n">action</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="n">choice</span> <span class="k">else</span> <span class="mi">0</span>
+
+                <span class="c1"># Append the (state, action) pair to the trajectory</span>
+                <span class="n">trajectory</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">))</span>
+            <span class="n">trajectories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trajectory</span><span class="p">)</span>
 
         <span class="c1"># Initialize and fit IRL model</span>
-        <span class="n">n_features</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-        <span class="n">n_actions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">choices</span><span class="p">))</span>
+        <span class="c1"># Number of features corresponds to the length of the state vector</span>
+        <span class="n">n_features</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trajectories</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1"># Number of actions: binary (chosen or not chosen)</span>
+        <span class="n">n_actions</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="c1"># Initialize MaxEntIRL model</span>
         <span class="n">irl_model</span> <span class="o">=</span> <span class="n">MaxEntIRL</span><span class="p">(</span><span class="n">n_features</span><span class="p">,</span> <span class="n">n_actions</span><span class="p">)</span>
+
+        <span class="c1"># Fit the IRL model using the prepared trajectories</span>
         <span class="n">reward_weights</span> <span class="o">=</span> <span class="n">irl_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">trajectories</span><span class="p">)</span>
 
         <span class="c1"># Print and plot results</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Inferred Reward Weights:&quot;</span><span class="p">)</span>
-        <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Process Type&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="c1"># Feature names: [&#39;Process Type&#39;, &#39;Param1&#39;, &#39;Param2&#39;, ...]</span>
+        <span class="n">process_types</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Process Type&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_ranges</span><span class="p">[</span><span class="n">process_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">feature_names</span><span class="p">,</span> <span class="n">reward_weights</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">weight</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
+        <span class="c1"># Plot the inferred reward weights</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">feature_names</span><span class="p">,</span> <span class="n">reward_weights</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Inferred Reward Weights&quot;</span><span class="p">)</span>
@@ -1031,7 +1163,7 @@
 
 
 <div class="viewcode-block" id="MaxEntIRL">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL">[docs]</a>
 <span class="k">class</span> <span class="nc">MaxEntIRL</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    MaxEntIRL (Maximum Entropy Inverse Reinforcement Learning) Class</span>
@@ -1107,7 +1239,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reward_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n_features</span><span class="p">)</span>
 
 <div class="viewcode-block" id="MaxEntIRL.feature_expectations">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.feature_expectations">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.feature_expectations">[docs]</a>
     <span class="k">def</span> <span class="nf">feature_expectations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute empirical feature expectations.</span>
@@ -1126,7 +1258,7 @@
 
 
 <div class="viewcode-block" id="MaxEntIRL.compute_state_visitation_freq">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.compute_state_visitation_freq">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.compute_state_visitation_freq">[docs]</a>
     <span class="k">def</span> <span class="nf">compute_state_visitation_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute state visitation frequencies.</span>
@@ -1154,7 +1286,7 @@
 
 
 <div class="viewcode-block" id="MaxEntIRL.compute_expected_svf">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.compute_expected_svf">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.compute_expected_svf">[docs]</a>
     <span class="k">def</span> <span class="nf">compute_expected_svf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute expected state visitation frequency.</span>
@@ -1176,7 +1308,7 @@
 
 
 <div class="viewcode-block" id="MaxEntIRL.compute_gradient">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.compute_gradient">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.compute_gradient">[docs]</a>
     <span class="k">def</span> <span class="nf">compute_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feat_exp</span><span class="p">,</span> <span class="n">exp_svf</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the gradient for the optimization.</span>
@@ -1193,7 +1325,7 @@
 
 
 <div class="viewcode-block" id="MaxEntIRL.optimize_reward">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.optimize_reward">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.optimize_reward">[docs]</a>
     <span class="k">def</span> <span class="nf">optimize_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Optimize the reward function.</span>
@@ -1218,7 +1350,7 @@
 
 
 <div class="viewcode-block" id="MaxEntIRL.compute_policy">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.compute_policy">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.compute_policy">[docs]</a>
     <span class="k">def</span> <span class="nf">compute_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the policy based on current reward weights.</span>
@@ -1238,7 +1370,7 @@
 
 
 <div class="viewcode-block" id="MaxEntIRL.fit">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.fit">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.fit">[docs]</a>
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fit the IRL model to the given trajectories.</span>
@@ -1255,7 +1387,7 @@
 
 
 <div class="viewcode-block" id="MaxEntIRL.predict_reward">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.predict_reward">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.MaxEntIRL.predict_reward">[docs]</a>
     <span class="k">def</span> <span class="nf">predict_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Predict the reward for a given state.</span>
@@ -1314,7 +1446,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
 
 <div class="viewcode-block" id="utility_quadratic">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.utility_quadratic">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.utility_quadratic">[docs]</a>
 <span class="k">def</span> <span class="nf">utility_quadratic</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Quadratic utility function.</span>
@@ -1333,7 +1465,7 @@
 
 
 <div class="viewcode-block" id="utility_arctan">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.utility_arctan">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.utility_arctan">[docs]</a>
 <span class="k">def</span> <span class="nf">utility_arctan</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Arctan utility function.</span>
@@ -1350,7 +1482,7 @@
 
 
 <div class="viewcode-block" id="utility_sigmoid">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.utility_sigmoid">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.utility_sigmoid">[docs]</a>
 <span class="k">def</span> <span class="nf">utility_sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sigmoid utility function.</span>
@@ -1369,7 +1501,7 @@
 
 
 <div class="viewcode-block" id="utility_linear_threshold">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.utility_linear_threshold">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.utility_linear_threshold">[docs]</a>
 <span class="k">def</span> <span class="nf">utility_linear_threshold</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Linear threshold utility function.</span>
@@ -1388,7 +1520,7 @@
 
 
 <div class="viewcode-block" id="utility_cobb_douglas">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.utility_cobb_douglas">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.utility_cobb_douglas">[docs]</a>
 <span class="k">def</span> <span class="nf">utility_cobb_douglas</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Cobb-Douglas utility function.</span>
@@ -1407,7 +1539,7 @@
 
 
 <div class="viewcode-block" id="utility_prospect_theory">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.utility_prospect_theory">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.utility_prospect_theory">[docs]</a>
 <span class="k">def</span> <span class="nf">utility_prospect_theory</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Prospect Theory utility function.</span>
@@ -1479,7 +1611,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The utility of </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> according to the best-fitting function is: </span><span class="si">{</span><span class="n">utility</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="UtilityFunctionTester">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester">[docs]</a>
 <span class="k">class</span> <span class="nc">UtilityFunctionTester</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    UtilityFunctionTester Class</span>
@@ -1555,7 +1687,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="UtilityFunctionTester.generate_process_parameters">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.generate_process_parameters">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.generate_process_parameters">[docs]</a>
     <span class="k">def</span> <span class="nf">generate_process_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate random process parameters within specified ranges.</span>
@@ -1574,7 +1706,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionTester.simulate_process">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.simulate_process">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.simulate_process">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the stochastic process with given parameters.</span>
@@ -1591,7 +1723,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionTester.calculate_utility">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.calculate_utility">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.calculate_utility">[docs]</a>
     <span class="k">def</span> <span class="nf">calculate_utility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">utility_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">trajectory</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">utility_params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the utility of a given stochastic process instance using a utility function.</span>
@@ -1608,7 +1740,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionTester.optimize_utility_function">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.optimize_utility_function">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.optimize_utility_function">[docs]</a>
     <span class="k">def</span> <span class="nf">optimize_utility_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">utility_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">trajectory</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Optimize the parameters of a utility function for a given trajectory.</span>
@@ -1630,7 +1762,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionTester.test_utility_functions">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.test_utility_functions">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.test_utility_functions">[docs]</a>
     <span class="k">def</span> <span class="nf">test_utility_functions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Test all utility functions against a simulated process trajectory.</span>
@@ -1655,8 +1787,8 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionTester.run_tests">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.run_tests">[docs]</a>
-    <span class="k">def</span> <span class="nf">run_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_processes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.run_tests">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_processes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run tests for multiple processes in parallel.</span>
 
@@ -1677,7 +1809,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionTester.analyze_results">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.analyze_results">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.analyze_results">[docs]</a>
     <span class="k">def</span> <span class="nf">analyze_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform statistical analysis on the test results for all utility functions.</span>
@@ -1723,7 +1855,7 @@
 
 
 <div class="viewcode-block" id="UtilityFunctionTester.plot_optimal_utility_vs_process_params">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.plot_optimal_utility_vs_process_params">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.UtilityFunctionTester.plot_optimal_utility_vs_process_params">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_optimal_utility_vs_process_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the relationship between process parameters and optimal utility values.</span>
@@ -1755,25 +1887,16 @@
     <span class="kn">from</span> <span class="nn">ergodicity.process.basic</span> <span class="kn">import</span> <span class="n">BrownianMotion</span>
 
 
-<div class="viewcode-block" id="utility_power">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.utility_power">[docs]</a>
     <span class="k">def</span> <span class="nf">utility_power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">beta</span><span class="p">):</span>
-       <span class="k">return</span> <span class="n">x</span> <span class="o">**</span> <span class="n">beta</span></div>
+       <span class="k">return</span> <span class="n">x</span> <span class="o">**</span> <span class="n">beta</span>
 
 
-
-<div class="viewcode-block" id="utility_exp">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.utility_exp">[docs]</a>
     <span class="k">def</span> <span class="nf">utility_exp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="utility_log">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evaluation.utility_log">[docs]</a>
     <span class="k">def</span> <span class="nf">utility_log</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span></div>
-
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
 
 
     <span class="n">process_class</span> <span class="o">=</span> <span class="n">BrownianMotion</span>
@@ -1788,6 +1911,191 @@
     <span class="n">tester</span><span class="o">.</span><span class="n">run_tests</span><span class="p">(</span><span class="n">n_processes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
     <span class="n">tester</span><span class="o">.</span><span class="n">analyze_results</span><span class="p">()</span>
     <span class="n">tester</span><span class="o">.</span><span class="n">plot_optimal_utility_vs_process_params</span><span class="p">()</span>
+
+
+<span class="c1"># Utility functions as functions of x without parameters</span>
+<div class="viewcode-block" id="utility_power">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.utility_power">[docs]</a>
+<span class="k">def</span> <span class="nf">utility_power</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span>  <span class="c1"># Equivalent to x ** 0.5</span></div>
+
+
+<div class="viewcode-block" id="utility_exp">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.utility_exp">[docs]</a>
+<span class="k">def</span> <span class="nf">utility_exp</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>  <span class="c1"># Equivalent to alpha = 1.0</span></div>
+
+
+<div class="viewcode-block" id="utility_log">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.utility_log">[docs]</a>
+<span class="k">def</span> <span class="nf">utility_log</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>  <span class="c1"># Small constant to avoid log(0)</span></div>
+
+
+<span class="c1"># Updated utility_functions list</span>
+<span class="n">utility_functions</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Power&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="n">utility_power</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Exponential&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="n">utility_exp</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Logarithmic&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="n">utility_log</span><span class="p">},</span>
+<span class="p">]</span>
+
+<span class="c1"># Define the agent class</span>
+<div class="viewcode-block" id="AgentEvaluation">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.AgentEvaluation">[docs]</a>
+<span class="k">class</span> <span class="nc">AgentEvaluation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    AgentEvaluation Class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the AgentEvaluation with the given model.</span>
+
+<span class="sd">        :param model: Trained model for selecting processes</span>
+<span class="sd">        :type model: Model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+<div class="viewcode-block" id="AgentEvaluation.select_process">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.AgentEvaluation.select_process">[docs]</a>
+    <span class="k">def</span> <span class="nf">select_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoded_processes</span><span class="p">,</span> <span class="n">select_max</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Select a process based on the model&#39;s predictions.</span>
+
+<span class="sd">        :param encoded_processes: Encoded processes to choose from</span>
+<span class="sd">        :param select_max: Whether to select the process with the maximum score</span>
+<span class="sd">        :return: Index of the selected process</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Compute scores for each process</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">encoded_processes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">select_max</span><span class="p">:</span>
+            <span class="n">choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">choice</span></div>
+</div>
+
+
+<span class="c1"># Main function</span>
+<div class="viewcode-block" id="evaluate_utility_functions">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evaluation.evaluate_utility_functions">[docs]</a>
+<span class="k">def</span> <span class="nf">evaluate_utility_functions</span><span class="p">(</span><span class="n">utility_functions</span><span class="p">,</span> <span class="n">agent</span><span class="p">,</span> <span class="n">processes</span><span class="p">,</span> <span class="n">param_ranges</span><span class="p">,</span> <span class="n">n_process_batches</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_options</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">select_max</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Evaluate utility functions based on agent choices.</span>
+<span class="sd">    The utility functions are estimated according to the maximum likelihood of the agent&#39;s choices.</span>
+
+<span class="sd">    :param utility_functions: List of utility functions to evaluate</span>
+<span class="sd">    :rtype: List[Dict[str, float]]</span>
+<span class="sd">    :param agent: An instance of the AgentEvaluation class</span>
+<span class="sd">    :rtype agent: AgentEvaluation</span>
+<span class="sd">    :param processes: A list of process types</span>
+<span class="sd">    :rtype processes: List[Dict[str, str]]</span>
+<span class="sd">    :param param_ranges: A dictionary of parameter ranges for each process type</span>
+<span class="sd">    :rtype param_ranges: Dict[str, Dict[str, Tuple[float, float]]]</span>
+<span class="sd">    :param n_process_batches: Number of process batches to evaluate</span>
+<span class="sd">    :rtype n_process_batches: int</span>
+<span class="sd">    :param n_options: Number of process options per batch</span>
+<span class="sd">    :rtype n_options: int</span>
+<span class="sd">    :param num_instances: Number of instances used in the expected utility calculation</span>
+<span class="sd">    :rtype num_instances: int</span>
+<span class="sd">    :param select_max: Whether to select the process with the maximum expected utility or with the minimum</span>
+<span class="sd">    :rtype select_max: bool</span>
+<span class="sd">    :return: Dictionary of likelihood scores for each utility function</span>
+<span class="sd">    :rtype: Dict[str, float]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Define the process encoder</span>
+    <span class="n">process_encoder</span> <span class="o">=</span> <span class="n">ProcessEncoder</span><span class="p">()</span>
+
+    <span class="c1"># Initialize counters for utility functions</span>
+    <span class="n">utility_counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">uf</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">uf</span> <span class="ow">in</span> <span class="n">utility_functions</span><span class="p">}</span>
+
+    <span class="c1"># Total number of batches</span>
+    <span class="n">total_batches</span> <span class="o">=</span> <span class="n">n_process_batches</span>
+
+    <span class="k">for</span> <span class="n">batch_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_process_batches</span><span class="p">):</span>
+        <span class="c1"># For each batch, generate n_options processes</span>
+        <span class="n">process_options</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">option_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_options</span><span class="p">):</span>
+            <span class="c1"># Randomly select a process type</span>
+            <span class="n">process_info</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">processes</span><span class="p">)</span>
+            <span class="n">process_type</span> <span class="o">=</span> <span class="n">process_info</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+            <span class="n">process_class</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">process_type</span><span class="p">]</span>
+            <span class="c1"># Randomly select parameters within specified ranges</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span> <span class="ow">in</span> <span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+            <span class="c1"># Create process instance</span>
+            <span class="n">process</span> <span class="o">=</span> <span class="n">process_class</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+            <span class="c1"># Simulate the process to get final values x</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="n">num_instances</span><span class="p">)</span>
+            <span class="n">times</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">separate</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="c1"># Get final values</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># x = np.maximum(x, 0.001)  # Ensure x is positive</span>
+            <span class="c1"># Store the process data</span>
+            <span class="n">process_data</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;process&#39;</span><span class="p">:</span> <span class="n">process</span><span class="p">,</span>
+                <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x</span>
+            <span class="p">}</span>
+            <span class="n">process_options</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">process_data</span><span class="p">)</span>
+
+        <span class="c1"># Encode the processes using ProcessEncoder</span>
+        <span class="n">encoded_processes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">process_data</span> <span class="ow">in</span> <span class="n">process_options</span><span class="p">:</span>
+            <span class="n">process</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">[</span><span class="s1">&#39;process&#39;</span><span class="p">]</span>
+            <span class="n">encoded_process</span> <span class="o">=</span> <span class="n">process_encoder</span><span class="o">.</span><span class="n">encode_process_with_time</span><span class="p">(</span><span class="n">process</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">encoded_processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">encoded_process</span><span class="p">)</span>
+        <span class="n">encoded_processes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">encoded_processes</span><span class="p">)</span>
+
+        <span class="c1"># The agent makes its choice</span>
+        <span class="n">agent_choice</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">select_process</span><span class="p">(</span><span class="n">encoded_processes</span><span class="p">,</span> <span class="n">select_max</span><span class="o">=</span><span class="n">select_max</span><span class="p">)</span>
+
+        <span class="c1"># For each utility function, compute expected utilities and determine the process with the highest expected utility</span>
+        <span class="k">for</span> <span class="n">uf</span> <span class="ow">in</span> <span class="n">utility_functions</span><span class="p">:</span>
+            <span class="n">expected_utilities</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">p_data</span> <span class="ow">in</span> <span class="n">process_options</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">p_data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+                <span class="n">u_x</span> <span class="o">=</span> <span class="n">uf</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+                <span class="n">expected_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">u_x</span><span class="p">)</span>
+                <span class="n">expected_utilities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">expected_u</span><span class="p">)</span>
+            <span class="c1"># Determine the process with the maximum expected utility</span>
+            <span class="k">if</span> <span class="n">select_max</span><span class="p">:</span>
+                <span class="n">utility_choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">expected_utilities</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">utility_choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">expected_utilities</span><span class="p">)</span>
+            <span class="c1"># Compare with agent&#39;s choice</span>
+            <span class="k">if</span> <span class="n">utility_choice</span> <span class="o">==</span> <span class="n">agent_choice</span><span class="p">:</span>
+                <span class="n">utility_counts</span><span class="p">[</span><span class="n">uf</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># After all batches, calculate likelihood scores</span>
+    <span class="n">likelihood_scores</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">uf</span> <span class="ow">in</span> <span class="n">utility_functions</span><span class="p">:</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">utility_counts</span><span class="p">[</span><span class="n">uf</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span>
+        <span class="n">likelihood</span> <span class="o">=</span> <span class="n">count</span> <span class="o">/</span> <span class="n">total_batches</span>
+        <span class="n">likelihood_scores</span><span class="p">[</span><span class="n">uf</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">likelihood</span>
+
+    <span class="c1"># Return the likelihood scores</span>
+    <span class="k">return</span> <span class="n">likelihood_scores</span></div>
+
+
+<span class="c1"># Example usage</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Instantiate the agent</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">AgentEvaluation</span><span class="p">()</span>
+
+    <span class="c1"># Evaluate utility functions</span>
+    <span class="n">likelihood_scores</span> <span class="o">=</span> <span class="n">evaluate_utility_functions</span><span class="p">(</span>
+        <span class="n">utility_functions</span><span class="o">=</span><span class="n">utility_functions</span><span class="p">,</span>
+        <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
+        <span class="n">n_process_batches</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+        <span class="n">n_options</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">num_instances</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">select_max</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Print the likelihood scores</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Likelihood scores for each utility function:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">likelihood_scores</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 
           </div>

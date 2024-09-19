@@ -89,10 +89,12 @@
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">linregress</span>
 <span class="kn">import</span> <span class="nn">pywt</span>
 <span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">stats</span>
+<span class="kn">from</span> <span class="nn">ergodicity.tools.helper</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ergodicity.tools.compute</span> <span class="kn">import</span> <span class="n">relative_increments</span> <span class="k">as</span> <span class="n">ri</span>
 
 <div class="viewcode-block" id="test_ergodicity_increments">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.test_ergodicity_increments">[docs]</a>
-<span class="k">def</span> <span class="nf">test_ergodicity_increments</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.test_ergodicity_increments">[docs]</a>
+<span class="k">def</span> <span class="nf">test_ergodicity_increments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">relative_increments</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Test the ergodicity of a stochastic process based on its increments.</span>
 
@@ -103,13 +105,16 @@
 <span class="sd">    :return: Dictionary containing test results and metrics</span>
 <span class="sd">    :rtype: dict</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">times</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">process_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">times</span><span class="p">,</span> <span class="n">process_data</span> <span class="o">=</span> <span class="n">separate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">relative_increments</span><span class="p">:</span>
+        <span class="n">increments</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">process_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">increments</span> <span class="o">=</span> <span class="n">ri</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">times</span><span class="p">,</span> <span class="n">increments</span> <span class="o">=</span> <span class="n">separate</span><span class="p">(</span><span class="n">increments</span><span class="p">)</span>
+
     <span class="n">num_instances</span><span class="p">,</span> <span class="n">num_time_steps</span> <span class="o">=</span> <span class="n">process_data</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">dt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">num_time_steps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="c1"># Calculate increments</span>
-    <span class="n">increments</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">process_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -119,6 +124,8 @@
     <span class="n">results</span><span class="p">[</span><span class="s1">&#39;increments_stationary&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;stationarity_p_values&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">0.05</span>
 
     <span class="c1"># 2. Calculate time averages</span>
+    <span class="k">if</span> <span class="n">relative_increments</span><span class="p">:</span>
+        <span class="n">process_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">process_data</span><span class="p">)</span>
     <span class="n">time_averages</span> <span class="o">=</span> <span class="p">(</span><span class="n">process_data</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">process_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">num_time_steps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">time_averages_per_unit</span> <span class="o">=</span> <span class="n">time_averages</span> <span class="o">/</span> <span class="n">dt</span>
 
@@ -143,7 +150,7 @@
 
 
 <div class="viewcode-block" id="plot_ergodicity_results">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.plot_ergodicity_results">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.plot_ergodicity_results">[docs]</a>
 <span class="k">def</span> <span class="nf">plot_ergodicity_results</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot visualizations to help assess ergodicity of increments.</span>
@@ -220,87 +227,73 @@
     <span class="c1"># Plot results</span>
     <span class="n">plot_ergodicity_results</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
 
-<div class="viewcode-block" id="hurst_exponent">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.hurst_exponent">[docs]</a>
-<span class="k">def</span> <span class="nf">hurst_exponent</span><span class="p">(</span><span class="n">time_series</span><span class="p">):</span>
+
+<div class="viewcode-block" id="detrended_fluctuation_analysis">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.detrended_fluctuation_analysis">[docs]</a>
+<span class="k">def</span> <span class="nf">detrended_fluctuation_analysis</span><span class="p">(</span><span class="n">time_series</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Estimate the Hurst exponent using the rescaled range (R/S) method.</span>
+<span class="sd">    Estimate the Hurst exponent using Detrended Fluctuation Analysis (DFA).</span>
 
 <span class="sd">    :param time_series: The time series to analyze</span>
 <span class="sd">    :type time_series: array_like</span>
 <span class="sd">    :return: Estimated Hurst exponent</span>
 <span class="sd">    :rtype: float</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+    <span class="c1"># Cumulative sum of deviations from the mean</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">time_series</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">time_series</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">rs</span><span class="p">(</span><span class="n">ts</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate rescaled range.&quot;&quot;&quot;</span>
-        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
-        <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">ts</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">r</span> <span class="o">/</span> <span class="n">std</span> <span class="k">if</span> <span class="n">std</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="c1"># Define scales (window sizes)</span>
+    <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">N</span> <span class="o">//</span> <span class="mi">4</span><span class="p">),</span> <span class="n">num</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
 
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
-    <span class="n">taus</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>  <span class="c1"># Different time scales</span>
-    <span class="n">taus</span> <span class="o">=</span> <span class="p">[</span><span class="n">tau</span> <span class="k">for</span> <span class="n">tau</span> <span class="ow">in</span> <span class="n">taus</span> <span class="k">if</span> <span class="n">tau</span> <span class="o">&lt;=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">flucts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">scale</span> <span class="ow">in</span> <span class="n">scales</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">scale</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># Number of non-overlapping windows</span>
+        <span class="n">n_windows</span> <span class="o">=</span> <span class="n">N</span> <span class="o">//</span> <span class="n">scale</span>
+        <span class="k">if</span> <span class="n">n_windows</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">F_nu</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_windows</span><span class="p">):</span>
+            <span class="n">segment</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">scale</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span><span class="p">]</span>
+            <span class="c1"># Fit a polynomial of order 1 (linear detrending)</span>
+            <span class="n">coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">scale</span><span class="p">),</span> <span class="n">segment</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">scale</span><span class="p">))</span>
+            <span class="c1"># Calculate the fluctuation (standard deviation) after detrending</span>
+            <span class="n">F_nu</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">segment</span> <span class="o">-</span> <span class="n">fit</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+        <span class="c1"># Average fluctuation over all segments of this scale</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">F_nu</span><span class="p">)</span>
+        <span class="n">flucts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">scale</span><span class="p">,</span> <span class="n">F</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">taus</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">flucts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-    <span class="n">rs_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">rs</span><span class="p">(</span><span class="n">time_series</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">tau</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="n">tau</span><span class="p">,</span> <span class="n">tau</span><span class="p">)])</span>
-                 <span class="k">for</span> <span class="n">tau</span> <span class="ow">in</span> <span class="n">taus</span><span class="p">]</span>
-
-    <span class="n">hurst</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">taus</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">rs_values</span><span class="p">))</span>
+    <span class="n">scales</span><span class="p">,</span> <span class="n">Fs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">flucts</span><span class="p">)</span>
+    <span class="n">log_scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+    <span class="n">log_Fs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Fs</span><span class="p">)</span>
+    <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">r_value</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">std_err</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">log_scales</span><span class="p">,</span> <span class="n">log_Fs</span><span class="p">)</span>
+    <span class="n">hurst</span> <span class="o">=</span> <span class="n">slope</span><span class="o">-</span><span class="mi">1</span>
     <span class="k">return</span> <span class="n">hurst</span></div>
 
 
 
-<div class="viewcode-block" id="aggregate_variance">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.aggregate_variance">[docs]</a>
-<span class="k">def</span> <span class="nf">aggregate_variance</span><span class="p">(</span><span class="n">time_series</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Estimate the scaling parameter using the aggregate variance method.</span>
-
-<span class="sd">    :param time_series: The time series to analyze</span>
-<span class="sd">    :type time_series: array_like</span>
-<span class="sd">    :return: Estimated scaling parameter</span>
-<span class="sd">    :rtype: float</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
-    <span class="n">max_m</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">4</span>  <span class="c1"># Maximum aggregation level</span>
-
-    <span class="n">m_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">max_m</span><span class="p">),</span> <span class="n">num</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-    <span class="n">var_values</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">m_values</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="n">aggregated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">time_series</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">var_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">aggregated</span><span class="p">))</span>
-
-    <span class="n">slope</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">m_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">var_values</span><span class="p">))</span>
-    <span class="k">return</span> <span class="o">-</span><span class="n">slope</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># The slope is -2H, so H = -slope/2</span></div>
-
-
-
 <div class="viewcode-block" id="test_self_similarity">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.test_self_similarity">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.test_self_similarity">[docs]</a>
 <span class="k">def</span> <span class="nf">test_self_similarity</span><span class="p">(</span><span class="n">time_series</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Test the self-similarity of a given time series.</span>
 
 <span class="sd">    :param time_series: The time series to analyze</span>
 <span class="sd">    :type time_series: array_like</span>
-<span class="sd">    :return: Dictionary containing the estimated Hurst exponent and scaling parameter</span>
+<span class="sd">    :return: Dictionary containing the estimated Hurst exponents</span>
 <span class="sd">    :rtype: dict</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">hurst</span> <span class="o">=</span> <span class="n">hurst_exponent</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
-    <span class="n">scaling_param</span> <span class="o">=</span> <span class="n">aggregate_variance</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
+    <span class="n">hurst_dfa</span> <span class="o">=</span> <span class="n">detrended_fluctuation_analysis</span><span class="p">(</span><span class="n">time_series</span><span class="p">)</span>
 
     <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;Hurst Exponent&quot;</span><span class="p">:</span> <span class="n">hurst</span><span class="p">,</span>
-        <span class="s2">&quot;Scaling Parameter (Aggregate Variance)&quot;</span><span class="p">:</span> <span class="n">scaling_param</span><span class="p">,</span>
-        <span class="s2">&quot;Estimated Alpha&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">scaling_param</span> <span class="k">if</span> <span class="n">scaling_param</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="s2">&quot;Hurst Exponent (DFA)&quot;</span><span class="p">:</span> <span class="n">hurst_dfa</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">return</span> <span class="n">results</span></div>
@@ -342,7 +335,7 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 <div class="viewcode-block" id="wavelet_estimation">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.wavelet_estimation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.wavelet_estimation">[docs]</a>
 <span class="k">def</span> <span class="nf">wavelet_estimation</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">wavelet</span><span class="o">=</span><span class="s1">&#39;db4&#39;</span><span class="p">,</span> <span class="n">max_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Estimate the Hurst exponent using wavelet-based method.</span>
@@ -375,14 +368,14 @@
     <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">r_value</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">std_err</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">variances</span><span class="p">))</span>
 
     <span class="c1"># The Hurst exponent is related to the slope</span>
-    <span class="n">H</span> <span class="o">=</span> <span class="p">(</span><span class="n">slope</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">slope</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
     <span class="k">return</span> <span class="n">H</span></div>
 
 
 
 <div class="viewcode-block" id="test_self_similarity_wavelet">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.test_self_similarity_wavelet">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.test_self_similarity_wavelet">[docs]</a>
 <span class="k">def</span> <span class="nf">test_self_similarity_wavelet</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">wavelet</span><span class="o">=</span><span class="s1">&#39;db4&#39;</span><span class="p">,</span> <span class="n">max_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Test the self-similarity of a given time series using wavelet-based method.</span>
@@ -408,7 +401,7 @@
 
 
 <div class="viewcode-block" id="plot_wavelet_analysis">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.plot_wavelet_analysis">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.plot_wavelet_analysis">[docs]</a>
 <span class="k">def</span> <span class="nf">plot_wavelet_analysis</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="n">wavelet</span><span class="o">=</span><span class="s1">&#39;db4&#39;</span><span class="p">,</span> <span class="n">max_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform wavelet analysis and plot the results.</span>
@@ -432,7 +425,7 @@
     <span class="n">scales</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span> <span class="o">**</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">variances</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
 
     <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">r_value</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">std_err</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">variances</span><span class="p">))</span>
-    <span class="n">H</span> <span class="o">=</span> <span class="p">(</span><span class="n">slope</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">slope</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">scales</span><span class="p">,</span> <span class="n">variances</span><span class="p">,</span> <span class="s1">&#39;bo-&#39;</span><span class="p">)</span>
@@ -485,7 +478,7 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 <div class="viewcode-block" id="kurtosis_test">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.kurtosis_test">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.kurtosis_test">[docs]</a>
 <span class="k">def</span> <span class="nf">kurtosis_test</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Test for fat-tailedness using excess kurtosis.</span>
@@ -504,7 +497,7 @@
 
 
 <div class="viewcode-block" id="jarque_bera_test">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.jarque_bera_test">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.jarque_bera_test">[docs]</a>
 <span class="k">def</span> <span class="nf">jarque_bera_test</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform Jarque-Bera test for normality.</span>
@@ -524,7 +517,7 @@
 
 
 <div class="viewcode-block" id="tail_index_hill">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.tail_index_hill">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.tail_index_hill">[docs]</a>
 <span class="k">def</span> <span class="nf">tail_index_hill</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tail_fraction</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Estimate the tail index using Hill estimator.</span>
@@ -548,7 +541,7 @@
 
 
 <div class="viewcode-block" id="qqplot_analysis">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.qqplot_analysis">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.qqplot_analysis">[docs]</a>
 <span class="k">def</span> <span class="nf">qqplot_analysis</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform Q-Q plot analysis against normal distribution.</span>
@@ -566,7 +559,7 @@
 
 
 <div class="viewcode-block" id="test_fat_tailedness">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.evaluate.test_fat_tailedness">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.evaluate.test_fat_tailedness">[docs]</a>
 <span class="k">def</span> <span class="nf">test_fat_tailedness</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform a comprehensive test for fat-tailedness.</span>

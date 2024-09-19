@@ -75,23 +75,20 @@
 
 <span class="sd">Each simulation function is decorated to handle time stepping, data storage, and optional plotting.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="c1"># here we will put selected processes used in finance etc.</span>
 <span class="kn">import</span> <span class="nn">ergodicity.process.definitions</span> <span class="k">as</span> <span class="nn">definitions</span>
-<span class="kn">from</span> <span class="nn">ergodicity.process.increments</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">ergodicity.process.increments</span> <span class="kn">import</span> <span class="n">dL_1</span>
-<span class="kn">from</span> <span class="nn">ergodicity.process.default_values</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ergodicity.process.increments</span> <span class="kn">import</span> <span class="n">WP</span><span class="p">,</span> <span class="n">LP15</span><span class="p">,</span> <span class="n">LP05</span><span class="p">,</span> <span class="n">LP15</span><span class="p">,</span> <span class="n">LPL</span><span class="p">,</span> <span class="n">LPC</span>
 <span class="kn">from</span> <span class="nn">ergodicity.configurations</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">ergodicity.process.definitions</span> <span class="kn">import</span> <span class="n">simulation_decorator</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">ergodicity.tools.helper</span> <span class="kn">import</span> <span class="n">plot</span>
 <span class="kn">from</span> <span class="nn">ergodicity.tools.helper</span> <span class="kn">import</span> <span class="n">plot_system</span>
+<span class="kn">from</span> <span class="nn">ergodicity.configurations</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;timestep&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s1">&#39;num_instances&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;save&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;timestep&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s1">&#39;num_instances&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;save&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 
 <div class="viewcode-block" id="custom_simulate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.custom_simulate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.custom_simulate">[docs]</a>
 <span class="k">def</span> <span class="nf">custom_simulate</span><span class="p">(</span><span class="n">simulate_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decorator for individual simulation functions. Handles time stepping, data storage, and optional plotting.</span>
@@ -132,14 +129,15 @@
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulating instance </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, X = </span><span class="si">{</span><span class="n">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">times</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">data</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;save&#39;</span><span class="p">],</span> <span class="n">plot</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">lib_plot</span><span class="p">:</span>
+            <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;save&#39;</span><span class="p">],</span> <span class="n">plot</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">data</span>
 
     <span class="k">return</span> <span class="n">wrapper</span></div>
 
 
 <div class="viewcode-block" id="custom_simulate_system">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.custom_simulate_system">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.custom_simulate_system">[docs]</a>
 <span class="k">def</span> <span class="nf">custom_simulate_system</span><span class="p">(</span><span class="n">simulate_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decorator for system simulation functions. Handles time stepping, data storage, and optional plotting.</span>
@@ -194,7 +192,7 @@
 
 
 <div class="viewcode-block" id="TestSystemSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.TestSystemSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.TestSystemSimulation">[docs]</a>
 <span class="nd">@custom_simulate_system</span>
 <span class="k">def</span> <span class="nf">TestSystemSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -230,7 +228,7 @@
 
 
 <div class="viewcode-block" id="LotkaVolterraSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.LotkaVolterraSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.LotkaVolterraSimulation">[docs]</a>
 <span class="nd">@custom_simulate_system</span>
 <span class="k">def</span> <span class="nf">LotkaVolterraSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -267,7 +265,7 @@
 
 
 <div class="viewcode-block" id="OrnsteinUhlenbeckSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.OrnsteinUhlenbeckSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.OrnsteinUhlenbeckSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">OrnsteinUhlenbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -290,7 +288,7 @@
 
 
 <div class="viewcode-block" id="GeneralizedDiffusionSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.GeneralizedDiffusionSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.GeneralizedDiffusionSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">GeneralizedDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -317,7 +315,7 @@
 
 
 <div class="viewcode-block" id="ConstantElasticityOfVarianceSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.ConstantElasticityOfVarianceSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.ConstantElasticityOfVarianceSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">ConstantElasticityOfVarianceSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -344,7 +342,7 @@
 
 
 <div class="viewcode-block" id="CoxIngersollRossSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.CoxIngersollRossSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.CoxIngersollRossSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">CoxIngersollRossSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">X_mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -375,7 +373,7 @@
 
 
 <div class="viewcode-block" id="VasicekSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.VasicekSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.VasicekSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">VasicekSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -400,7 +398,7 @@
 
 
 <div class="viewcode-block" id="CauchyOrnsteinUlehnbeckSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.CauchyOrnsteinUlehnbeckSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.CauchyOrnsteinUlehnbeckSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">CauchyOrnsteinUlehnbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -425,7 +423,7 @@
 
 
 <div class="viewcode-block" id="LevyStableOrnsteinUlehnbeckSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.LevyStableOrnsteinUlehnbeckSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.LevyStableOrnsteinUlehnbeckSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">LevyStableOrnsteinUlehnbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -450,7 +448,7 @@
 
 
 <div class="viewcode-block" id="Levy05OrnsteinUlehnbeckSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.Levy05OrnsteinUlehnbeckSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.Levy05OrnsteinUlehnbeckSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">Levy05OrnsteinUlehnbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -475,7 +473,7 @@
 
 
 <div class="viewcode-block" id="Levy15OrnsteinUlehnbeckSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.Levy15OrnsteinUlehnbeckSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.Levy15OrnsteinUlehnbeckSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">Levy15OrnsteinUlehnbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -500,7 +498,7 @@
 
 
 <div class="viewcode-block" id="GeometricBrownianMotionSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.GeometricBrownianMotionSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.GeometricBrownianMotionSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">GeometricBrownianMotionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -523,7 +521,7 @@
 
 
 <div class="viewcode-block" id="HestonSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.HestonSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.HestonSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">HestonSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">v0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">kappa</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">xi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.7</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -557,7 +555,7 @@
 
 
 <div class="viewcode-block" id="JumpDiffusionSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.JumpDiffusionSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.JumpDiffusionSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">JumpDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">jump_intensity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">jump_mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">jump_std</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -587,7 +585,7 @@
 
 
 <div class="viewcode-block" id="MeanRevertingSquareRootDiffusionSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.MeanRevertingSquareRootDiffusionSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.MeanRevertingSquareRootDiffusionSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">MeanRevertingSquareRootDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -612,7 +610,7 @@
 
 
 <div class="viewcode-block" id="StochasticVolatilityModelSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.StochasticVolatilityModelSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.StochasticVolatilityModelSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">StochasticVolatilityModelSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">v0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">kappa</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">xi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.7</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -648,7 +646,7 @@
 
 
 <div class="viewcode-block" id="GeometricOrnsteinUhlenbeckSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.GeometricOrnsteinUhlenbeckSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.GeometricOrnsteinUhlenbeckSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">GeometricOrnsteinUhlenbeckSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -673,7 +671,7 @@
 
 
 <div class="viewcode-block" id="HullWhiteSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.HullWhiteSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.HullWhiteSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">HullWhiteSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -698,7 +696,7 @@
 
 
 <div class="viewcode-block" id="VarianceGammaSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.VarianceGammaSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.VarianceGammaSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">VarianceGammaSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">nu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -724,7 +722,7 @@
 
 
 <div class="viewcode-block" id="KouJumpDiffusionSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.KouJumpDiffusionSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.KouJumpDiffusionSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">KouJumpDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">lambda_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">lambda_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">eta1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">eta2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -759,7 +757,7 @@
 
 
 <div class="viewcode-block" id="DoubleExponentialJumpDiffusionSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.DoubleExponentialJumpDiffusionSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.DoubleExponentialJumpDiffusionSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">DoubleExponentialJumpDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">lambda_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">lambda_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">eta1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">eta2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -794,7 +792,7 @@
 
 
 <div class="viewcode-block" id="SubordinatorSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.SubordinatorSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.SubordinatorSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">SubordinatorSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -819,7 +817,7 @@
 
 
 <div class="viewcode-block" id="StochasticAlphaBetaRhoSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.StochasticAlphaBetaRhoSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.StochasticAlphaBetaRhoSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">StochasticAlphaBetaRhoSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -847,7 +845,7 @@
 
 
 <div class="viewcode-block" id="MertonJumpDiffusionSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.MertonJumpDiffusionSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.MertonJumpDiffusionSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">MertonJumpDiffusionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -880,7 +878,7 @@
 <span class="kn">from</span> <span class="nn">ergodicity.process.basic</span> <span class="kn">import</span> <span class="n">StandardFractionalBrownianMotion</span>
 
 <div class="viewcode-block" id="FractionalBrownianMotionSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.FractionalBrownianMotionSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.FractionalBrownianMotionSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">FractionalBrownianMotionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">hurst</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -904,7 +902,7 @@
 
 
 <div class="viewcode-block" id="GeometricFractionalBrownianMotionSimulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.lib.GeometricFractionalBrownianMotionSimulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.lib.GeometricFractionalBrownianMotionSimulation">[docs]</a>
 <span class="nd">@custom_simulate</span>
 <span class="k">def</span> <span class="nf">GeometricFractionalBrownianMotionSimulation</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">hurst</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>

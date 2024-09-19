@@ -114,7 +114,7 @@
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
 
 <div class="viewcode-block" id="AgentPool">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool">[docs]</a>
 <span class="k">class</span> <span class="nc">AgentPool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    AgentPool represents a collection of agents participating in a wealth dynamics simulation.</span>
@@ -175,7 +175,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">wealth</span><span class="o">.</span><span class="n">copy</span><span class="p">()]</span>
 
 <div class="viewcode-block" id="AgentPool.simulate">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.simulate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.simulate">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dynamic_s</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run the wealth dynamics simulation for the specified time horizon.</span>
@@ -216,7 +216,7 @@
             <span class="c1"># return self.history</span>
 
 <div class="viewcode-block" id="AgentPool.save_data">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.save_data">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.save_data">[docs]</a>
     <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save the wealth history data to a file.</span>
@@ -230,7 +230,7 @@
 
 
 <div class="viewcode-block" id="AgentPool.plot">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.plot">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.plot">[docs]</a>
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize the wealth dynamics of all agents over time.</span>
@@ -259,7 +259,7 @@
 
 
 <div class="viewcode-block" id="AgentPool.mean_logarithmic_deviation">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.mean_logarithmic_deviation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.mean_logarithmic_deviation">[docs]</a>
     <span class="k">def</span> <span class="nf">mean_logarithmic_deviation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Mean Logarithmic Deviation (MLD) for each time step.</span>
@@ -274,7 +274,7 @@
 
 
 <div class="viewcode-block" id="AgentPool.coefficient_of_variation">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.coefficient_of_variation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.coefficient_of_variation">[docs]</a>
     <span class="k">def</span> <span class="nf">coefficient_of_variation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Coefficient of Variation for each time step.</span>
@@ -288,7 +288,7 @@
 
 
 <div class="viewcode-block" id="AgentPool.palma_ratio">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.palma_ratio">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.palma_ratio">[docs]</a>
     <span class="k">def</span> <span class="nf">palma_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Palma ratio for each time step.</span>
@@ -309,7 +309,7 @@
 
 
 <div class="viewcode-block" id="AgentPool.gini_coefficient">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.gini_coefficient">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.gini_coefficient">[docs]</a>
     <span class="k">def</span> <span class="nf">gini_coefficient</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Gini coefficient for each time step.</span>
@@ -329,7 +329,7 @@
 
 
 <div class="viewcode-block" id="AgentPool.plot_inequality_measures">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.plot_inequality_measures">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.plot_inequality_measures">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_inequality_measures</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot all implemented inequality measures over time.</span>
@@ -361,7 +361,7 @@
 
 
 <div class="viewcode-block" id="AgentPool.save_and_plot_wealth_distribution">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.save_and_plot_wealth_distribution">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.AgentPool.save_and_plot_wealth_distribution">[docs]</a>
     <span class="k">def</span> <span class="nf">save_and_plot_wealth_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename_prefix</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save and plot the final wealth distribution in normal and log-log scales.</span>
@@ -386,23 +386,29 @@
         <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">)</span>
 
         <span class="c1"># Log-log scale histogram</span>
-        <span class="n">wealth_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">final_wealth</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">final_wealth</span><span class="p">)),</span> <span class="n">num</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
-        <span class="n">hist</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">final_wealth</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">wealth_range</span><span class="p">)</span>
+        <span class="n">final_wealth_nonzero</span> <span class="o">=</span> <span class="n">final_wealth</span><span class="p">[</span><span class="n">final_wealth</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">wealth_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">final_wealth_nonzero</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">final_wealth_nonzero</span><span class="p">)),</span> <span class="n">num</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+        <span class="n">hist</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">final_wealth_nonzero</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">wealth_range</span><span class="p">)</span>
         <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">bins</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
 
+        <span class="c1"># Remove zero counts for log-log fit</span>
+        <span class="n">nonzero</span> <span class="o">=</span> <span class="n">hist</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">log_center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="n">nonzero</span><span class="p">])</span>
+        <span class="n">log_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="n">nonzero</span><span class="p">])</span>
+
+        <span class="c1"># Linear regression in log-log space</span>
+        <span class="n">fit</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">linregress</span><span class="p">(</span><span class="n">log_center</span><span class="p">,</span> <span class="n">log_hist</span><span class="p">)</span>
+
+        <span class="c1"># Compute the fitted power-law line</span>
+        <span class="n">x_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="n">nonzero</span><span class="p">])),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="n">nonzero</span><span class="p">])),</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">y_fit</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">intercept</span> <span class="o">+</span> <span class="n">fit</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">x_fit</span><span class="p">))</span>
+
+        <span class="c1"># Plotting</span>
         <span class="n">ax2</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="s1">&#39;k.&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="c1"># ax2.plot(x_fit, y_fit, &#39;r-&#39;, label=f&#39;Power Law Fit (α ≈ {fit.slope:.2f})&#39;)</span>
         <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Wealth Distribution (Log-Log Scale)&#39;</span><span class="p">)</span>
         <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Wealth (log scale)&#39;</span><span class="p">)</span>
         <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Frequency (log scale)&#39;</span><span class="p">)</span>
-
-        <span class="c1"># Filter out zero values for log-log fit</span>
-        <span class="n">nonzero_wealth</span> <span class="o">=</span> <span class="n">final_wealth</span><span class="p">[</span><span class="n">final_wealth</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
-        <span class="n">fit</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">linregress</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">nonzero_wealth</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nonzero_wealth</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
-
-        <span class="n">x_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">nonzero_wealth</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">nonzero_wealth</span><span class="p">)),</span> <span class="mi">100</span><span class="p">)</span>
-        <span class="n">y_fit</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">intercept</span> <span class="o">+</span> <span class="n">fit</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">x_fit</span><span class="p">))</span>
-
-        <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_fit</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">,</span> <span class="s1">&#39;r-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Power Law Fit (α ≈ </span><span class="si">{</span><span class="o">-</span><span class="n">fit</span><span class="o">.</span><span class="n">slope</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
         <span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 
         <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -415,11 +421,16 @@
 
 
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
+
+
 <div class="viewcode-block" id="plot_wealth_3d">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.agent_pool.plot_wealth_3d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.agent_pool.plot_wealth_3d">[docs]</a>
 <span class="k">def</span> <span class="nf">plot_wealth_3d</span><span class="p">(</span><span class="n">process</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">simulation_timestep</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">s_range</span><span class="p">,</span> <span class="n">n_range</span><span class="p">,</span> <span class="n">save_html</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Plot a 3D graph of total wealth as a function of sharing rate s and number of agents n.</span>
+<span class="sd">    Plot a 3D graph of average wealth as a function of sharing rate s and number of agents n.</span>
 
 <span class="sd">    :param process: The stochastic process to use (e.g., GeometricBrownianMotion instance)</span>
 <span class="sd">    :type process: StochasticProcess</span>
@@ -441,24 +452,24 @@
 <span class="sd">    :rtype: None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">s_values</span><span class="p">,</span> <span class="n">n_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">s_range</span><span class="p">,</span> <span class="n">n_range</span><span class="p">)</span>
-    <span class="n">total_wealth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">s_values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">average_wealth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">s_values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">n_range</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s_range</span><span class="p">):</span>
             <span class="n">pool</span> <span class="o">=</span> <span class="n">AgentPool</span><span class="p">(</span><span class="n">process</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">simulation_timestep</span><span class="p">,</span> <span class="n">timestep</span><span class="p">)</span>
             <span class="n">pool</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">dynamic_s</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="n">total_wealth</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">wealth</span><span class="p">)</span>
+            <span class="n">average_wealth</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">wealth</span><span class="p">)</span>
 
     <span class="c1"># Create static 3D plot using Matplotlib</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
 
-    <span class="n">surf</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot_surface</span><span class="p">(</span><span class="n">s_values</span><span class="p">,</span> <span class="n">n_values</span><span class="p">,</span> <span class="n">total_wealth</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+    <span class="n">surf</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot_surface</span><span class="p">(</span><span class="n">s_values</span><span class="p">,</span> <span class="n">n_values</span><span class="p">,</span> <span class="n">average_wealth</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Sharing Rate (s)&#39;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Number of Agents (n)&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Total Wealth&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Total Wealth as a Function of Sharing Rate and Number of Agents&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Average Wealth&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Average Wealth as a Function of Sharing Rate and Number of Agents&#39;</span><span class="p">)</span>
 
     <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">surf</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 
@@ -466,17 +477,17 @@
 
     <span class="c1"># Create and save interactive 3D plot using Plotly</span>
     <span class="k">if</span> <span class="n">save_html</span><span class="p">:</span>
-        <span class="n">fig_plotly</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">go</span><span class="o">.</span><span class="n">Surface</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="n">total_wealth</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">s_values</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">n_values</span><span class="p">)])</span>
+        <span class="n">fig_plotly</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">go</span><span class="o">.</span><span class="n">Surface</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="n">average_wealth</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">s_values</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">n_values</span><span class="p">)])</span>
         <span class="n">fig_plotly</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
-            <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Total Wealth as a Function of Sharing Rate and Number of Agents&#39;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Average Wealth as a Function of Sharing Rate and Number of Agents&#39;</span><span class="p">,</span>
             <span class="n">scene</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
                 <span class="n">xaxis_title</span><span class="o">=</span><span class="s1">&#39;Sharing Rate (s)&#39;</span><span class="p">,</span>
                 <span class="n">yaxis_title</span><span class="o">=</span><span class="s1">&#39;Number of Agents (n)&#39;</span><span class="p">,</span>
-                <span class="n">zaxis_title</span><span class="o">=</span><span class="s1">&#39;Total Wealth&#39;</span>
+                <span class="n">zaxis_title</span><span class="o">=</span><span class="s1">&#39;Average Wealth&#39;</span>
             <span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="n">html_filename</span> <span class="o">=</span> <span class="s1">&#39;total_wealth_3d_plot.html&#39;</span>
+        <span class="n">html_filename</span> <span class="o">=</span> <span class="s1">&#39;average_wealth_3d_plot.html&#39;</span>
         <span class="n">fig_plotly</span><span class="o">.</span><span class="n">write_html</span><span class="p">(</span><span class="n">html_filename</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;3D interactive graph saved as </span><span class="si">{</span><span class="n">html_filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 

@@ -113,10 +113,13 @@
 <span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">ergodicity.custom_warnings</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..tools.helper</span> <span class="kn">import</span> <span class="n">covariance_to_correlation</span>
+
 
 <div class="viewcode-block" id="EmptyProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.EmptyProcess">[docs]</a>
-<span class="k">class</span> <span class="nc">EmptyProcess</span><span class="p">(</span><span class="n">Process</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.EmptyProcess">[docs]</a>
+<span class="k">class</span> <span class="nc">EmptyProcess</span><span class="p">(</span><span class="n">ItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A process that is always zero or one.</span>
 <span class="sd">    It may be used as a placeholder, for testing purposes, or often in the agents module as a null-action.</span>
@@ -136,14 +139,16 @@
 <span class="sd">        :type zero_or_one: float</span>
 <span class="sd">        :raises ValueError: If zero_or_one is not 0 or 1</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drift_term</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stochastic_term</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;empty&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">zero_or_one</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;zero_or_one must be 0 or 1.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_zero_or_one</span> <span class="o">=</span> <span class="n">zero_or_one</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_independent</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_multiplicative</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="EmptyProcess.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.EmptyProcess.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.EmptyProcess.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Custom increment function for the process.</span>
@@ -159,7 +164,7 @@
 
 
 <div class="viewcode-block" id="EmptyProcess.simulate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.EmptyProcess.simulate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.EmptyProcess.simulate">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the process.</span>
@@ -186,7 +191,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">BesselProcess</span> <span class="k">as</span> <span class="n">StochasticBesselProcess</span>
 <div class="viewcode-block" id="StandardBesselProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.StandardBesselProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.StandardBesselProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">StandardBesselProcess</span><span class="p">(</span><span class="n">ItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A standard Bessel process.</span>
@@ -219,7 +224,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">BrownianBridge</span> <span class="k">as</span> <span class="n">StochasticBrownianBridge</span>
 <div class="viewcode-block" id="StandardBrownianBridge">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.StandardBrownianBridge">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.StandardBrownianBridge">[docs]</a>
 <span class="k">class</span> <span class="nc">StandardBrownianBridge</span><span class="p">(</span><span class="n">ItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A StandardBrownianBridge represents a continuous-time stochastic process that models a Brownian motion constrained</span>
@@ -255,7 +260,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">BrownianExcursion</span> <span class="k">as</span> <span class="n">StochasticBrownianExcursion</span>
 <div class="viewcode-block" id="StandardBrownianExcursion">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.StandardBrownianExcursion">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.StandardBrownianExcursion">[docs]</a>
 <span class="k">class</span> <span class="nc">StandardBrownianExcursion</span><span class="p">(</span><span class="n">ItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A StandardBrownianExcursion represents a continuous-time stochastic process that models a Brownian motion</span>
@@ -291,7 +296,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">BrownianMeander</span> <span class="k">as</span> <span class="n">StochasticBrownianMeander</span>
 <div class="viewcode-block" id="StandardBrownianMeander">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.StandardBrownianMeander">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.StandardBrownianMeander">[docs]</a>
 <span class="k">class</span> <span class="nc">StandardBrownianMeander</span><span class="p">(</span><span class="n">ItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A StandardBrownianMeander represents a continuous-time stochastic process that models a Brownian motion</span>
@@ -329,7 +334,7 @@
         
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">BrownianMotion</span> <span class="k">as</span> <span class="n">StochasticBrownianMotion</span>
 <div class="viewcode-block" id="BrownianMotion">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.BrownianMotion">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.BrownianMotion">[docs]</a>
 <span class="k">class</span> <span class="nc">BrownianMotion</span><span class="p">(</span><span class="n">ItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    BrownianMotion represents a fundamental continuous-time stochastic process, also known as Wiener process,</span>
@@ -367,9 +372,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_drift_term</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drift</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_has_wrong_params</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">drift</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">scale</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Congratulations! You have created a standard Brownian motion process (Wiener process).&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s2">&quot;standard&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_drift_term_sympy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term_sympy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span>
 
 <div class="viewcode-block" id="BrownianMotion.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.BrownianMotion.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.BrownianMotion.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Custom increment function for the process.</span>
@@ -388,7 +398,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">CauchyProcess</span> <span class="k">as</span> <span class="n">StochasticCauchyProcess</span>
 <div class="viewcode-block" id="CauchyProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.CauchyProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.CauchyProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">CauchyProcess</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    CauchyProcess represents a continuous-time stochastic process that models random motion with heavy-tailed</span>
@@ -422,7 +432,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">FractionalBrownianMotion</span> <span class="k">as</span> <span class="n">StochasticFractionalBrownianMotion</span>
 <div class="viewcode-block" id="StandardFractionalBrownianMotion">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.StandardFractionalBrownianMotion">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.StandardFractionalBrownianMotion">[docs]</a>
 <span class="k">class</span> <span class="nc">StandardFractionalBrownianMotion</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    StandardFractionalBrownianMotion (fBm) represents a generalization of classical Brownian motion, characterized</span>
@@ -465,7 +475,7 @@
 
 
 <div class="viewcode-block" id="FractionalBrownianMotion">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.FractionalBrownianMotion">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.FractionalBrownianMotion">[docs]</a>
 <span class="k">class</span> <span class="nc">FractionalBrownianMotion</span><span class="p">(</span><span class="n">StandardFractionalBrownianMotion</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    FractionalBrownianMotion extends the StandardFractionalBrownianMotion, offering a more generalized implementation</span>
@@ -511,7 +521,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The scale parameter must be non-negative.&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FractionalBrownianMotion.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.FractionalBrownianMotion.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.FractionalBrownianMotion.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Custom increment function for the process.</span>
@@ -532,7 +542,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">GammaProcess</span> <span class="k">as</span> <span class="n">StochasticGammaProcess</span>
 <div class="viewcode-block" id="GammaProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.GammaProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.GammaProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">GammaProcess</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    GammaProcess represents a continuous-time stochastic process with independent, stationary increments following</span>
@@ -581,7 +591,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">InverseGaussianProcess</span> <span class="k">as</span> <span class="n">StochasticInverseGaussianProcess</span>
 <div class="viewcode-block" id="InverseGaussianProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.InverseGaussianProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.InverseGaussianProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">InverseGaussianProcess</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    InverseGaussianProcess represents a continuous-time stochastic process with independent, stationary increments</span>
@@ -628,7 +638,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">MultifractionalBrownianMotion</span> <span class="k">as</span> <span class="n">StochasticMultifractionalBrownianMotion</span>
 <div class="viewcode-block" id="StandardMultifractionalBrownianMotion">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.StandardMultifractionalBrownianMotion">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.StandardMultifractionalBrownianMotion">[docs]</a>
 <span class="k">class</span> <span class="nc">StandardMultifractionalBrownianMotion</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    StandardMultifractionalBrownianMotion (mBm) represents a generalization of fractional Brownian motion, allowing</span>
@@ -670,7 +680,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">SquaredBesselProcess</span> <span class="k">as</span> <span class="n">StochasticSquaredBesselProcess</span>
 <div class="viewcode-block" id="SquaredBesselProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.SquaredBesselProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.SquaredBesselProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">SquaredBesselProcess</span><span class="p">(</span><span class="n">ItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    SquaredBesselProcess represents a continuous-time stochastic process that models the square of the Euclidean</span>
@@ -710,7 +720,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">VarianceGammaProcess</span> <span class="k">as</span> <span class="n">StochasticVarianceGammaProcess</span>
 <div class="viewcode-block" id="VarianceGammaProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.VarianceGammaProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.VarianceGammaProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">VarianceGammaProcess</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    GeneralizedHyperbolicProcess represents a highly flexible class of continuous-time stochastic processes that</span>
@@ -781,7 +791,7 @@
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">WienerProcess</span> <span class="k">as</span> <span class="n">StochasticWienerProcess</span>
 <div class="viewcode-block" id="WienerProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.WienerProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.WienerProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">WienerProcess</span><span class="p">(</span><span class="n">ItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    WienerProcess represents the fundamental continuous-time stochastic process, also known as standard Brownian</span>
@@ -812,12 +822,14 @@
 <span class="sd">        :type process_class: Type[Any]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;wiener&quot;</span><span class="p">,</span> <span class="s1">&#39;standard&#39;</span><span class="p">]</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">,</span> <span class="n">drift_term</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stochastic_term</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">,</span> <span class="n">drift_term</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stochastic_term</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_drift_term_sympy</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term_sympy</span> <span class="o">=</span> <span class="mi">1</span></div>
 
 
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">PoissonProcess</span> <span class="k">as</span> <span class="n">StochasticPoissonProcess</span>
 <div class="viewcode-block" id="PoissonProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.PoissonProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.PoissonProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">PoissonProcess</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    PoissonProcess represents a fundamental continuous-time stochastic process that models the occurrence of</span>
@@ -851,7 +863,7 @@
 <span class="sd">        :type rate: float</span>
 <span class="sd">        :raises ValueError: If the rate parameter is non-positive</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poisson&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poisson&quot;</span><span class="p">,</span> <span class="s2">&quot;jump&quot;</span><span class="p">,</span> <span class="s2">&quot;increasing&quot;</span><span class="p">]</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rate</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_rate</span> <span class="o">=</span> <span class="n">rate</span>
@@ -859,7 +871,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The rate parameter must be positive.&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PoissonProcess.simulate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.PoissonProcess.simulate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.PoissonProcess.simulate">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the Poisson process, plot, and save it.</span>
@@ -897,7 +909,7 @@
 <span class="kn">from</span> <span class="nn">.definitions</span> <span class="kn">import</span> <span class="n">NonItoProcess</span>
 
 <div class="viewcode-block" id="LevyStableProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.LevyStableProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.LevyStableProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">LevyStableProcess</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    LevyStableProcess represents a versatile class of continuous-time stochastic processes that generalize the</span>
@@ -921,7 +933,7 @@
 <span class="sd">    This implementation strikes a balance between the theoretical richness of Lévy stable processes and the</span>
 <span class="sd">    practical needs of modeling real-world phenomena with potentially bounded extreme events.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Levy Stable Process&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">alpha_default</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">beta_default</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">scale_default</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">loc_default</span><span class="p">,</span> <span class="n">default_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">default_comments</span><span class="p">,</span> <span class="n">tempering</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">truncation_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">truncation_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;hard&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Levy Stable Process&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">alpha_default</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">beta_default</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">scale_default</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">loc_default</span><span class="p">,</span> <span class="n">comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">default_comments</span><span class="p">,</span> <span class="n">tempering</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">truncation_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">truncation_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;hard&#39;</span><span class="p">,</span> <span class="n">scaled_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructor method for the LevyStableProcess class.</span>
 
@@ -945,6 +957,8 @@
 <span class="sd">        :type truncation_level: float</span>
 <span class="sd">        :param truncation_type: The type of truncation (&#39;hard&#39; or &#39;soft&#39;)</span>
 <span class="sd">        :type truncation_type: str</span>
+<span class="sd">        :param scaled_scale: Whether to use the scaled scale parameter. If True, the scale parameter is equivalent to the normal process standard deviation.</span>
+<span class="sd">        :type scaled_scale: bool</span>
 <span class="sd">        :raises ValueError: If the stability parameter is outside the range (0, 2]</span>
 <span class="sd">        :raises ValueError: If the skewness parameter is outside the range [-1, 1]</span>
 <span class="sd">        :raises ValueError: If the scale parameter is non-positive</span>
@@ -967,7 +981,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">=</span> <span class="n">loc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_loc_scaled</span> <span class="o">=</span> <span class="n">loc</span> <span class="o">/</span> <span class="mi">10</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_comments</span> <span class="o">=</span> <span class="n">default_comments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_comments</span> <span class="o">=</span> <span class="n">comments</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_external_simulator</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">tempering</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The tempering parameter must be non-negative.&quot;</span><span class="p">)</span>
@@ -988,8 +1002,8 @@
         <span class="c1"># Determine if truncation is applied</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_truncated</span> <span class="o">=</span> <span class="n">truncation_level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
-        <span class="c1"># Set this true to use normal process variance equivalent as the scale parameter.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_scaled_scale</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># Set this true to use Wiener process variance equivalent as the scale parameter.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scaled_scale</span> <span class="o">=</span> <span class="n">scaled_scale</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaled_scale</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="o">**</span><span class="mf">0.5</span>
 
@@ -1028,6 +1042,19 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span> <span class="o">==</span> <span class="mf">0.5</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Congratulations! With your parameters, you created a Levy Process with drift = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="si">}</span><span class="s1"> and scale = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s1">&#39;levy&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Even more, you created a Levy Smirnov process with scale = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span> <span class="o">==</span> <span class="mf">1.5</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Congratulations! With your parameters, you created a Holtsmark process with drift = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="si">}</span><span class="s1"> and scale = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s1">&#39;holtsmark&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Congratulations! With your parameters, you created a Landau process with drift = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="si">}</span><span class="s1"> and scale = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s1">&#39;landau&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span> <span class="o">&lt;=</span> <span class="mf">0.01</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Congratulations! With your parameters, you created an inverse gamma process approximation with beta = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="si">}</span><span class="s1">, drift = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="si">}</span><span class="s1"> and scale = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;This is but an approximation of the inverse gamma process, for the true process is is achieved when alpha approaches zero.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_type</span><span class="p">(</span><span class="s1">&#39;inverse gamma&#39;</span><span class="p">)</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">alpha</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1048,6 +1075,9 @@
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The stability parameter alpha must be in the interval (0, 2].&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span> <span class="o">=</span> <span class="n">alpha</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">beta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1233,25 +1263,27 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_scaled_scale</span> <span class="o">=</span> <span class="n">scaled_scale</span>
 
 <div class="viewcode-block" id="LevyStableProcess.tempered_stable_rvs">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.tempered_stable_rvs">[docs]</a>
-    <span class="k">def</span> <span class="nf">tempered_stable_rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.tempered_stable_rvs">[docs]</a>
+    <span class="k">def</span> <span class="nf">tempered_stable_rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestep</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate a tempered stable random variable.</span>
 <span class="sd">        Tempering is applied by multiplying the Levy stable random variable with an exponential factor.</span>
 <span class="sd">        Tempering parameter must be non-negative.</span>
 
+<span class="sd">        :param timestep: The time step for the simulation</span>
+<span class="sd">        :type timestep: float</span>
 <span class="sd">        :return: A tempered stable random variable</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Generate a sample from a Levy stable distribution</span>
-        <span class="n">levy_sample</span> <span class="o">=</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">)</span>
+        <span class="n">levy_sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="o">*</span><span class="n">timestep</span> <span class="o">+</span> <span class="p">(</span><span class="n">timestep</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">))</span><span class="o">*</span><span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">)</span>
         <span class="c1"># Apply the exponential tempering</span>
         <span class="n">tempered_sample</span> <span class="o">=</span> <span class="n">levy_sample</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_tempering</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">levy_sample</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">tempered_sample</span></div>
 
 
 <div class="viewcode-block" id="LevyStableProcess.truncate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.truncate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.truncate">[docs]</a>
     <span class="k">def</span> <span class="nf">truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Truncate the value based on the truncation level and type.</span>
@@ -1277,7 +1309,7 @@
 
 
 <div class="viewcode-block" id="LevyStableProcess.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Custom increment function for the process.</span>
@@ -1290,9 +1322,9 @@
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempered</span><span class="p">:</span>
-            <span class="n">dX</span> <span class="o">=</span> <span class="p">(</span><span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">))</span> <span class="o">*</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc_scaled</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">)</span>
+            <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="o">*</span><span class="n">timestep</span> <span class="o">+</span> <span class="p">(</span><span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">))</span> <span class="o">*</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">dX</span> <span class="o">=</span> <span class="p">(</span><span class="n">timestep</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tempered_stable_rvs</span><span class="p">()</span>
+            <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tempered_stable_rvs</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_truncated</span><span class="p">:</span>
             <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">dX</span><span class="p">)</span>
@@ -1301,7 +1333,7 @@
 
 
 <div class="viewcode-block" id="LevyStableProcess.differential">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.differential">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.differential">[docs]</a>
     <span class="k">def</span> <span class="nf">differential</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Express the Levy process as a differential equation.</span>
@@ -1315,7 +1347,7 @@
 
 
 <div class="viewcode-block" id="LevyStableProcess.express_as_elementary">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.express_as_elementary">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.express_as_elementary">[docs]</a>
     <span class="k">def</span> <span class="nf">express_as_elementary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Express a given Levy process as a function of an elementary Levy process.</span>
@@ -1324,17 +1356,36 @@
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;X(t) = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="si">}</span><span class="s2"> * t + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="si">}</span><span class="s2"> * LevyStableProcess(alpha=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="si">}</span><span class="s2">, beta=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="si">}</span><span class="s2">, truncation=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_truncation_level</span><span class="si">}</span><span class="s2">, type=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_truncation_type</span><span class="si">}</span><span class="s2">).increment()&quot;</span></div>
+
+
+<div class="viewcode-block" id="LevyStableProcess.characteristic_function">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.LevyStableProcess.characteristic_function">[docs]</a>
+    <span class="k">def</span> <span class="nf">characteristic_function</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Express the characteristic function of the Lévy stable distribution corresponding to the process.</span>
+
+<span class="sd">        :return: The characteristic function of the process</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">phi</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;tan(pi * </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="si">}</span><span class="s2"> / 2)&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">phi</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;-(2/pi) * log(|t|)&quot;</span>
+
+        <span class="n">char_function</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;exp(i * </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="si">}</span><span class="s2"> * t - |</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="si">}</span><span class="s2"> * t|^</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="si">}</span><span class="s2"> * (1 - i * </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="si">}</span><span class="s2"> * sign(t) * </span><span class="si">{</span><span class="n">phi</span><span class="si">}</span><span class="s2">))&quot;</span>
+        <span class="k">return</span> <span class="n">char_function</span></div>
 </div>
 
 
 <div class="viewcode-block" id="LevyStableStandardProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.LevyStableStandardProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.LevyStableStandardProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">LevyStableStandardProcess</span><span class="p">(</span><span class="n">LevyStableProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    LevyStableStandardProcess represents a standardized version of the Lévy stable process, a class of</span>
 <span class="sd">    continuous-time stochastic processes known for their ability to model heavy-tailed distributions and</span>
 <span class="sd">    asymmetry. This process, denoted as (X_t)_{t≥0}, is a special case of the general Lévy stable process</span>
 <span class="sd">    with fixed scale and location parameters (set to 1/2**0.5 and 0 correspondingly). It is primarily characterized by two parameters:</span>
+<span class="sd">    Scale is set to 1/2**0.5 because it corresponds to the standard deviation of the process when the process is Gaussian.</span>
 
 <span class="sd">    1. α (alpha): The stability parameter, where 0 &lt; α ≤ 2. This parameter determines the tail heaviness</span>
 <span class="sd">       of the distribution. As α approaches 2, the process behaves more like Brownian motion, while</span>
@@ -1388,7 +1439,7 @@
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">matplotlib.animation</span> <span class="k">as</span> <span class="nn">animation</span>
 <div class="viewcode-block" id="MultivariateBrownianMotion">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion">[docs]</a>
 <span class="k">class</span> <span class="nc">MultivariateBrownianMotion</span><span class="p">(</span><span class="n">ItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    MultivariateBrownianMotion represents a generalization of the standard Brownian motion to multiple dimensions,</span>
@@ -1420,9 +1471,9 @@
 <span class="sd">        :type name: str</span>
 <span class="sd">        :param process_class: The specific stochastic process class to use for simulation</span>
 <span class="sd">        :type process_class: Type[Any]</span>
-<span class="sd">        :param drift: The drift term for the process</span>
+<span class="sd">        :param drift: The drift term for the process: a vector of mean values</span>
 <span class="sd">        :type drift: List[float]</span>
-<span class="sd">        :param scale: The scale parameter for the process</span>
+<span class="sd">        :param scale: The scale parameter for the process: a matrix of variances and covariances</span>
 <span class="sd">        :type scale: List[List[float]]</span>
 <span class="sd">        :raises ValueError: If the scale matrix is not positive definite</span>
 <span class="sd">        :raises ValueError: If the scale matrix does not match the dimension of the drift vector</span>
@@ -1440,7 +1491,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_external_simulator</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="MultivariateBrownianMotion.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Custom increment function for the process.</span>
@@ -1457,7 +1508,7 @@
 
 
 <div class="viewcode-block" id="MultivariateBrownianMotion.simulate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the Multivariate Brownian Motion process, plot, and save it.</span>
@@ -1496,7 +1547,7 @@
 
 
 <div class="viewcode-block" id="MultivariateBrownianMotion.simulate_weights">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_weights">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_weights">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                                   <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1550,9 +1601,8 @@
         <span class="k">return</span> <span class="n">weight_data</span></div>
 
 
-
 <div class="viewcode-block" id="MultivariateBrownianMotion.simulate_live">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_live">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_live">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the process live and save as a video file.</span>
@@ -1597,7 +1647,7 @@
 
 
 <div class="viewcode-block" id="MultivariateBrownianMotion.simulate_2d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_2d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_2d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                     <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1640,7 +1690,7 @@
 
 
 <div class="viewcode-block" id="MultivariateBrownianMotion.simulate_live_2d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_live_2d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_live_2d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                          <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1697,7 +1747,7 @@
 
 
 <div class="viewcode-block" id="MultivariateBrownianMotion.simulate_3d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_3d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_3d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                     <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1740,7 +1790,7 @@
 
 
 <div class="viewcode-block" id="MultivariateBrownianMotion.simulate_live_3d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_live_3d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_live_3d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                          <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1803,7 +1853,7 @@
 
 
 <div class="viewcode-block" id="MultivariateBrownianMotion.simulate_live_2dt">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_live_2dt">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateBrownianMotion.simulate_live_2dt">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live_2dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                           <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1907,7 +1957,7 @@
 
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">genhyperbolic</span>
 <div class="viewcode-block" id="GeneralizedHyperbolicProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">GeneralizedHyperbolicProcess</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    GeneralizedHyperbolicProcess represents a highly flexible class of continuous-time stochastic processes that</span>
@@ -1932,8 +1982,14 @@
 <span class="sd">    hyperbolic process comes with increased model complexity, requiring careful consideration in application and</span>
 <span class="sd">    interpretation. Its ability to nest simpler models allows for sophisticated hypothesis testing and model</span>
 <span class="sd">    selection in empirical studies.</span>
+
+<span class="sd">    Attention! The class must be used with caution. The generalized hyperbolic distribution is not convolution-closed.</span>
+<span class="sd">    It means that the sum of two generalized hyperbolic random variables may be not a generalized hyperbolic random variable.</span>
+<span class="sd">    This makes the simulation of the process using finite differential problematic.</span>
+<span class="sd">    A related problem is that it is unclear how to scale time increments dt in the simulations. The process may not be self-similar.</span>
+<span class="sd">    Or if we make it self-similar by design, many options are possible which lead to different processes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Generalized Hyperbolic Process&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.7</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0005</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.003</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Generalized Hyperbolic Process&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plambda</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.7</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0005</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">t_scaling</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructor method for the GeneralizedHyperbolicProcess class.</span>
 
@@ -1947,31 +2003,49 @@
 <span class="sd">        :type beta: float</span>
 <span class="sd">        :param loc: The location parameter (μ)</span>
 <span class="sd">        :type loc: float</span>
-<span class="sd">        :param scale: The scale parameter (σ)</span>
-<span class="sd">        :type scale: float</span>
+<span class="sd">        :param plambda: The shape parameter (λ)</span>
+<span class="sd">        :type plambda: float</span>
+<span class="sd">        :param t_scaling: The scaling function for time increments</span>
+<span class="sd">        :type t_scaling: Callable[[float], float]</span>
 <span class="sd">        :param kwargs: Additional keyword arguments for the process</span>
 <span class="sd">        :raises ValueError: If the scale parameter is non-positive</span>
 <span class="sd">        :raises ValueError: If the shape parameter (a) is non-positive</span>
+<span class="sd">        :raises KnowWhatYouDoWarning: The class is under development and there are nuances with simulation. Please use with caution.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;generalized&quot;</span><span class="p">,</span> <span class="s2">&quot;hyperbolic&quot;</span><span class="p">]</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span> <span class="o">=</span> <span class="n">alpha</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span> <span class="o">=</span> <span class="n">beta</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">=</span> <span class="n">loc</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="n">scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delta</span> <span class="o">=</span> <span class="n">delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plambda</span> <span class="o">=</span> <span class="n">plambda</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_external_simulator</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Using custom increment function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_t_scaling</span> <span class="o">=</span> <span class="n">t_scaling</span>
 
         <span class="c1"># Compute &#39;a&#39; based on alpha and beta if not provided directly</span>
-        <span class="k">if</span> <span class="s1">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+        <span class="c1"># if &#39;a&#39; in kwargs:</span>
+        <span class="c1">#     self._a = kwargs[&#39;a&#39;]</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     self._a = (self._beta ** 2 + self._alpha ** 2) ** 0.5</span>
 
         <span class="c1"># Validity checks</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Scale parameter must be positive.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter &#39;a&#39; must be positive.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter &#39;delta&#39; must be positive.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Parametetrization to use with scipy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plambda</span>
+
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The GeneralizedHyperbolicProcess class is still under development and may not be fully functional.&quot;</span>
+                                   <span class="s2">&quot;Its usage comes with potential risks if you do now know what you do exactly.&quot;</span>
+                                   <span class="s2">&quot;Specifically, the parameters in the class define the distribution of the increments used in the simulation (stochastic differential approximation), and the distribution of process instances may be different and unpredictable.&quot;</span>
+                                   <span class="s2">&quot;The generalized hyperbolic distribution is, generally, not convolution-closed.&quot;</span>
+                                   <span class="s2">&quot;It means that the sum of two generalized hyperbolic random variables may be not a generalized hyperbolic random variable.&quot;</span>
+                                   <span class="s2">&quot;This makes the simulation of the process using finite differential problematic.&quot;</span>
+                                   <span class="s2">&quot;A related problem is that it is unclear how to scale time increments dt in the simulations. The process may not be self-similar.&quot;</span>
+                                   <span class="s2">&quot;Or if we make it self-similar by design, many options are possible which lead to different processes.&quot;</span><span class="p">,</span> <span class="n">KnowWhatYouDoWarning</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">alpha</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1983,6 +2057,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span>
 
+    <span class="nd">@alpha</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">alpha</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the shape parameter (α) of the process.</span>
+
+<span class="sd">        :param alpha: The shape parameter (α)</span>
+<span class="sd">        :type alpha: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">beta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1992,6 +2076,16 @@
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span>
+
+    <span class="nd">@beta</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">beta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the skewness parameter (β) of the process.</span>
+
+<span class="sd">        :param beta: The skewness parameter (β)</span>
+<span class="sd">        :type beta: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span> <span class="o">=</span> <span class="n">beta</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">loc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2003,28 +2097,122 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span>
 
+    <span class="nd">@loc</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">loc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the location parameter (μ) of the process.</span>
+
+<span class="sd">        :param loc: The location parameter (μ)</span>
+<span class="sd">        :type loc: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">=</span> <span class="n">loc</span>
+
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">delta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the scale parameter (σ) of the process.</span>
 
 <span class="sd">        :return: The scale parameter (σ)</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta</span>
+
+    <span class="nd">@delta</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">delta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the scale parameter (σ) of the process.</span>
+
+<span class="sd">        :param delta: The scale parameter (σ)</span>
+<span class="sd">        :type delta: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delta</span> <span class="o">=</span> <span class="n">delta</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">a</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return the shape parameter &#39;a&#39; of the process.</span>
+<span class="sd">        Return the shape parameter &#39;a&#39; of the process, parametrized for the usage with scipy.</span>
 
 <span class="sd">        :return: The shape parameter &#39;a&#39;</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">b</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the skewness parameter &#39;b&#39; of the process, parametrized for the usage with scipy.</span>
+
+<span class="sd">        :return: The skewness parameter &#39;b&#39;</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the scale parameter &#39;scale&#39; of the process, parametrized for the usage with scipy.</span>
+
+<span class="sd">        :return: The scale parameter &#39;scale&#39;</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">plambda</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the shape parameter &#39;λ&#39; of the process.</span>
+
+<span class="sd">        :return: The shape parameter &#39;λ&#39;</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plambda</span>
+
+    <span class="nd">@plambda</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">plambda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plambda</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the shape parameter &#39;λ&#39; of the process.</span>
+
+<span class="sd">        :param plambda: The shape parameter &#39;λ&#39;</span>
+<span class="sd">        :type plambda: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plambda</span> <span class="o">=</span> <span class="n">plambda</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">t_scaling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the time scaling function of the process.</span>
+
+<span class="sd">        :return: The time scaling function</span>
+<span class="sd">        :rtype: Callable[[float], float]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_scaling</span>
+
+    <span class="nd">@t_scaling</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">t_scaling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_scaling</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the time scaling function of the process.</span>
+
+<span class="sd">        :param t_scaling: The time scaling function</span>
+<span class="sd">        :type t_scaling: Callable[[float], float]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_t_scaling</span> <span class="o">=</span> <span class="n">t_scaling</span>
+
+<div class="viewcode-block" id="GeneralizedHyperbolicProcess.apply_time_scaling">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.apply_time_scaling">[docs]</a>
+    <span class="k">def</span> <span class="nf">apply_time_scaling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply the time scaling function to the given time (increment) value.</span>
+
+<span class="sd">        :param t: he time (increment) value</span>
+<span class="sd">        :type t: float</span>
+<span class="sd">        :return: The scaled time value</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_scaling</span><span class="p">(</span><span class="n">t</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="GeneralizedHyperbolicProcess.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Custom increment function for the process.</span>
@@ -2036,12 +2224,12 @@
 <span class="sd">        :return: The increment value</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">dX</span> <span class="o">=</span> <span class="p">(</span><span class="n">timestep</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">genhyperbolic</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_a</span><span class="p">)</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="o">*</span><span class="n">timestep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_time_scaling</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span> <span class="o">*</span> <span class="n">genhyperbolic</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_plambda</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_b</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_a</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dX</span></div>
 
 
 <div class="viewcode-block" id="GeneralizedHyperbolicProcess.differential">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.differential">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.differential">[docs]</a>
     <span class="k">def</span> <span class="nf">differential</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;&quot;</span>
 <span class="sd">        Return the differential equation of the process.</span>
@@ -2053,7 +2241,7 @@
 
 
 <div class="viewcode-block" id="GeneralizedHyperbolicProcess.express_as_elementary">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.express_as_elementary">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.GeneralizedHyperbolicProcess.express_as_elementary">[docs]</a>
     <span class="k">def</span> <span class="nf">express_as_elementary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Express a given Generalized Hyperbolic process as a function of an elementary Hyperbolic process.</span>
@@ -2067,7 +2255,7 @@
 
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">pareto</span>
 <div class="viewcode-block" id="ParetoProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.ParetoProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.ParetoProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">ParetoProcess</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ParetoProcess represents a continuous-time stochastic process based on the Pareto distribution, known for</span>
@@ -2166,7 +2354,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span>
 
 <div class="viewcode-block" id="ParetoProcess.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.ParetoProcess.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.ParetoProcess.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Custom increment function for the process.</span>
@@ -2183,7 +2371,7 @@
 
 
 <div class="viewcode-block" id="ParetoProcess.differential">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.ParetoProcess.differential">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.ParetoProcess.differential">[docs]</a>
     <span class="k">def</span> <span class="nf">differential</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the differential equation of the process.</span>
@@ -2195,7 +2383,7 @@
 
 
 <div class="viewcode-block" id="ParetoProcess.express_as_elementary">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.ParetoProcess.express_as_elementary">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.ParetoProcess.express_as_elementary">[docs]</a>
     <span class="k">def</span> <span class="nf">express_as_elementary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Express a given Pareto process as a function of elementary processes.</span>
@@ -2208,7 +2396,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy">[docs]</a>
 <span class="k">class</span> <span class="nc">MultivariateLevy</span><span class="p">(</span><span class="n">LevyStableProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    MultivariateLevy represents a sophisticated extension of the Lévy stable process to multiple dimensions,</span>
@@ -2261,10 +2449,10 @@
 <span class="sd">    when dealing with empirical data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Multivariate Levy Stable Process&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">default_comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">tempering</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">truncation_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">truncation_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;hard&#39;</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">pseudovariances</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">mean_list_default</span><span class="p">,</span>
+                 <span class="n">comments</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">tempering</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">truncation_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">truncation_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;hard&#39;</span><span class="p">,</span> <span class="n">pseudocorrelation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">correlation_matrix_default</span><span class="p">,</span>
+                 <span class="n">pseudovariances</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">variances_default</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructor method for the MultivariateLevy class.</span>
 
@@ -2288,26 +2476,26 @@
 <span class="sd">        :type truncation_level: float</span>
 <span class="sd">        :param truncation_type: The type of truncation (&#39;hard&#39; or &#39;soft&#39;)</span>
 <span class="sd">        :type truncation_type: str</span>
-<span class="sd">        :param correlation_matrix: The correlation matrix for the multivariate process</span>
-<span class="sd">        :type correlation_matrix: np.ndarray</span>
+<span class="sd">        :param pseudocorrelation_matrix: A generalization of the correlation matrix for the fat-tailed processes</span>
+<span class="sd">        :type pseudocorrelation_matrix: np.ndarray</span>
 <span class="sd">        :param pseudovariances:The pseudovariances for the multivariate process</span>
 <span class="sd">        :type pseudovariances: np.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># First, initialize the base class</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">default_comments</span><span class="o">=</span><span class="n">default_comments</span><span class="p">,</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="n">comments</span><span class="p">,</span>
                          <span class="n">tempering</span><span class="o">=</span><span class="n">tempering</span><span class="p">,</span> <span class="n">truncation_level</span><span class="o">=</span><span class="n">truncation_level</span><span class="p">,</span> <span class="n">truncation_type</span><span class="o">=</span><span class="n">truncation_type</span><span class="p">)</span>
 
         <span class="c1"># Then, initialize MultivariateLevy-specific attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_multivariate</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">pseudovariances</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_multivariate</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">pseudocorrelation_matrix</span><span class="p">,</span> <span class="n">pseudovariances</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_initialize_multivariate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pseudovariances</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_initialize_multivariate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pseudocorrelation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pseudovariances</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the multivariate parameters for the process.</span>
 
 <span class="sd">        :param loc: The location vector (μ)</span>
 <span class="sd">        :type loc: np.ndarray</span>
-<span class="sd">        :param correlation_matrix: The correlation matrix for the process</span>
-<span class="sd">        :type correlation_matrix: np.ndarray</span>
+<span class="sd">        :param pseudocorrelation_matrix: The correlation matrix for the process</span>
+<span class="sd">        :type pseudocorrelation_matrix: np.ndarray</span>
 <span class="sd">        :param pseudovariances: The pseudovariances for the process</span>
 <span class="sd">        :type pseudovariances: np.ndarray</span>
 <span class="sd">        :raises ValueError: If the correlation matrix is not symmetric</span>
@@ -2317,7 +2505,7 @@
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">correlation_matrix</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">pseudovariances</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pseudocorrelation_matrix</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">pseudovariances</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Correlation matrix and pseudovariances must be provided.&quot;</span><span class="p">)</span>
 
         <span class="c1"># Ensure pseudovariances is a 1D array</span>
@@ -2335,19 +2523,19 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loc must be a numpy array of shape (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dims</span><span class="si">}</span><span class="s2">,)&quot;</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Debug: correlation_matrix shape: </span><span class="si">{</span><span class="n">correlation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Debug: correlation_matrix shape: </span><span class="si">{</span><span class="n">pseudocorrelation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">pseudocorrelation_matrix</span><span class="p">,</span> <span class="n">pseudocorrelation_matrix</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Correlation matrix must be symmetric.&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">pseudocorrelation_matrix</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Correlation matrix must be positive definite.&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_correlation_matrix</span> <span class="o">=</span> <span class="n">correlation_matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pseudocorrelation_matrix</span> <span class="o">=</span> <span class="n">pseudocorrelation_matrix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pseudovariances</span> <span class="o">=</span> <span class="n">pseudovariances</span>
 
         <span class="c1"># Compute the Cholesky decomposition of the correlation matrix</span>
-        <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_correlation_matrix</span><span class="p">)</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pseudocorrelation_matrix</span><span class="p">)</span>
 
         <span class="c1"># Create the matrix A by scaling L with the standard deviations (square roots of pseudovariances)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pseudovariances</span><span class="p">)),</span> <span class="n">L</span><span class="p">)</span>
@@ -2361,17 +2549,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dims</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">correlation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">pseudocorrelation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the correlation matrix of the process.</span>
 
 <span class="sd">        :return: The correlation matrix</span>
 <span class="sd">        :rtype: np.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_correlation_matrix</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pseudocorrelation_matrix</span>
 
-    <span class="nd">@correlation_matrix</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">correlation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="nd">@pseudocorrelation_matrix</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">pseudocorrelation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">correlation_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the correlation matrix of the process.</span>
 
@@ -2381,7 +2569,7 @@
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dims</span> <span class="o">=</span> <span class="n">correlation_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_correlation_matrix</span> <span class="o">=</span> <span class="n">correlation_matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pseudocorrelation_matrix</span> <span class="o">=</span> <span class="n">correlation_matrix</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">pseudovariances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2430,7 +2618,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_loc</span> <span class="o">=</span> <span class="n">loc</span>
 
 <div class="viewcode-block" id="MultivariateLevy.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate a custom increment for the multivariate process.</span>
@@ -2469,7 +2657,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy.simulate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2512,7 +2700,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy.plot">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot">[docs]</a>
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the simulation results.</span>
@@ -2552,14 +2740,19 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_dir</span><span class="p">,</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_dir</span><span class="p">,</span>
                                          <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span><span class="si">}</span><span class="s1">_t:</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s1">_timestep:</span><span class="si">{</span><span class="n">timestep</span><span class="si">}</span><span class="s1">_num_instances:</span><span class="si">{</span><span class="n">num_instances</span><span class="si">}</span><span class="s1">_process_simulation.png&#39;</span><span class="p">))</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_dir</span><span class="p">,</span>
+                                         <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">_simulation.png&#39;</span><span class="p">))</span>
+
             <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="MultivariateLevy.plot_2d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot_2d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot_2d">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_2d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the 2D simulation results.</span>
@@ -2595,7 +2788,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy.plot_2dt">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot_2dt">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot_2dt">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_2dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_2d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the 2D simulation results in a 3D graph with time as the third dimension.</span>
@@ -2635,7 +2828,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy.plot_3d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot_3d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.plot_3d">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_3d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the 3D simulation results.</span>
@@ -2676,7 +2869,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy.simulate_live">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_live">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_live">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the process live and save as a video file.</span>
@@ -2721,7 +2914,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy.simulate_2d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_2d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_2d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the 2D Multivariate Lévy Process.</span>
@@ -2759,7 +2952,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy.simulate_live_2d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_live_2d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_live_2d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the 2D process live and save as a video file.</span>
@@ -2809,7 +3002,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy.simulate_3d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_3d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_3d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the 3D Multivariate Lévy Process.</span>
@@ -2847,7 +3040,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy.simulate_live_3d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_live_3d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_live_3d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the 3D process live and save as a video file.</span>
@@ -2903,7 +3096,7 @@
 
 
 <div class="viewcode-block" id="MultivariateLevy.simulate_live_2dt">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_live_2dt">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.basic.MultivariateLevy.simulate_live_2dt">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live_2dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the 2D process live with time and save as a video file.</span>

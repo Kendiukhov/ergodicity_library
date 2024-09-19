@@ -116,9 +116,28 @@
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">animation</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">ergodicity.process.basic</span> <span class="kn">import</span> <span class="n">WienerProcess</span>
+
+<div class="viewcode-block" id="wiener_increment_function">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.partial_sde.wiener_increment_function">[docs]</a>
+<span class="k">def</span> <span class="nf">wiener_increment_function</span><span class="p">(</span><span class="n">timestep_increment</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to generate Wiener process increments.</span>
+<span class="sd">    This is a default increment function for the PSDE simulator.</span>
+<span class="sd">    It can be changed to use different increments, such as for example Levy increments.</span>
+
+<span class="sd">    :param timestep_increment: The time step of the discrete increment</span>
+<span class="sd">    :type timestep_increment: float</span>
+<span class="sd">    :return: The Wiener process increment</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">WP</span> <span class="o">=</span> <span class="n">WienerProcess</span><span class="p">()</span>
+    <span class="n">dW</span> <span class="o">=</span> <span class="n">WP</span><span class="o">.</span><span class="n">increment</span><span class="p">(</span><span class="n">timestep_increment</span><span class="o">=</span><span class="n">timestep_increment</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dW</span></div>
+
 
 <div class="viewcode-block" id="PSDESimulator">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator">[docs]</a>
 <span class="k">class</span> <span class="nc">PSDESimulator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Partial Stochastic Differential Equation (PSDE) Simulator.</span>
@@ -162,7 +181,7 @@
                  <span class="n">t_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
                  <span class="n">nx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">boundary_condition</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;dirichlet&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">)):</span>
+                 <span class="n">boundary_condition</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;dirichlet&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="mi">0</span><span class="p">),</span> <span class="n">increment</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">wiener_increment_function</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the PSDE simulator.</span>
 
@@ -182,6 +201,8 @@
 <span class="sd">        :type nt: int</span>
 <span class="sd">        :param boundary_condition: Type of boundary condition and function. It can be &quot;dirichlet&quot;, &quot;neumann&quot;, or &quot;periodic&quot;</span>
 <span class="sd">        :type boundary_condition: Tuple[str, Callable]</span>
+<span class="sd">        :param increment: The increment function for the stochastic term (default: Wiener process)</span>
+<span class="sd">        :type increment: Callable</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">drift</span> <span class="o">=</span> <span class="n">drift</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">diffusion</span> <span class="o">=</span> <span class="n">diffusion</span>
@@ -203,8 +224,10 @@
         <span class="c1"># Apply initial boundary conditions</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">apply_boundary_condition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">increment</span> <span class="o">=</span> <span class="n">increment</span>
+
 <div class="viewcode-block" id="PSDESimulator.apply_boundary_condition">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.apply_boundary_condition">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.apply_boundary_condition">[docs]</a>
     <span class="k">def</span> <span class="nf">apply_boundary_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply boundary conditions at time step n.</span>
@@ -229,7 +252,7 @@
 
 
 <div class="viewcode-block" id="PSDESimulator.simulate">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.simulate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.simulate">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run the simulation.</span>
@@ -238,7 +261,8 @@
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nt</span><span class="p">):</span>
-            <span class="n">dW</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">)</span>
+            <span class="c1"># dW = np.sqrt(self.dt) * np.random.normal(0, 1, self.nx)</span>
+            <span class="n">dW</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">increment</span><span class="p">(</span><span class="n">timestep_increment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">)]</span>
 
             <span class="n">u_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
             <span class="n">u_xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">u_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
@@ -255,7 +279,7 @@
 
 
 <div class="viewcode-block" id="PSDESimulator.plot_results">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.plot_results">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.plot_results">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the results of the simulation. This includes a 2D surface plot of the function evolution and a time slice at the final time step.</span>
@@ -284,7 +308,7 @@
 
 
 <div class="viewcode-block" id="PSDESimulator.plot_3d">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.plot_3d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.plot_3d">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a 3D plot of the function evolution.</span>
@@ -309,7 +333,7 @@
 
 
 <div class="viewcode-block" id="PSDESimulator.create_animation">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.create_animation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.partial_sde.PSDESimulator.create_animation">[docs]</a>
     <span class="k">def</span> <span class="nf">create_animation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;psde_evolution.mp4&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create an animation of the function evolution.</span>

@@ -112,8 +112,8 @@
 
 <span class="sd">ufi.plot_utility_functions()</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">sympy.physics.control</span> <span class="kn">import</span> <span class="n">step_response_plot</span>
 <span class="kn">from</span> <span class="nn">sympy.physics.units</span> <span class="kn">import</span> <span class="n">length</span>
 <span class="kn">from</span> <span class="nn">tensorflow</span> <span class="kn">import</span> <span class="n">keras</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -127,10 +127,11 @@
 <span class="kn">from</span> <span class="nn">ergodicity.configurations</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">ergodicity.process.default_values</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">ergodicity.tools.helper</span> <span class="kn">import</span> <span class="n">ProcessEncoder</span>
-
+<span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <div class="viewcode-block" id="create_model">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.create_model">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.create_model">[docs]</a>
 <span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">hidden_layers</span><span class="p">,</span> <span class="n">output_shape</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a neural network model with the specified hidden layers and output shape.</span>
@@ -160,7 +161,7 @@
 
 
 <div class="viewcode-block" id="x_reach_2">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.x_reach_2">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.x_reach_2">[docs]</a>
 <span class="k">def</span> <span class="nf">x_reach_2</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check if the value of X is greater than or equal to 2.</span>
@@ -174,7 +175,7 @@
 
 
 <div class="viewcode-block" id="simulate_process">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.simulate_process">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.simulate_process">[docs]</a>
 <span class="k">def</span> <span class="nf">simulate_process</span><span class="p">(</span><span class="n">process_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Simulate a stochastic process with the specified parameters.</span>
@@ -198,7 +199,7 @@
 
 
 <div class="viewcode-block" id="pad_array">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.pad_array">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.pad_array">[docs]</a>
 <span class="k">def</span> <span class="nf">pad_array</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">target_shape</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Pad an array to the target shape with NaN values.</span>
@@ -216,7 +217,7 @@
 
 
 <div class="viewcode-block" id="worker">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.worker">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.worker">[docs]</a>
 <span class="k">def</span> <span class="nf">worker</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Worker function for parallel processing.</span>
@@ -250,9 +251,9 @@
 
 
 <div class="viewcode-block" id="generate_dataset">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.generate_dataset">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.generate_dataset">[docs]</a>
 <span class="k">def</span> <span class="nf">generate_dataset</span><span class="p">(</span><span class="n">processes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">param_ranges</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]],</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                     <span class="n">n_simulations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;output_general&#39;</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+                     <span class="n">n_simulations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;output_general&#39;</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">simulate_method</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate a dataset of simulated processes with random parameters.</span>
 
@@ -262,54 +263,67 @@
 <span class="sd">    :type param_ranges: Dict[str, Dict[str, tuple]]</span>
 <span class="sd">    :param num_instances: Number of instances to simulate for each process.</span>
 <span class="sd">    :type num_instances: int</span>
-<span class="sd">    :param n_simulations: Number of simulations to run for each process.</span>
+<span class="sd">    :param n_simulations: Number of simulations to run for each process. It sets how many process objects will be created within the specified parameter ranges.</span>
 <span class="sd">    :type n_simulations: int</span>
 <span class="sd">    :param output_dir: Output directory to save the results.</span>
 <span class="sd">    :type output_dir: str</span>
 <span class="sd">    :param save: Boolean indicating whether to save the results to files.</span>
 <span class="sd">    :type save: bool</span>
+<span class="sd">    :param simulate_method: Boolean indicating whether to use the simulation method or the simulate_until method.</span>
+<span class="sd">    :type simulate_method: bool</span>
 <span class="sd">    :return: List of arrays containing the simulated process data.</span>
 <span class="sd">    :rtype: List[np.ndarray]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">simulate_method</span><span class="p">:</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">processes</span><span class="p">:</span>
+            <span class="n">process_type</span> <span class="o">=</span> <span class="n">process</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>  <span class="c1"># Use mean of parameter ranges</span>
+            <span class="n">process_instance</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">process_type</span><span class="p">](</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">process_instance</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataset</span>
 
-    <span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="p">[(</span><span class="n">process</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span> <span class="n">param_ranges</span><span class="p">[</span><span class="n">process</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]],</span> <span class="n">num_instances</span><span class="p">,</span> <span class="n">n_simulations</span><span class="p">)</span> <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">processes</span><span class="p">]</span>
-        <span class="n">all_results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">executor</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="c1"># Flatten the list of lists</span>
-    <span class="n">flat_results</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">all_results</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
+        <span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">[(</span><span class="n">process</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span> <span class="n">param_ranges</span><span class="p">[</span><span class="n">process</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]],</span> <span class="n">num_instances</span><span class="p">,</span> <span class="n">n_simulations</span><span class="p">)</span> <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">processes</span><span class="p">]</span>
+            <span class="n">all_results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">executor</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">worker</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
 
-    <span class="c1"># Save results to files and prepare return data</span>
-    <span class="n">return_data</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">result</span><span class="p">,</span> <span class="n">process_type</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">sim</span> <span class="ow">in</span> <span class="n">flat_results</span><span class="p">:</span>
-        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">process_type</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">sim</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">.csv&quot;</span>
-        <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="c1"># Flatten the list of lists</span>
+        <span class="n">flat_results</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">all_results</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-                <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="s1">&#39;process_type&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;instance&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;value_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span>
-                                                                                                 <span class="nb">range</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])])</span>
-                <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_instances</span><span class="p">):</span>
-                    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-                        <span class="n">row</span> <span class="o">=</span> <span class="p">[</span><span class="n">process_type</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="p">[</span><span class="n">inst</span><span class="p">,</span> <span class="n">t</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">inst</span><span class="p">,</span> <span class="n">t</span><span class="p">])</span>
-                        <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="c1"># Save results to files and prepare return data</span>
+        <span class="n">return_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">result</span><span class="p">,</span> <span class="n">process_type</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">sim</span> <span class="ow">in</span> <span class="n">flat_results</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">process_type</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">sim</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
 
-        <span class="c1"># print(f&quot;Saved simulation to {filepath}&quot;)</span>
+            <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="s1">&#39;process_type&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;instance&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;value_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span>
+                                                                                                     <span class="nb">range</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])])</span>
+                    <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_instances</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                            <span class="n">row</span> <span class="o">=</span> <span class="p">[</span><span class="n">process_type</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="p">[</span><span class="n">inst</span><span class="p">,</span> <span class="n">t</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">inst</span><span class="p">,</span> <span class="n">t</span><span class="p">])</span>
+                            <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
-        <span class="c1"># Prepare data for return, including parameter values</span>
-        <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.01</span>
-        <span class="n">param_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
-        <span class="n">return_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">times</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">param_values</span><span class="p">,</span> <span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+            <span class="c1"># print(f&quot;Saved simulation to {filepath}&quot;)</span>
 
-    <span class="k">return</span> <span class="n">return_data</span></div>
+            <span class="c1"># Prepare data for return, including parameter values</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.01</span>
+            <span class="n">param_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+            <span class="n">return_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">times</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">param_values</span><span class="p">,</span> <span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+
+        <span class="k">return</span> <span class="n">return_data</span></div>
 
 
 <div class="viewcode-block" id="NeuralNetworkAgent">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.NeuralNetworkAgent">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.NeuralNetworkAgent">[docs]</a>
 <span class="k">class</span> <span class="nc">NeuralNetworkAgent</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NeuralNetworkAgent Class</span>
@@ -369,7 +383,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">performance_history</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="NeuralNetworkAgent.select_process">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.NeuralNetworkAgent.select_process">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.NeuralNetworkAgent.select_process">[docs]</a>
     <span class="k">def</span> <span class="nf">select_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoded_processes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Select the optimal process based on the encoded processes.</span>
@@ -387,7 +401,7 @@
 
 
 <div class="viewcode-block" id="NeuralNetworkAgent.update_wealth">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.NeuralNetworkAgent.update_wealth">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.NeuralNetworkAgent.update_wealth">[docs]</a>
     <span class="k">def</span> <span class="nf">update_wealth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the agent&#39;s wealth based on the outcome of a selected process.</span>
@@ -402,7 +416,7 @@
 
 
 <div class="viewcode-block" id="NeuralNetworkAgent.reset_wealth">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.NeuralNetworkAgent.reset_wealth">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.NeuralNetworkAgent.reset_wealth">[docs]</a>
     <span class="k">def</span> <span class="nf">reset_wealth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reset the agent&#39;s wealth to the initial value (1.0) and clear the performance history.</span>
@@ -415,29 +429,8 @@
 </div>
 
 
-<span class="k">def</span> <span class="nf">ranked_array</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Rank the elements of an array in descending order.</span>
-
-<span class="sd">    :param arr: Input array.</span>
-<span class="sd">    :type arr: np.ndarray</span>
-<span class="sd">    :return: Array with elements and their corresponding ranks.</span>
-<span class="sd">    :rtype: np.ndarray</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Step 1: Get the sorted indices (argsort sorts in ascending order, so we reverse it for descending order)</span>
-
-    <span class="n">sorted_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">arr</span><span class="p">)</span>
-
-    <span class="c1"># Step 2: Create a rank array where the rank corresponds to the original index</span>
-    <span class="n">ranks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">sorted_indices</span><span class="p">)</span>
-    <span class="n">ranks</span><span class="p">[</span><span class="n">sorted_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span>
-
-    <span class="c1"># Step 3: Combine the original array with its corresponding ranks</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">arr</span><span class="p">,</span> <span class="n">ranks</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">result</span>
-
+<div class="viewcode-block" id="save_model">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.save_model">[docs]</a>
 <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Save the full model (architecture + weights) to a file.</span>
@@ -454,28 +447,11 @@
 
     <span class="c1"># Save the entire model (architecture + weights)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full model saved to </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="save_model">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.save_model">[docs]</a>
-<span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Save the full model (architecture + weights) to a file.</span>
-
-<span class="sd">    :param model: Keras model to save.</span>
-<span class="sd">    :type model: tf.keras.Model</span>
-<span class="sd">    :param filepath: Path to save the model file.</span>
-<span class="sd">    :type filepath: str</span>
-<span class="sd">    :return: None</span>
-<span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filepath</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full model saved to </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ranked_array">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.ranked_array">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.ranked_array">[docs]</a>
 <span class="k">def</span> <span class="nf">ranked_array</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rank the elements of an array in descending order.</span>
@@ -492,9 +468,9 @@
     <span class="k">return</span> <span class="n">result</span></div>
 
 
-<div class="viewcode-block" id="train_agent">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.train_agent">[docs]</a>
-<span class="k">def</span> <span class="nf">train_agent</span><span class="p">(</span><span class="n">agent</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">,</span>
+<div class="viewcode-block" id="train_agent_time">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.train_agent_time">[docs]</a>
+<span class="k">def</span> <span class="nf">train_agent_time</span><span class="p">(</span><span class="n">agent</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">,</span>
                 <span class="n">processes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
                 <span class="n">param_ranges</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]],</span>
                 <span class="n">n_episodes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -582,6 +558,19 @@
             <span class="n">min_time_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
             <span class="n">min_time</span> <span class="o">=</span> <span class="n">actual_times</span><span class="p">[</span><span class="n">min_time_index</span><span class="p">]</span>
 
+            <span class="c1"># Get the corresponding process type and parameters</span>
+            <span class="n">process_type</span> <span class="o">=</span> <span class="n">processes</span><span class="p">[</span><span class="n">min_time_index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">processes</span><span class="p">)][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">dataset</span><span class="p">[</span><span class="n">min_time_index</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())}</span>
+
+            <span class="c1"># Create and simulate the process instance</span>
+            <span class="n">process_instance</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">process_type</span><span class="p">](</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+            <span class="n">simulated_data</span> <span class="o">=</span> <span class="n">process_instance</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># Update agent&#39;s wealth</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">update_wealth</span><span class="p">(</span><span class="n">simulated_data</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+            <span class="n">step_wealth_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">wealth</span><span class="p">)</span>
+
             <span class="n">actual_min_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">actual_times</span><span class="p">)</span>
 
             <span class="n">ranked_predictions</span> <span class="o">=</span> <span class="n">ranked_array</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
@@ -611,7 +600,7 @@
 
 
 <div class="viewcode-block" id="save_model_weights">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.save_model_weights">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.save_model_weights">[docs]</a>
 <span class="k">def</span> <span class="nf">save_model_weights</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Save the weights of a Keras model to a file.</span>
@@ -628,7 +617,7 @@
 
 
 <div class="viewcode-block" id="visualize_results">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.sml.visualize_results">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.visualize_results">[docs]</a>
 <span class="k">def</span> <span class="nf">visualize_results</span><span class="p">(</span><span class="n">episode_wealth_history</span><span class="p">,</span> <span class="n">episode_performance_history</span><span class="p">,</span> <span class="n">min_times</span><span class="p">,</span> <span class="n">actual_min_times</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Visualize the results of the agent training.</span>
@@ -682,7 +671,120 @@
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Visualization results saved in </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="train_agent_value">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.sml.train_agent_value">[docs]</a>
+<span class="k">def</span> <span class="nf">train_agent_value</span><span class="p">(</span><span class="n">agent</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">,</span>
+                      <span class="n">processes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+                      <span class="n">param_ranges</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]],</span>
+                      <span class="n">n_episodes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                      <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                      <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;output_general&#39;</span><span class="p">,</span>
+                      <span class="n">ergodicity_transform</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                      <span class="n">early_stopping_patience</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                      <span class="n">early_stopping_min_delta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Train the agent to predict and select stochastic processes based on their values.</span>
 
+<span class="sd">    :param agent: NeuralNetworkAgent object to train.</span>
+<span class="sd">    :param processes: List of process dictionaries to simulate.</span>
+<span class="sd">    :param param_ranges: Dictionary of parameter ranges for each process type.</span>
+<span class="sd">    :param n_episodes: Number of episodes to train the agent.</span>
+<span class="sd">    :param n_steps: Number of steps per episode.</span>
+<span class="sd">    :param output_dir: Output directory to save the results.</span>
+<span class="sd">    :param ergodicity_transform: Whether to use ergodicity transform of process values.</span>
+<span class="sd">    :param early_stopping_patience: Number of episodes with no improvement after which training will be stopped.</span>
+<span class="sd">    :param early_stopping_min_delta: Minimum change in MSE to qualify as an improvement.</span>
+<span class="sd">    :return: Tuple of agent, episode performance history, and best MSE.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">process_encoder</span> <span class="o">=</span> <span class="n">ProcessEncoder</span><span class="p">()</span>
+    <span class="n">episode_performance_history</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">best_mse</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+    <span class="n">patience_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_episodes</span><span class="p">):</span>
+        <span class="n">episode_mse</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
+            <span class="c1"># Generate a batch of processes</span>
+            <span class="n">encoded_processes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">actual_values</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">processes</span><span class="p">:</span>
+                <span class="n">process_type</span> <span class="o">=</span> <span class="n">process</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">param_ranges</span><span class="p">[</span><span class="n">process_type</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                <span class="n">process_instance</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">process_type</span><span class="p">](</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+                <span class="n">encoded_process</span> <span class="o">=</span> <span class="n">process_encoder</span><span class="o">.</span><span class="n">encode_process_with_time</span><span class="p">(</span><span class="n">process_instance</span><span class="p">,</span> <span class="n">t_default</span><span class="p">)</span>
+                <span class="n">encoded_processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">encoded_process</span><span class="p">)</span>
+
+                <span class="c1"># Simulate the process</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulating </span><span class="si">{</span><span class="n">process_type</span><span class="si">}</span><span class="s2"> with parameters: </span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">simulated_data</span> <span class="o">=</span> <span class="n">process_instance</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulation completed. Shape of simulated data: </span><span class="si">{</span><span class="n">simulated_data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">simulated_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># Ensure we have at least two time points</span>
+                    <span class="n">process_value</span> <span class="o">=</span> <span class="n">simulated_data</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Last value of the process (excluding time)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Insufficient data points in simulation. Using initial value.&quot;</span><span class="p">)</span>
+                    <span class="n">process_value</span> <span class="o">=</span> <span class="n">simulated_data</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># Use the initial value</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Process value: </span><span class="si">{</span><span class="n">process_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">ergodicity_transform</span><span class="p">:</span>
+                    <span class="c1"># Apply ergodicity transform</span>
+                    <span class="n">istrue</span><span class="p">,</span> <span class="n">transform_expr</span><span class="p">,</span> <span class="n">a_u</span><span class="p">,</span> <span class="n">b_u</span> <span class="o">=</span> <span class="n">process_instance</span><span class="o">.</span><span class="n">ergodicity_transform</span><span class="p">()</span>
+                    <span class="n">transform_func</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">transform_expr</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">)</span>
+                    <span class="n">process_value</span> <span class="o">=</span> <span class="n">transform_func</span><span class="p">(</span><span class="n">process_value</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transformed process value: </span><span class="si">{</span><span class="n">process_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="n">actual_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">process_value</span><span class="p">)</span>
+
+            <span class="n">encoded_processes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">encoded_processes</span><span class="p">)</span>
+            <span class="n">actual_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">actual_values</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shape of encoded_processes: </span><span class="si">{</span><span class="n">encoded_processes</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shape of actual_values: </span><span class="si">{</span><span class="n">actual_values</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Predict process values</span>
+            <span class="n">predicted_values</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">encoded_processes</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shape of predicted_values: </span><span class="si">{</span><span class="n">predicted_values</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Train the model</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">encoded_processes</span><span class="p">,</span> <span class="n">actual_values</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c1"># Calculate MSE</span>
+            <span class="n">mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">predicted_values</span> <span class="o">-</span> <span class="n">actual_values</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">episode_mse</span> <span class="o">+=</span> <span class="n">mse</span>
+
+            <span class="c1"># Select process with highest predicted value</span>
+            <span class="n">selected_process_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">predicted_values</span><span class="p">)</span>
+            <span class="n">selected_process_value</span> <span class="o">=</span> <span class="n">actual_values</span><span class="p">[</span><span class="n">selected_process_index</span><span class="p">]</span>
+
+            <span class="c1"># Update agent&#39;s wealth</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">update_wealth</span><span class="p">(</span><span class="n">selected_process_value</span><span class="p">)</span>
+
+        <span class="c1"># Calculate average MSE for the episode</span>
+        <span class="n">avg_episode_mse</span> <span class="o">=</span> <span class="n">episode_mse</span> <span class="o">/</span> <span class="n">n_steps</span>
+        <span class="n">episode_performance_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg_episode_mse</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Episode </span><span class="si">{</span><span class="n">episode</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_episodes</span><span class="si">}</span><span class="s2">: MSE = </span><span class="si">{</span><span class="n">avg_episode_mse</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, Wealth = </span><span class="si">{</span><span class="n">agent</span><span class="o">.</span><span class="n">wealth</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Early stopping check</span>
+        <span class="k">if</span> <span class="n">avg_episode_mse</span> <span class="o">&lt;</span> <span class="n">best_mse</span> <span class="o">-</span> <span class="n">early_stopping_min_delta</span><span class="p">:</span>
+            <span class="n">best_mse</span> <span class="o">=</span> <span class="n">avg_episode_mse</span>
+            <span class="n">patience_counter</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c1"># Save the best model</span>
+            <span class="n">save_model</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                       <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;best_model_</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">_%H%M%S&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">.h5&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">patience_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">patience_counter</span> <span class="o">&gt;=</span> <span class="n">early_stopping_patience</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Early stopping triggered after </span><span class="si">{</span><span class="n">episode</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> episodes.&quot;</span><span class="p">)</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">agent</span><span class="p">,</span> <span class="n">episode_performance_history</span><span class="p">,</span> <span class="n">best_mse</span></div>
 
 
 </pre></div>

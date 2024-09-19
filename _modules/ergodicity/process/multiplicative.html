@@ -102,6 +102,21 @@
 <span class="sd">    across multiple interacting components. This class is particularly useful in fields such as finance, where</span>
 <span class="sd">    multiple asset prices or risk factors may exhibit simultaneous extreme behaviors.</span>
 
+<span class="sd">- **Geometric Generalized Hyperbolic Process**:</span>
+
+<span class="sd">    A generalization of the Lévy process that includes the generalized hyperbolic distribution, providing a</span>
+<span class="sd">    flexible framework for modeling heavy-tailed phenomena with varying skewness and kurtosis.</span>
+
+<span class="sd">- **Geometric Bessel Process**:</span>
+
+<span class="sd">    A Lévy process based on the Bessel distribution, useful for modeling processes with infinite activity and</span>
+<span class="sd">    non-negative jumps. This process is particularly relevant in insurance and risk management contexts.</span>
+
+<span class="sd">- **Geometric Squared Bessel Process**:</span>
+
+<span class="sd">    A variant of the Bessel process where the squared values of the process are considered, leading to different</span>
+<span class="sd">    behavior and statistical properties. </span>
+
 <span class="sd">Helper Functions:</span>
 
 <span class="sd">- **implied_levy_correction**:</span>
@@ -142,7 +157,6 @@
 <span class="sd">dynamics.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Literal</span>
 <span class="kn">from</span> <span class="nn">.definitions</span> <span class="kn">import</span> <span class="n">ItoProcess</span>
 <span class="kn">from</span> <span class="nn">.definitions</span> <span class="kn">import</span> <span class="n">NonItoProcess</span>
@@ -162,12 +176,11 @@
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">r2_score</span>
-
 <span class="kn">from</span> <span class="nn">stochastic.processes.continuous</span> <span class="kn">import</span> <span class="n">GeometricBrownianMotion</span> <span class="k">as</span> <span class="n">StochasticGBM</span>
 <span class="kn">from</span> <span class="nn">.basic</span> <span class="kn">import</span> <span class="n">BrownianMotion</span>
 
 <div class="viewcode-block" id="GeometricBrownianMotion">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion">[docs]</a>
 <span class="k">class</span> <span class="nc">GeometricBrownianMotion</span><span class="p">(</span><span class="n">BrownianMotion</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    GeometricBrownianMotion represents a fundamental continuous-time stochastic process used to model the</span>
@@ -197,9 +210,11 @@
         <span class="k">if</span> <span class="n">use_external_simulators</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_has_wrong_params</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;External simulator for this process may not work properly. We advice to use the internal simulator or make sure you know exactly what you are doing.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_drift_term_sympy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drift</span><span class="o">*</span><span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term_sympy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volatility</span><span class="o">*</span><span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GeometricBrownianMotion.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the custom increment for the process.</span>
@@ -215,29 +230,8 @@
         <span class="k">return</span> <span class="n">dX</span></div>
 
 
-<div class="viewcode-block" id="GeometricBrownianMotion.closed_formula">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.closed_formula">[docs]</a>
-    <span class="k">def</span> <span class="nf">closed_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns the closed formula for the process.</span>
-
-<span class="sd">        :return: Closed formula for the process</span>
-<span class="sd">        :rtype: Any</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Implement this as a wrapper for all processes later</span>
-        <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">t</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;t W&#39;</span><span class="p">)</span>
-            <span class="n">formula</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_drift</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volatility</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volatility</span> <span class="o">*</span> <span class="n">W</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The closed formula for the Geometric Brownian Motion is:&quot;</span><span class="p">,</span> <span class="n">formula</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">formula</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_drift</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">*</span> <span class="n">W</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">formula</span></div>
-
-
 <div class="viewcode-block" id="GeometricBrownianMotion.simulate_growth_rate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.simulate_growth_rate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.simulate_growth_rate">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_growth_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                              <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">n_simulations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                              <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -294,7 +288,7 @@
 
 
 <div class="viewcode-block" id="GeometricBrownianMotion.plot_growth_rate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.plot_growth_rate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.plot_growth_rate">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_growth_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">growth_rates</span><span class="p">,</span> <span class="n">save</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the simulated growth rate of the Geometric Brownian Motion process.</span>
@@ -322,7 +316,7 @@
 
 
 <div class="viewcode-block" id="GeometricBrownianMotion.self_averaging_time_theory">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.self_averaging_time_theory">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.self_averaging_time_theory">[docs]</a>
     <span class="k">def</span> <span class="nf">self_averaging_time_theory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the theoretical estimate of self-averaging time for the Geometric Brownian Motion process.</span>
@@ -338,13 +332,14 @@
         <span class="k">return</span> <span class="n">sat</span></div>
 
 
-<div class="viewcode-block" id="GeometricBrownianMotion.relative_variance_pea">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.relative_variance_pea">[docs]</a>
-    <span class="k">def</span> <span class="nf">relative_variance_pea</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">):</span>
+<div class="viewcode-block" id="GeometricBrownianMotion.relative_variance_pea_theory">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricBrownianMotion.relative_variance_pea_theory">[docs]</a>
+    <span class="k">def</span> <span class="nf">relative_variance_pea_theory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate the theoretical relative variance of the process using the PEA method.</span>
-<span class="sd">        The PEA method estimates the relative variance of the process by considering the ensemble average</span>
-<span class="sd">        of the process.</span>
+<span class="sd">        Calculate the theoretical relative variance of a partial ensemble average (PEA).</span>
+<span class="sd">        It is used to estimate if PEA is close to its expectation value.</span>
+<span class="sd">        If the results is &lt;&lt;1, then PEA is close to its expectation value.</span>
+<span class="sd">        Otherwise, the process has exited the self-averaging regime.</span>
 
 <span class="sd">        :param num_instances: Number of instances to simulate</span>
 <span class="sd">        :type num_instances: int</span>
@@ -364,13 +359,13 @@
 <span class="kn">import</span> <span class="nn">ergodicity.configurations</span> <span class="k">as</span> <span class="nn">config</span>
 
 <div class="viewcode-block" id="comments_false">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.comments_false">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.comments_false">[docs]</a>
 <span class="k">def</span> <span class="nf">comments_false</span><span class="p">():</span>
     <span class="n">config</span><span class="o">.</span><span class="n">default_comments</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="comments_true">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.comments_true">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.comments_true">[docs]</a>
 <span class="k">def</span> <span class="nf">comments_true</span><span class="p">():</span>
     <span class="n">config</span><span class="o">.</span><span class="n">default_comments</span> <span class="o">=</span> <span class="kc">True</span></div>
 
@@ -378,7 +373,7 @@
 <span class="kn">from</span> <span class="nn">ergodicity.tools.compute</span> <span class="kn">import</span> <span class="o">*</span>
 
 <div class="viewcode-block" id="GeometricLevyProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">GeometricLevyProcess</span><span class="p">(</span><span class="n">LevyStableProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    GeometricLevyProcess represents a stochastic process that combines the heavy-tailed</span>
@@ -465,7 +460,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_external_simulator</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="GeometricLevyProcess.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the custom increment for the process.</span>
@@ -478,7 +473,7 @@
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">simulate_with_differential</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">L</span> <span class="o">=</span> <span class="n">LevyStableProcess</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="p">,</span> <span class="n">default_comments</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">L</span> <span class="o">=</span> <span class="n">LevyStableProcess</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_beta</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_loc</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">dL</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">increment</span><span class="p">(</span><span class="n">timestep_increment</span><span class="o">=</span><span class="n">timestep</span><span class="p">)</span>
             <span class="n">dX</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dL</span>
         <span class="k">else</span><span class="p">:</span>
@@ -488,7 +483,7 @@
 
 
 <div class="viewcode-block" id="GeometricLevyProcess.sigma_divergence">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess.sigma_divergence">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess.sigma_divergence">[docs]</a>
     <span class="k">def</span> <span class="nf">sigma_divergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the divergence between the theoretical and empirical sigma values for the process.</span>
@@ -528,7 +523,7 @@
 
 
 <div class="viewcode-block" id="GeometricLevyProcess.implied_correction">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess.implied_correction">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricLevyProcess.implied_correction">[docs]</a>
     <span class="k">def</span> <span class="nf">implied_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the implied correction term for the Geometric Levy Process (analogoys to -0.5 * sigma^2 * t for GBM).</span>
@@ -568,7 +563,7 @@
 
         <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">average_growth_rate_values</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Average Growth Rate&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">average_growth_rate_values</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Growth Rate&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">growth_function</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Growth function&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">naive_growth_function</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Naive Growth function&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Comparison of growth functions&quot;</span><span class="p">)</span>
@@ -588,7 +583,7 @@
 
 <span class="kn">from</span> <span class="nn">.basic</span> <span class="kn">import</span> <span class="n">MultivariateBrownianMotion</span>
 <div class="viewcode-block" id="MultivariateGeometricBrownianMotion">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion">[docs]</a>
 <span class="k">class</span> <span class="nc">MultivariateGeometricBrownianMotion</span><span class="p">(</span><span class="n">MultivariateBrownianMotion</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    MultivariateGeometricBrownianMotion represents a sophisticated extension of Geometric Brownian Motion</span>
@@ -675,7 +670,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Scale matrix must be symmetric and positive definite&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="MultivariateGeometricBrownianMotion.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the custom increment for the process.</span>
@@ -694,7 +689,7 @@
 
 
 <div class="viewcode-block" id="MultivariateGeometricBrownianMotion.simulate_weights">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.simulate_weights">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.simulate_weights">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                                   <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -746,7 +741,7 @@
 
 
 <div class="viewcode-block" id="MultivariateGeometricBrownianMotion.calculate_expected_log_growth_rate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.calculate_expected_log_growth_rate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.calculate_expected_log_growth_rate">[docs]</a>
     <span class="k">def</span> <span class="nf">calculate_expected_log_growth_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the expected log growth rate at each time step.</span>
@@ -781,7 +776,7 @@
 
 
 <div class="viewcode-block" id="MultivariateGeometricBrownianMotion.simulate_growth_rate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.simulate_growth_rate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.simulate_growth_rate">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_growth_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">n_simulations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span>
                                            <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -832,7 +827,7 @@
 
 
 <div class="viewcode-block" id="MultivariateGeometricBrownianMotion.plot_weights_and_growth_rate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.plot_weights_and_growth_rate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.plot_weights_and_growth_rate">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_weights_and_growth_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">log_growth_rates</span><span class="p">,</span> <span class="n">save</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the simulated weights and expected log growth rate of the Multivariate Geometric Brownian Motion process.</span>
@@ -873,7 +868,7 @@
 
 
 <div class="viewcode-block" id="MultivariateGeometricBrownianMotion.simulate_ensemble">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.simulate_ensemble">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricBrownianMotion.simulate_ensemble">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_ensemble</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate a single path for a portfolio consisting of multiple instances.</span>
@@ -945,11 +940,10 @@
 </div>
 
 
-
 <span class="kn">from</span> <span class="nn">ergodicity.process.basic</span> <span class="kn">import</span> <span class="n">StandardFractionalBrownianMotion</span>
 
 <div class="viewcode-block" id="GeometricFractionalBrownianMotion">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricFractionalBrownianMotion">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricFractionalBrownianMotion">[docs]</a>
 <span class="k">class</span> <span class="nc">GeometricFractionalBrownianMotion</span><span class="p">(</span><span class="n">NonItoProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    MultivariateGeometricBrownianMotion represents a sophisticated extension of Geometric Brownian Motion</span>
@@ -1039,7 +1033,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_external_simulator</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="GeometricFractionalBrownianMotion.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricFractionalBrownianMotion.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricFractionalBrownianMotion.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the custom increment for the process.</span>
@@ -1055,7 +1049,7 @@
 
 
 <div class="viewcode-block" id="GeometricCauchyProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.GeometricCauchyProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricCauchyProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">GeometricCauchyProcess</span><span class="p">(</span><span class="n">GeometricLevyProcess</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    MultivariateGeometricBrownianMotion represents a sophisticated extension of Geometric Brownian Motion</span>
@@ -1129,7 +1123,7 @@
 
 <span class="kn">from</span> <span class="nn">ergodicity.process.basic</span> <span class="kn">import</span> <span class="n">MultivariateLevy</span>
 <div class="viewcode-block" id="MultivariateGeometricLevy">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricLevy">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricLevy">[docs]</a>
 <span class="k">class</span> <span class="nc">MultivariateGeometricLevy</span><span class="p">(</span><span class="n">MultivariateLevy</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    MultivariateGeometricLevy represents an advanced stochastic process that combines the heavy-tailed</span>
@@ -1228,7 +1222,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_external_simulator</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="MultivariateGeometricLevy.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricLevy.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricLevy.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the custom increment for the process.</span>
@@ -1256,7 +1250,7 @@
 
 
 <div class="viewcode-block" id="MultivariateGeometricLevy.simulate_ensemble">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricLevy.simulate_ensemble">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.MultivariateGeometricLevy.simulate_ensemble">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_ensemble</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate a single path for a portfolio consisting of multiple instances.</span>
@@ -1313,8 +1307,238 @@
 </div>
 
 
+<span class="kn">from</span> <span class="nn">.basic</span> <span class="kn">import</span> <span class="n">GeneralizedHyperbolicProcess</span>
+<div class="viewcode-block" id="GeometricGeneralizedHyperbolicProcess">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricGeneralizedHyperbolicProcess">[docs]</a>
+<span class="k">class</span> <span class="nc">GeometricGeneralizedHyperbolicProcess</span><span class="p">(</span><span class="n">GeneralizedHyperbolicProcess</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    GeometricGeneralizedHyperbolicProcess represents a multiplicative version of the Generalized Hyperbolic Process.</span>
+<span class="sd">    This continuous-time stochastic process combines the flexibility of the Generalized Hyperbolic distribution</span>
+<span class="sd">    with multiplicative dynamics, making it suitable for modeling phenomena where changes are proportional to</span>
+<span class="sd">    the current state and exhibit complex distributional characteristics.</span>
+
+<span class="sd">    The process is defined as:</span>
+<span class="sd">    dS(t) = S(t) * dX(t)</span>
+
+<span class="sd">    where X(t) is a Generalized Hyperbolic Process.</span>
+
+<span class="sd">    Key properties include:</span>
+<span class="sd">    1. Multiplicative nature: Changes are proportional to the current value, preserving non-negativity.</span>
+<span class="sd">    2. Flexible distribution: Can model a wide range of tail behaviors and asymmetries.</span>
+<span class="sd">    3. Nests several important distributions: Including normal, Student&#39;s t, variance-gamma, and normal-inverse Gaussian.</span>
+
+<span class="sd">    This implementation extends the GeneralizedHyperbolicProcess class, adapting it to a multiplicative framework.</span>
+<span class="sd">    It&#39;s explicitly set as multiplicative (_multiplicative = True) and uses an internal simulator for precise</span>
+<span class="sd">    control over the process generation.</span>
+
+<span class="sd">    Researchers and practitioners should be aware of the increased complexity in parameter estimation and</span>
+<span class="sd">    interpretation compared to simpler processes. The rich behavior of this process requires careful consideration</span>
+<span class="sd">    in both theoretical development and practical applications.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Multiplicative Generalized Hyperbolic Process&quot;</span><span class="p">,</span> <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">plambda</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.7</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">loc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0005</span><span class="p">,</span> <span class="n">delta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+                 <span class="n">t_scaling</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the Geometric Generalized Hyperbolic Process.</span>
+
+<span class="sd">        :param name: Name of the process</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        :param process_class: Class of the process</span>
+<span class="sd">        :type process_class: Type[Any]</span>
+<span class="sd">        :param plambda: The shape parameter (λ)</span>
+<span class="sd">        :type plambda: float</span>
+<span class="sd">        :param alpha: The shape parameter (α)</span>
+<span class="sd">        :type alpha: float</span>
+<span class="sd">        :param beta: The skewness parameter (β)</span>
+<span class="sd">        :type beta: float</span>
+<span class="sd">        :param loc: The location parameter (μ)</span>
+<span class="sd">        :type loc: float</span>
+<span class="sd">        :param delta: The scale parameter (δ)</span>
+<span class="sd">        :type delta: float</span>
+<span class="sd">        :param t_scaling: The scaling function for time increments</span>
+<span class="sd">        :type t_scaling: Callable[[float], float]</span>
+<span class="sd">        :param kwargs: Additional keyword arguments for the process</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">,</span> <span class="n">plambda</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">t_scaling</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;multiplicative&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_multiplicative</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_external_simulator</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="GeometricGeneralizedHyperbolicProcess.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricGeneralizedHyperbolicProcess.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the custom increment for the process.</span>
+
+<span class="sd">        :param X: Current value of the process</span>
+<span class="sd">        :type X: float</span>
+<span class="sd">        :param timestep: Time step for the simulation</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :return: Increment for the process</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Generate increment from the base Generalized Hyperbolic Process</span>
+        <span class="n">dX_base</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">custom_increment</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">timestep</span><span class="p">)</span>
+
+        <span class="c1"># Convert to multiplicative increment</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dX_base</span>
+
+        <span class="k">return</span> <span class="n">dX</span></div>
+</div>
+
+
+<span class="kn">from</span> <span class="nn">ergodicity.process.basic</span> <span class="kn">import</span> <span class="n">StandardBesselProcess</span>
+<div class="viewcode-block" id="GeometricBesselProcess">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricBesselProcess">[docs]</a>
+<span class="k">class</span> <span class="nc">GeometricBesselProcess</span><span class="p">(</span><span class="n">StandardBesselProcess</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    GeometricBesselProcess represents a multiplicative extension of the StandardBesselProcess.</span>
+<span class="sd">    This process combines the characteristics of a Bessel process with the multiplicative nature of geometric processes.</span>
+<span class="sd">    The resulting stochastic process, denoted as (S_t)_{t≥0}, is defined as:</span>
+
+<span class="sd">    dS_t = S_t * dR_t</span>
+
+<span class="sd">    where R_t is the StandardBesselProcess of dimension d.</span>
+
+<span class="sd">    Key features of GeometricBesselProcess include:</span>
+<span class="sd">    1. Multiplicative nature: Changes are proportional to the current value, preserving non-negativity.</span>
+<span class="sd">    2. Dimension-dependent behavior: The underlying Bessel process characteristics (recurrence, transience) are preserved.</span>
+<span class="sd">    3. Non-negative: The process is always positive, making it suitable for modeling quantities that cannot be negative.</span>
+
+<span class="sd">    This implementation extends the StandardBesselProcess class, adapting it to a geometric framework.</span>
+<span class="sd">    It inherits the dimension-dependent properties of the Bessel process while providing a multiplicative growth model.</span>
+
+<span class="sd">    Applications of GeometricBesselProcess span various fields:</span>
+<span class="sd">    - Finance: Modeling asset prices or interest rates with specific volatility structures.</span>
+<span class="sd">    - Physics: Studying particle diffusion processes with multiplicative growth.</span>
+<span class="sd">    - Biology: Analyzing population dynamics with radial growth patterns.</span>
+
+<span class="sd">    Researchers and practitioners should be aware of the increased complexity in interpretation compared to the standard Bessel process.</span>
+<span class="sd">    The multiplicative nature introduces new dynamics that require careful consideration in both theoretical development and practical applications.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Geometric Bessel Process&quot;</span><span class="p">,</span>
+                 <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">dim_default</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor method for the GeometricBesselProcess class.</span>
+
+<span class="sd">        :param name: The name of the process</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        :param process_class: The specific stochastic process class to use for simulation</span>
+<span class="sd">        :type process_class: Type[Any]</span>
+<span class="sd">        :param dim: The dimension of the underlying Bessel process</span>
+<span class="sd">        :type dim: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;geometric&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_multiplicative</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_external_simulator</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="GeometricBesselProcess.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricBesselProcess.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the custom increment for the process.</span>
+
+<span class="sd">        :param X: Current value of the process</span>
+<span class="sd">        :type X: float</span>
+<span class="sd">        :param timestep: Time step for the simulation</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :return: Increment for the process</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Generate increment from the base Bessel Process</span>
+        <span class="n">BP</span> <span class="o">=</span> <span class="n">StandardBesselProcess</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">)</span>
+        <span class="n">dR</span> <span class="o">=</span> <span class="n">BP</span><span class="o">.</span><span class="n">increment</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span>
+
+        <span class="c1"># Convert to multiplicative increment</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dR</span>
+
+        <span class="k">return</span> <span class="n">dX</span></div>
+</div>
+
+
+<span class="kn">from</span> <span class="nn">.basic</span> <span class="kn">import</span> <span class="n">SquaredBesselProcess</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Any</span>
+
+<div class="viewcode-block" id="GeometricSquaredBesselProcess">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricSquaredBesselProcess">[docs]</a>
+<span class="k">class</span> <span class="nc">GeometricSquaredBesselProcess</span><span class="p">(</span><span class="n">SquaredBesselProcess</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    GeometricSquaredBesselProcess represents a multiplicative extension of the SquaredBesselProcess.</span>
+<span class="sd">    This process combines the characteristics of a squared Bessel process with the multiplicative nature of geometric processes.</span>
+<span class="sd">    The resulting stochastic process, denoted as (S_t)_{t≥0}, is defined as:</span>
+
+<span class="sd">    dS_t = S_t * dR²_t</span>
+
+<span class="sd">    where R²_t is the SquaredBesselProcess of dimension d.</span>
+
+<span class="sd">    Key features of GeometricSquaredBesselProcess include:</span>
+<span class="sd">    1. Multiplicative nature: Changes are proportional to the current value, preserving non-negativity.</span>
+<span class="sd">    2. Dimension-dependent behavior: The underlying squared Bessel process characteristics are preserved.</span>
+<span class="sd">    3. Non-negative: The process is always positive, making it suitable for modeling quantities that cannot be negative.</span>
+<span class="sd">    4. Inherits properties of squared Bessel process: Including recurrence/transience behavior based on dimension.</span>
+
+<span class="sd">    This implementation extends the SquaredBesselProcess class, adapting it to a geometric framework.</span>
+<span class="sd">    It inherits the dimension-dependent properties of the squared Bessel process while providing a multiplicative growth model.</span>
+
+<span class="sd">    Applications of GeometricSquaredBesselProcess span various fields:</span>
+<span class="sd">    - Finance: Modeling volatility of asset prices or interest rates with specific structures.</span>
+<span class="sd">    - Physics: Studying particle diffusion processes with multiplicative squared radial growth.</span>
+<span class="sd">    - Biology: Analyzing population dynamics with quadratic radial growth patterns.</span>
+<span class="sd">    - Queueing theory: Modeling busy periods with multiplicative squared characteristics.</span>
+
+<span class="sd">    Researchers and practitioners should be aware of the increased complexity in interpretation compared to the standard squared Bessel process.</span>
+<span class="sd">    The multiplicative nature introduces new dynamics that require careful consideration in both theoretical development and practical applications.</span>
+<span class="sd">    The dimension parameter d plays a crucial role in determining the behavior of the process, affecting its recurrence properties and long-term behavior.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Geometric Squared Bessel Process&quot;</span><span class="p">,</span>
+                 <span class="n">process_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">dim_default</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor method for the GeometricSquaredBesselProcess class.</span>
+
+<span class="sd">        :param name: The name of the process</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        :param process_class: The specific stochastic process class to use for simulation</span>
+<span class="sd">        :type process_class: Type[Any]</span>
+<span class="sd">        :param dim: The dimension of the underlying squared Bessel process</span>
+<span class="sd">        :type dim: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">process_class</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;geometric&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_multiplicative</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_external_simulator</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="GeometricSquaredBesselProcess.custom_increment">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.GeometricSquaredBesselProcess.custom_increment">[docs]</a>
+    <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the custom increment for the process.</span>
+
+<span class="sd">        :param X: Current value of the process</span>
+<span class="sd">        :type X: float</span>
+<span class="sd">        :param timestep: Time step for the simulation</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :return: Increment for the process</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Generate increment from the base Squared Bessel Process</span>
+        <span class="n">SBP</span> <span class="o">=</span> <span class="n">SquaredBesselProcess</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">)</span>
+        <span class="n">dR2</span> <span class="o">=</span> <span class="n">SBP</span><span class="o">.</span><span class="n">increment</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span>
+
+        <span class="c1"># Convert to multiplicative increment</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">dR2</span>
+
+        <span class="k">return</span> <span class="n">dX</span></div>
+</div>
+
+
 <div class="viewcode-block" id="implied_levy_correction">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.implied_levy_correction">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.implied_levy_correction">[docs]</a>
 <span class="k">def</span> <span class="nf">implied_levy_correction</span><span class="p">(</span><span class="n">alpha_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
                             <span class="n">beta_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
                             <span class="n">time_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
@@ -1333,8 +1557,8 @@
 <span class="sd">    :type alpha_range: Tuple[float, float]</span>
 <span class="sd">    :param beta_range: Tuple of (min_beta, max_beta)</span>
 <span class="sd">    :type beta_range: Tuple[float, float]</span>
-<span class="sd">    :param time_range: Tuple of (min_time, max_time)</span>
-<span class="sd">    :type time_range: Tuple[float, float]</span>
+<span class="sd">    :param time_range: Tuple of (min_time, max_time) or a single time value</span>
+<span class="sd">    :type time_range: Tuple[float, float] or float</span>
 <span class="sd">    :param alpha_step: Step size for alpha</span>
 <span class="sd">    :type alpha_step: float</span>
 <span class="sd">    :param beta_step: Step size for beta</span>
@@ -1359,7 +1583,13 @@
 
     <span class="n">alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">*</span><span class="n">alpha_range</span><span class="p">,</span> <span class="n">alpha_step</span><span class="p">)</span>
     <span class="n">betas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">*</span><span class="n">beta_range</span><span class="p">,</span> <span class="n">beta_step</span><span class="p">)</span>
-    <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">*</span><span class="n">time_range</span><span class="p">,</span> <span class="n">time_step</span><span class="p">)</span>
+
+    <span class="c1"># if times is float just convert it to list</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_range</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="n">time_range</span><span class="p">]</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">*</span><span class="n">time_range</span><span class="p">,</span> <span class="n">time_step</span><span class="p">)</span>
 
     <span class="n">corrections</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">alphas</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">betas</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)))</span>
 
@@ -1406,7 +1636,7 @@
 
 
 <div class="viewcode-block" id="estimate_sigma">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.multiplicative.estimate_sigma">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.multiplicative.estimate_sigma">[docs]</a>
 <span class="k">def</span> <span class="nf">estimate_sigma</span><span class="p">(</span>
         <span class="n">num_steps_alpha</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">num_steps_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>

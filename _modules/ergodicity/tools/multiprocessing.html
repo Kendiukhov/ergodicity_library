@@ -108,7 +108,6 @@
 
 <span class="sd">    print(results1)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">import</span> <span class="nn">concurrent.futures</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">json</span>
@@ -125,9 +124,8 @@
 <span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">freeze_support</span>
 <span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ProcessPoolExecutor</span>
 
-
 <div class="viewcode-block" id="get_object_name">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.get_object_name">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.get_object_name">[docs]</a>
 <span class="k">def</span> <span class="nf">get_object_name</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the name of an object from the local variables in the calling frame.</span>
@@ -143,7 +141,7 @@
 
 
 <div class="viewcode-block" id="ParallelExecutionManager">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.ParallelExecutionManager">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.ParallelExecutionManager">[docs]</a>
 <span class="k">class</span> <span class="nc">ParallelExecutionManager</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class to manage the parallel execution of tasks using ProcessPoolExecutor.</span>
@@ -157,7 +155,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="ParallelExecutionManager.run_task_parallel">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.ParallelExecutionManager.run_task_parallel">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.ParallelExecutionManager.run_task_parallel">[docs]</a>
     <span class="k">def</span> <span class="nf">run_task_parallel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run a task in parallel using ProcessPoolExecutor.</span>
@@ -181,7 +179,7 @@
 
 
 <div class="viewcode-block" id="ParallelExecutionManager.execute">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.ParallelExecutionManager.execute">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.ParallelExecutionManager.execute">[docs]</a>
     <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Execute multiple tasks in parallel using ProcessPoolExecutor.</span>
@@ -216,7 +214,7 @@
 
 
 <div class="viewcode-block" id="create_task_key">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.create_task_key">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.create_task_key">[docs]</a>
 <span class="k">def</span> <span class="nf">create_task_key</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;</span>
 <span class="sd">    Create a unique key for a task based on its parameters.</span>
@@ -232,7 +230,7 @@
 
 
 <div class="viewcode-block" id="task_wrapper">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.task_wrapper">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.task_wrapper">[docs]</a>
 <span class="k">def</span> <span class="nf">task_wrapper</span><span class="p">(</span><span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;save&#39;</span><span class="p">],</span>
                  <span class="n">output_dir</span><span class="o">=</span><span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">],</span>
                  <span class="n">print_debug</span><span class="o">=</span><span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;print_debug&#39;</span><span class="p">]):</span>
@@ -295,7 +293,7 @@
 
 
 <div class="viewcode-block" id="initial_tasks_wrapper">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.initial_tasks_wrapper">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.initial_tasks_wrapper">[docs]</a>
 <span class="k">def</span> <span class="nf">initial_tasks_wrapper</span><span class="p">(</span><span class="n">task_name</span><span class="p">,</span> <span class="n">specific_args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A decorator for functions that create initial tasks for parallel execution.</span>
@@ -362,7 +360,7 @@
 
 
 <div class="viewcode-block" id="secondary_tasks_wrapper">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.secondary_tasks_wrapper">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.secondary_tasks_wrapper">[docs]</a>
 <span class="k">def</span> <span class="nf">secondary_tasks_wrapper</span><span class="p">(</span><span class="n">task_name</span><span class="p">,</span> <span class="n">specific_args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A decorator for functions that create secondary tasks for parallel execution.</span>
@@ -434,7 +432,7 @@
 
 
 <div class="viewcode-block" id="parallel_processor">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.parallel_processor">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.parallel_processor">[docs]</a>
 <span class="k">def</span> <span class="nf">parallel_processor</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A decorator that wraps any function, allowing it to process multiple datasets in parallel.</span>
@@ -492,11 +490,11 @@
 
 
 <div class="viewcode-block" id="multi_simulations">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_simulations">[docs]</a>
-<span class="nd">@initial_tasks_wrapper</span><span class="p">(</span><span class="s1">&#39;simulate&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;timestep&#39;</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">,</span> <span class="s1">&#39;num_instances&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_simulations">[docs]</a>
+<span class="nd">@initial_tasks_wrapper</span><span class="p">(</span><span class="s1">&#39;simulate&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="n">t_default</span><span class="p">,</span> <span class="s1">&#39;timestep&#39;</span><span class="p">:</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="s1">&#39;num_instances&#39;</span><span class="p">:</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">multi_simulations</span><span class="p">(</span><span class="n">process_class</span><span class="p">,</span> <span class="n">param_ranges</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Run multiple simulations in parallel for different parameter combinations.</span>
+<span class="sd">    Run multiple simulations of stochastic processes in parallel for different parameter combinations.</span>
 
 <span class="sd">    :param process_class: The stochastic process class</span>
 <span class="sd">    :type process_class: type</span>
@@ -509,7 +507,7 @@
 
 
 <div class="viewcode-block" id="multi_visualize_moments">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_visualize_moments">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_visualize_moments">[docs]</a>
 <span class="nd">@secondary_tasks_wrapper</span><span class="p">(</span><span class="s1">&#39;visualize_moments&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;mask&#39;</span><span class="p">:</span> <span class="n">mask_default</span><span class="p">,</span> <span class="s1">&#39;save&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">multi_visualize_moments</span><span class="p">(</span><span class="n">simulation_results</span><span class="p">,</span> <span class="n">param_to_task</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -525,7 +523,7 @@
 
 
 <div class="viewcode-block" id="multi_growth_rate_time_average">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_growth_rate_time_average">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_growth_rate_time_average">[docs]</a>
 <span class="nd">@initial_tasks_wrapper</span><span class="p">(</span><span class="s1">&#39;growth_rate_time_average&#39;</span><span class="p">,</span> <span class="p">{</span>
     <span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="mi">1000000</span><span class="p">,</span>
     <span class="s1">&#39;timestep&#39;</span><span class="p">:</span> <span class="mf">0.0001</span>
@@ -546,7 +544,7 @@
 
 
 <div class="viewcode-block" id="multi_growth_rate_ensemble_average">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_growth_rate_ensemble_average">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_growth_rate_ensemble_average">[docs]</a>
 <span class="nd">@initial_tasks_wrapper</span><span class="p">(</span><span class="s1">&#39;growth_rate_ensemble_average&#39;</span><span class="p">,</span> <span class="p">{</span>
     <span class="s1">&#39;num_instances&#39;</span><span class="p">:</span> <span class="mi">1000000</span>
 <span class="p">})</span>
@@ -565,7 +563,7 @@
 
 
 <div class="viewcode-block" id="multi_visualize_moment">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_visualize_moment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_visualize_moment">[docs]</a>
 <span class="nd">@secondary_tasks_wrapper</span><span class="p">(</span><span class="s1">&#39;visualize_moment&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;moment&#39;</span><span class="p">:</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;mask&#39;</span><span class="p">:</span> <span class="n">mask_default</span><span class="p">,</span> <span class="s1">&#39;save&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">multi_visualize_moment</span><span class="p">(</span><span class="n">simulation_results</span><span class="p">,</span> <span class="n">param_to_task</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -583,7 +581,7 @@
 
 
 <div class="viewcode-block" id="growth_rate_wrapper">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.growth_rate_wrapper">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.growth_rate_wrapper">[docs]</a>
 <span class="k">def</span> <span class="nf">growth_rate_wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A decorator that wraps functions related to growth rate calculations.</span>
@@ -616,7 +614,7 @@
 
 
 <div class="viewcode-block" id="simulate_and_calculate_growth_rate">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.simulate_and_calculate_growth_rate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.simulate_and_calculate_growth_rate">[docs]</a>
 <span class="nd">@growth_rate_wrapper</span>
 <span class="k">def</span> <span class="nf">simulate_and_calculate_growth_rate</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -642,7 +640,7 @@
 
 <span class="c1"># Update the multi_growth_rate_processor to use the wrapped function</span>
 <div class="viewcode-block" id="multi_growth_rate_processor">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_growth_rate_processor">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.multi_growth_rate_processor">[docs]</a>
 <span class="k">def</span> <span class="nf">multi_growth_rate_processor</span><span class="p">(</span><span class="n">process_class</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">t_range</span><span class="p">,</span> <span class="n">num_instances_range</span><span class="p">,</span>
                                 <span class="n">timestep</span><span class="o">=</span><span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -696,7 +694,7 @@
 
 
 <div class="viewcode-block" id="visualize_growth_rates">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.visualize_growth_rates">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.visualize_growth_rates">[docs]</a>
 <span class="k">def</span> <span class="nf">visualize_growth_rates</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">process_class</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Visualize the growth rates for multiple parameter combinations.</span>
@@ -729,7 +727,7 @@
 
 
 <div class="viewcode-block" id="general_pipeline">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.general_pipeline">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.general_pipeline">[docs]</a>
 <span class="k">def</span> <span class="nf">general_pipeline</span><span class="p">(</span><span class="n">process_class</span><span class="p">,</span> <span class="n">param_ranges</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">],</span> <span class="n">timestep</span><span class="o">=</span><span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">],</span> <span class="n">num_instances</span><span class="o">=</span><span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;num_instances&#39;</span><span class="p">],</span> <span class="n">time_average_time</span><span class="o">=</span><span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;time_average_time&#39;</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run an example of general research pipeline that includes simulations, visualizations, and growth rate calculations.</span>
@@ -761,7 +759,7 @@
 
 
 <div class="viewcode-block" id="ensemble_vs_time_average_pipeline">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.ensemble_vs_time_average_pipeline">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.ensemble_vs_time_average_pipeline">[docs]</a>
 <span class="k">def</span> <span class="nf">ensemble_vs_time_average_pipeline</span><span class="p">(</span><span class="n">process_class</span><span class="p">,</span> <span class="n">param_ranges</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">],</span> <span class="n">num_instances</span><span class="o">=</span><span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;num_instances&#39;</span><span class="p">],</span> <span class="n">time_average_time</span><span class="o">=</span><span class="n">pipeline_parameters</span><span class="p">[</span><span class="s1">&#39;time_average_time&#39;</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">       Compare the ensemble average and time average growth rates for multiple parameter combinations.</span>
@@ -790,7 +788,7 @@
 
 
 <div class="viewcode-block" id="growth_rate_of_average_pipeline">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.growth_rate_of_average_pipeline">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.growth_rate_of_average_pipeline">[docs]</a>
 <span class="k">def</span> <span class="nf">growth_rate_of_average_pipeline</span><span class="p">(</span><span class="n">process_class</span><span class="p">,</span> <span class="n">process_params</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">timestep</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the growth rate of the average of multiple instances of a stochastic process.</span>
@@ -816,17 +814,16 @@
     <span class="k">return</span> <span class="n">results</span></div>
 
 
-
 <span class="c1"># Create a new parallel processor function to take functions as input and return outputs of these functions that are run in parallel</span>
 
 <div class="viewcode-block" id="Parallel">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.Parallel">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.Parallel">[docs]</a>
 <span class="k">class</span> <span class="nc">Parallel</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class that provides tools for parallel processing of functions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Parallel.run_function">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.Parallel.run_function">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.Parallel.run_function">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">run_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -843,7 +840,7 @@
 
 
 <div class="viewcode-block" id="Parallel.wrapp">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.Parallel.wrapp">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.Parallel.wrapp">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">wrapp</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -893,27 +890,8 @@
 
 
 
-<span class="c1"># def example2(x: int, y: int) -&gt; int:</span>
-<span class="c1">#     return x + y</span>
-<span class="c1">#</span>
-<span class="c1"># def run_example():</span>
-<span class="c1">#     parallel_example_function = Parallel.wrapp(example2)</span>
-<span class="c1">#</span>
-<span class="c1">#     data_arrays = [np.random.rand(10, 100) for _ in range(5)]  # Create 5 random data arrays</span>
-<span class="c1">#     # make sure to provide the arguments as a list of tuples - convert from data_arrays to list of tuples</span>
-<span class="c1">#     for i in range(len(data_arrays)):</span>
-<span class="c1">#         data_arrays[i] = (data_arrays[i])</span>
-<span class="c1">#</span>
-<span class="c1">#     print(data_arrays)</span>
-<span class="c1">#</span>
-<span class="c1">#     # Using the parallelized function</span>
-<span class="c1">#     arg_sets = [(1, 2), (3, 4), (5, 6)]</span>
-<span class="c1">#     results = parallel_example_function(data_arrays)</span>
-<span class="c1">#     print(results)  # Expected output: [3, 7, 11]</span>
-
-
 <div class="viewcode-block" id="parallel">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.parallel">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.parallel">[docs]</a>
 <span class="k">def</span> <span class="nf">parallel</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run any library function in parallel with multiple sets of arguments.</span>
@@ -945,7 +923,7 @@
 
 
 <div class="viewcode-block" id="parallel_example">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.multiprocessing.parallel_example">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.multiprocessing.parallel_example">[docs]</a>
 <span class="k">def</span> <span class="nf">parallel_example</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Example function to demonstrate the parallel processing capabilities.</span>

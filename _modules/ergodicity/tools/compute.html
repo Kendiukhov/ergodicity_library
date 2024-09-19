@@ -96,11 +96,12 @@
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">levy_stable</span>
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sp</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
 <span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">quad</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">integrate</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
 
 <div class="viewcode-block" id="visualize_function">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.visualize_function">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.visualize_function">[docs]</a>
 <span class="k">def</span> <span class="nf">visualize_function</span><span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Visualize the given precomputed data evolution over time. The data should be a 2D array with the first row.</span>
@@ -135,7 +136,7 @@
 
 
 <div class="viewcode-block" id="validate_input_shape">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.validate_input_shape">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.validate_input_shape">[docs]</a>
 <span class="k">def</span> <span class="nf">validate_input_shape</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decorator to validate the input shape of the data array for the functions in this module.</span>
@@ -167,7 +168,7 @@
 
 
 <div class="viewcode-block" id="average">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.average">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.average">[docs]</a>
 <span class="nd">@validate_input_shape</span>
 <span class="k">def</span> <span class="nf">average</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;average&quot;</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -195,7 +196,7 @@
 
 
 <div class="viewcode-block" id="growth_rates">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.growth_rates">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.growth_rates">[docs]</a>
 <span class="nd">@validate_input_shape</span>
 <span class="k">def</span> <span class="nf">growth_rates</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;growth rates&quot;</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -231,7 +232,7 @@
 
 
 <div class="viewcode-block" id="growth_rate_of_average">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.growth_rate_of_average">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.growth_rate_of_average">[docs]</a>
 <span class="nd">@validate_input_shape</span>
 <span class="k">def</span> <span class="nf">growth_rate_of_average</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -253,7 +254,7 @@
 
 
 <div class="viewcode-block" id="growth_rate_of_average_per_time">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.growth_rate_of_average_per_time">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.growth_rate_of_average_per_time">[docs]</a>
 <span class="nd">@validate_input_shape</span>
 <span class="k">def</span> <span class="nf">growth_rate_of_average_per_time</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -277,7 +278,7 @@
 
 
 <div class="viewcode-block" id="average_growth_rate">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.average_growth_rate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.average_growth_rate">[docs]</a>
 <span class="nd">@validate_input_shape</span>
 <span class="k">def</span> <span class="nf">average_growth_rate</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -299,7 +300,7 @@
 
 
 <div class="viewcode-block" id="mu_sigma">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.mu_sigma">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.mu_sigma">[docs]</a>
 <span class="nd">@validate_input_shape</span>
 <span class="k">def</span> <span class="nf">mu_sigma</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -324,7 +325,7 @@
 
 
 <div class="viewcode-block" id="average_growth_rate_vs_gbm">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.average_growth_rate_vs_gbm">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.average_growth_rate_vs_gbm">[docs]</a>
 <span class="nd">@validate_input_shape</span>
 <span class="k">def</span> <span class="nf">average_growth_rate_vs_gbm</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -361,7 +362,7 @@
 
 
 <div class="viewcode-block" id="compare_averages">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.compare_averages">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.compare_averages">[docs]</a>
 <span class="nd">@validate_input_shape</span>
 <span class="k">def</span> <span class="nf">compare_averages</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -395,7 +396,7 @@
 
 
 <div class="viewcode-block" id="demonstrate_alpha_stable_self_similarity">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.demonstrate_alpha_stable_self_similarity">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.demonstrate_alpha_stable_self_similarity">[docs]</a>
 <span class="k">def</span> <span class="nf">demonstrate_alpha_stable_self_similarity</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">n_points</span><span class="p">,</span> <span class="n">n_simulations</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Demonstrate the self-similarity of an α-stable process.</span>
@@ -447,11 +448,14 @@
     <span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 
     <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
     <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="relative_increments">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.relative_increments">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.relative_increments">[docs]</a>
 <span class="nd">@validate_input_shape</span>
 <span class="k">def</span> <span class="nf">relative_increments</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -501,10 +505,9 @@
 
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-
 <div class="viewcode-block" id="generate_levy_process">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.generate_levy_process">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_levy_process</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.generate_levy_process">[docs]</a>
+<span class="k">def</span> <span class="nf">generate_levy_process</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A Function to generate a Lévy process with the given parameters.</span>
 
@@ -517,13 +520,13 @@
 <span class="sd">    :rtype: np.ndarray</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dt</span> <span class="o">=</span> <span class="n">T</span> <span class="o">/</span> <span class="n">N</span>
-    <span class="n">dL</span> <span class="o">=</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">alpha</span><span class="p">)</span>
+    <span class="n">dL</span> <span class="o">=</span> <span class="n">levy_stable</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">loc</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">alpha</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">dL</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="compare_distributions">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.compare_distributions">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.compare_distributions">[docs]</a>
 <span class="k">def</span> <span class="nf">compare_distributions</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span> <span class="n">num_realizations</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compare the scaled distributions of end values for Lévy processes with different scales to check self-similarity.</span>
@@ -565,7 +568,7 @@
 
 
 <div class="viewcode-block" id="create_A_from_correlation_and_variances">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.create_A_from_correlation_and_variances">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.create_A_from_correlation_and_variances">[docs]</a>
 <span class="k">def</span> <span class="nf">create_A_from_correlation_and_variances</span><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">variances</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create matrix A from a given correlation matrix and variance vector.</span>
@@ -594,7 +597,7 @@
 
 
 <div class="viewcode-block" id="simulate_independent_gaussian_processes">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.simulate_independent_gaussian_processes">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.simulate_independent_gaussian_processes">[docs]</a>
 <span class="k">def</span> <span class="nf">simulate_independent_gaussian_processes</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Simulate n independent Gaussian processes.</span>
@@ -614,7 +617,7 @@
 
 
 <div class="viewcode-block" id="create_multivariate_gaussian_process">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.create_multivariate_gaussian_process">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.create_multivariate_gaussian_process">[docs]</a>
 <span class="k">def</span> <span class="nf">create_multivariate_gaussian_process</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">independent_processes</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a multivariate Gaussian process by linearly combining independent Gaussian processes.</span>
@@ -630,8 +633,8 @@
 
 
 <div class="viewcode-block" id="random_variable_from_pdf">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.random_variable_from_pdf">[docs]</a>
-<span class="k">def</span> <span class="nf">random_variable_from_pdf</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.random_variable_from_pdf">[docs]</a>
+<span class="k">def</span> <span class="nf">random_variable_from_pdf</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate random variable samples from a given probability density function (pdf).</span>
 
@@ -641,21 +644,27 @@
 <span class="sd">    :type x: sympy.core.symbol.Symbol</span>
 <span class="sd">    :param num_samples: Number of random variable samples to generate.</span>
 <span class="sd">    :type num_samples: int</span>
+<span class="sd">    :param t: Time parameter for the PDF (default is 1).</span>
+<span class="sd">    :type t: float</span>
 <span class="sd">    :return: Random variable samples.</span>
 <span class="sd">    :rtype: np.ndarray</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Step 1: Compute the CDF symbolically by integrating the PDF</span>
-    <span class="n">cdf_expr</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="n">sp</span><span class="o">.</span><span class="n">oo</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
-    <span class="n">cdf_func</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cdf_expr</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+    <span class="c1"># Convert sympy expression to numpy function</span>
+    <span class="n">pdf_func</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">)),</span> <span class="n">pdf</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Step 2: Create a grid for x and compute the CDF numerically</span>
-    <span class="n">x_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># A grid of x values</span>
-    <span class="n">cdf_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">cdf_func</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x_vals</span><span class="p">])</span>  <span class="c1"># Evaluate the CDF at these points</span>
+    <span class="c1"># Create a grid for x</span>
+    <span class="n">x_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Adjust range as needed</span>
 
-    <span class="c1"># Step 3: Inverse CDF (interpolation)</span>
-    <span class="n">inverse_cdf</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">cdf_vals</span><span class="p">,</span> <span class="n">x_vals</span><span class="p">)</span>
+    <span class="c1"># Compute the CDF numerically</span>
+    <span class="n">cdf_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span><span class="k">lambda</span> <span class="n">xi</span><span class="p">:</span> <span class="n">pdf_func</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">t</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">x_vals</span><span class="p">])</span>
 
-    <span class="c1"># Step 5: Generate uniform random numbers and apply inverse CDF</span>
+    <span class="c1"># Normalize CDF</span>
+    <span class="n">cdf_vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">cdf_vals</span> <span class="o">-</span> <span class="n">cdf_vals</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="n">cdf_vals</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">cdf_vals</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+
+    <span class="c1"># Inverse CDF (interpolation)</span>
+    <span class="n">inverse_cdf</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">cdf_vals</span><span class="p">,</span> <span class="n">x_vals</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Generate uniform random numbers and apply inverse CDF</span>
     <span class="n">uniform_random</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)</span>
     <span class="n">random_samples</span> <span class="o">=</span> <span class="n">inverse_cdf</span><span class="p">(</span><span class="n">uniform_random</span><span class="p">)</span>
 
@@ -680,7 +689,7 @@
 
 
 <div class="viewcode-block" id="solve_fokker_planck_numerically">
-<a class="viewcode-back" href="../../../ergodicity.tools.html#ergodicity.tools.compute.solve_fokker_planck_numerically">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.tools.html#ergodicity.tools.compute.solve_fokker_planck_numerically">[docs]</a>
 <span class="k">def</span> <span class="nf">solve_fokker_planck_numerically</span><span class="p">(</span><span class="n">mu_func</span><span class="p">,</span> <span class="n">sigma_func</span><span class="p">,</span> <span class="n">P0_func</span><span class="p">,</span> <span class="n">x_range</span><span class="p">,</span> <span class="n">t_range</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">Nt</span><span class="p">,</span> <span class="n">boundary_conditions</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve the Fokker-Planck equation numerically using finite differences and visualize the result in 3D.</span>

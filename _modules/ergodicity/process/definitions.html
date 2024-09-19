@@ -162,11 +162,13 @@
 <span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
 <span class="kn">from</span> <span class="nn">..custom_warnings</span> <span class="kn">import</span> <span class="n">InDevelopmentWarning</span><span class="p">,</span> <span class="n">KnowWhatYouDoWarning</span>
-<span class="kn">from</span> <span class="nn">ergodicity.tools.compute</span> <span class="kn">import</span> <span class="n">growth_rate_of_average_per_time</span>
+<span class="kn">from</span> <span class="nn">ergodicity.tools.compute</span> <span class="kn">import</span> <span class="n">growth_rate_of_average_per_time</span><span class="p">,</span> <span class="n">average_growth_rate</span>
 <span class="kn">from</span> <span class="nn">ergodicity.tools.compute</span> <span class="kn">import</span> <span class="n">average</span>
+<span class="kn">from</span> <span class="nn">..tools.helper</span> <span class="kn">import</span> <span class="n">separate</span>
+
 
 <div class="viewcode-block" id="Process">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process">[docs]</a>
 <span class="k">class</span> <span class="nc">Process</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The Process class is the base class for all processes in the Ergodicity Library.</span>
@@ -330,7 +332,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_comments</span> <span class="o">=</span> <span class="n">value</span>
 
 <div class="viewcode-block" id="Process.get_comments">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.get_comments">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.get_comments">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_comments</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -463,7 +465,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_types</span> <span class="o">=</span> <span class="n">new_types</span>
 
 <div class="viewcode-block" id="Process.add_type">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.add_type">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.add_type">[docs]</a>
     <span class="k">def</span> <span class="nf">add_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a new type to the types list if it is not already present.</span>
@@ -482,7 +484,7 @@
     <span class="n">always_present_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;multiplicative&#39;</span><span class="p">,</span> <span class="s1">&#39;ito&#39;</span><span class="p">,</span> <span class="s1">&#39;types&#39;</span><span class="p">,</span> <span class="s1">&#39;process_class&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="Process.get_params">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.get_params">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.get_params">[docs]</a>
     <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieves parameters specific to the current process class, excluding always_present_keys.</span>
@@ -503,7 +505,7 @@
 
 
 <div class="viewcode-block" id="Process.correct_params">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.correct_params">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.correct_params">[docs]</a>
     <span class="k">def</span> <span class="nf">correct_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Correct the parameters for the process.</span>
@@ -527,7 +529,7 @@
 
 
 <div class="viewcode-block" id="Process.data_for_simulation">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.data_for_simulation">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.data_for_simulation">[docs]</a>
     <span class="k">def</span> <span class="nf">data_for_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepare the data for simulation.</span>
@@ -550,7 +552,7 @@
 
 
 <div class="viewcode-block" id="Process.custom_increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.custom_increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.custom_increment">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Custom increment function for the process.</span>
@@ -568,7 +570,7 @@
 
 
 <div class="viewcode-block" id="Process.separate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.separate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.separate">[docs]</a>
     <span class="k">def</span> <span class="nf">separate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Separate the discrete time moments and corresponding process data in the dataset typically generated by many methods in the Ergodicity Library.</span>
@@ -586,7 +588,7 @@
 
 
 <div class="viewcode-block" id="Process.memory_update">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.memory_update">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.memory_update">[docs]</a>
     <span class="k">def</span> <span class="nf">memory_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the memory of the process. Used in the construction of processes with memory.</span>
@@ -600,7 +602,7 @@
 
 
 <div class="viewcode-block" id="Process.custom_simulate_raw">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.custom_simulate_raw">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.custom_simulate_raw">[docs]</a>
     <span class="k">def</span> <span class="nf">custom_simulate_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                     <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">X0</span> <span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 
@@ -652,7 +654,7 @@
 
 
 <div class="viewcode-block" id="Process.simulate_until">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_until">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate_until">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_until</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">X0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">condition</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the process until a certain condition is reached.</span>
@@ -718,7 +720,7 @@
 
 
 <div class="viewcode-block" id="Process.save_to_file">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.save_to_file">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.save_to_file">[docs]</a>
     <span class="k">def</span> <span class="nf">save_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save the data to a file.</span>
@@ -784,7 +786,7 @@
         <span class="c1"># print(&quot;Debug: Exiting save_to_file method&quot;)</span>
 
 <div class="viewcode-block" id="Process.plot">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.plot">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.plot">[docs]</a>
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_full</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">average_and_max</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
              <span class="n">plotlog</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -820,7 +822,7 @@
                 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Simulation of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Value&#39;</span><span class="p">)</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Change the color and thickness of the grid lines</span>
 
                 <span class="k">if</span> <span class="n">plotlog</span><span class="p">:</span>
                     <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>  <span class="c1"># Apply logarithmic scale for y-axis if plotlog is True</span>
@@ -864,7 +866,7 @@
 
 
 <div class="viewcode-block" id="Process.simulate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">average_and_max</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plotlog</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">X0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the process using the given stochastic process class.</span>
@@ -932,7 +934,7 @@
 
 
 <div class="viewcode-block" id="Process.simulate_ensembles">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_ensembles">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate_ensembles">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_ensembles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                            <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">num_ensembles</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_ensembles_default</span><span class="p">,</span>
                            <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot_separate_ensembles</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">X0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
@@ -996,7 +998,7 @@
 
 
 <div class="viewcode-block" id="Process.simulate_weights">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_weights">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate_weights">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                          <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                          <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -1048,7 +1050,7 @@
 
 
 <div class="viewcode-block" id="Process.plot_weights">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.plot_weights">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.plot_weights">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">save</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the simulated weights.</span>
@@ -1077,7 +1079,7 @@
 
 
 <div class="viewcode-block" id="Process.simulate_2d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_2d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate_2d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                     <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1119,7 +1121,7 @@
 
 
 <div class="viewcode-block" id="Process.plot_2d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.plot_2d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.plot_2d">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_2d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the 2D simulation results.</span>
@@ -1158,7 +1160,7 @@
 
 
 <div class="viewcode-block" id="Process.plot_2dt">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.plot_2dt">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.plot_2dt">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_2dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_2d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the 2D simulation results in a 3D graph with time as the third dimension.</span>
@@ -1201,7 +1203,7 @@
 
 
 <div class="viewcode-block" id="Process.simulate_3d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_3d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate_3d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                     <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1244,7 +1246,7 @@
 
 
 <div class="viewcode-block" id="Process.plot_3d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.plot_3d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.plot_3d">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_3d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the 3D simulation results.</span>
@@ -1288,7 +1290,7 @@
 
 
 <div class="viewcode-block" id="Process.get_data_for_moments">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.get_data_for_moments">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.get_data_for_moments">[docs]</a>
     <span class="k">def</span> <span class="nf">get_data_for_moments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">t_m</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">timestep_m</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">num_instances_m</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the data for moments calculation. If the data was already pre-computed and passed to the method, it will be used.</span>
@@ -1314,10 +1316,12 @@
 
 
 <div class="viewcode-block" id="Process.moments">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.moments">[docs]</a>
-    <span class="k">def</span> <span class="nf">moments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">num_instances</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.moments">[docs]</a>
+    <span class="k">def</span> <span class="nf">moments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">num_instances</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate the cumulative moments of the process up to every point in time using an optimized iterative approach.</span>
+<span class="sd">        Calculate the cumulative moments of the process increments up to every point in time using an optimized iterative approach.</span>
+<span class="sd">        If the process is multiplicative, the increments are calculated for the logarithm of the data.</span>
+<span class="sd">        The moments can be calculated either based on the already simulated data (using simulate method or exporting data) or by simulating the data using the specified parameters.</span>
 
 <span class="sd">        :param data: The data array of the process.</span>
 <span class="sd">        :type data: Any</span>
@@ -1332,8 +1336,8 @@
 <span class="sd">        :return: A tuple of times and the calculated moments (mean, variance, skewness, kurtosis, etc.</span>
 <span class="sd">        :rtype: Tuple</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_for_moments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">t_m</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep_m</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances_m</span><span class="o">=</span><span class="n">num_instances</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_for_moments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">t_m</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep_m</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances_m</span><span class="o">=</span><span class="n">num_instances</span><span class="p">)</span>
 
         <span class="n">times</span><span class="p">,</span> <span class="n">data_raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">separate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
@@ -1383,8 +1387,8 @@
 
 
 <div class="viewcode-block" id="Process.k_moments">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.k_moments">[docs]</a>
-    <span class="k">def</span> <span class="nf">k_moments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.k_moments">[docs]</a>
+    <span class="k">def</span> <span class="nf">k_moments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
                           <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">visualize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the cumulative moments of the process up to a specified order for every point in time</span>
@@ -1405,8 +1409,8 @@
 <span class="sd">        :return: A tuple of times and the calculated moments (mean, variance, skewness, kurtosis, etc.).</span>
 <span class="sd">        :rtype: Tuple</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_for_moments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">t_m</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep_m</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances_m</span><span class="o">=</span><span class="n">num_instances</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_for_moments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">t_m</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep_m</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances_m</span><span class="o">=</span><span class="n">num_instances</span><span class="p">)</span>
 
         <span class="n">times</span><span class="p">,</span> <span class="n">data_raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">separate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
@@ -1467,7 +1471,7 @@
 
 
 <div class="viewcode-block" id="Process.plot_moment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.plot_moment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.plot_moment">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">moment</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize a given moment of the process - a helper function for the next methods.</span>
@@ -1505,7 +1509,7 @@
 
 
 <div class="viewcode-block" id="Process.moments_dict">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.moments_dict">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.moments_dict">[docs]</a>
     <span class="k">def</span> <span class="nf">moments_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">save</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">num_instances</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a dictionary to further calculate the first, the second, the third, and the fourth moments of the process.</span>
@@ -1528,8 +1532,8 @@
 
 
 <div class="viewcode-block" id="Process.visualize_moments">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.visualize_moments">[docs]</a>
-    <span class="k">def</span> <span class="nf">visualize_moments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">num_instances</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.visualize_moments">[docs]</a>
+    <span class="k">def</span> <span class="nf">visualize_moments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">num_instances</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize the first, the second, the third, and the fourth moments of the process.</span>
 
@@ -1544,8 +1548,8 @@
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_for_moments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">t_m</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep_m</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances_m</span><span class="o">=</span><span class="n">num_instances</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_for_moments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">t_m</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep_m</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances_m</span><span class="o">=</span><span class="n">num_instances</span><span class="p">)</span>
 
         <span class="n">times</span><span class="p">,</span> <span class="n">data_raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">separate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="n">moments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">moments_dict</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="n">save</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="n">num_instances</span><span class="p">)</span>
@@ -1559,8 +1563,8 @@
 
 
 <div class="viewcode-block" id="Process.visualize_moment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.visualize_moment">[docs]</a>
-    <span class="k">def</span> <span class="nf">visualize_moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">num_instances</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.visualize_moment">[docs]</a>
+    <span class="k">def</span> <span class="nf">visualize_moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Mean&quot;</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">timestep</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">num_instances</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize a given moment of the process - a helper function for the next methods.</span>
 
@@ -1575,8 +1579,8 @@
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_for_moments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">t_m</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep_m</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances_m</span><span class="o">=</span><span class="n">num_instances</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_for_moments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">t_m</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep_m</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances_m</span><span class="o">=</span><span class="n">num_instances</span><span class="p">)</span>
 
         <span class="n">times</span><span class="p">,</span> <span class="n">data_raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">separate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="n">times</span> <span class="o">=</span> <span class="n">times</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
@@ -1585,11 +1589,12 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">save_to_file</span><span class="p">(</span><span class="n">moments</span><span class="p">[</span><span class="n">label</span><span class="p">],</span>
                           <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_simulation_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span><span class="si">}</span><span class="s2">.csv&quot;</span><span class="p">,</span>
-                          <span class="n">save</span><span class="p">)</span></div>
+                          <span class="n">save</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">moments</span><span class="p">[</span><span class="n">label</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="Process.simulate_live">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_live">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate_live">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the process live and save as a video file.</span>
@@ -1647,7 +1652,7 @@
 
 
 <div class="viewcode-block" id="Process.simulate_live_2d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_live_2d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate_live_2d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                          <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                          <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1716,7 +1721,7 @@
 
 
 <div class="viewcode-block" id="Process.simulate_live_3d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_live_3d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate_live_3d">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                          <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                          <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1823,7 +1828,7 @@
 
 
 <div class="viewcode-block" id="Process.simulate_live_2dt">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_live_2dt">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate_live_2dt">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_live_2dt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span>
                                    <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                                    <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
@@ -1937,7 +1942,7 @@
 
 
 <div class="viewcode-block" id="Process.increment_intermediate">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.increment_intermediate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.increment_intermediate">[docs]</a>
     <span class="k">def</span> <span class="nf">increment_intermediate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestep_increment</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the increment of the process for a given timestep increment.</span>
@@ -1957,7 +1962,7 @@
 
 
 <div class="viewcode-block" id="Process.increment">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.increment">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.increment">[docs]</a>
     <span class="k">def</span> <span class="nf">increment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestep_increment</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the increment of the process for a given timestep increment.</span>
@@ -1977,7 +1982,7 @@
 
 
 <div class="viewcode-block" id="Process.ensemble_average">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.ensemble_average">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.ensemble_average">[docs]</a>
     <span class="k">def</span> <span class="nf">ensemble_average</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the finite ensemble average of the process.</span>
@@ -2008,7 +2013,7 @@
 
 
 <div class="viewcode-block" id="Process.time_average">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.time_average">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.time_average">[docs]</a>
     <span class="k">def</span> <span class="nf">time_average</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the time average approximation of the process in a direct way (using one process instance and long simulation time).</span>
@@ -2024,6 +2029,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">times</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">separate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
         <span class="n">time_average</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">))</span><span class="o">/</span><span class="n">timestep</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">save_to_file</span><span class="p">(</span><span class="n">time_average</span><span class="p">,</span>
@@ -2036,7 +2042,7 @@
     <span class="c1"># methods to calculate ensemble and time averages of growth rates</span>
 
 <div class="viewcode-block" id="Process.growth_rate_ensemble_average">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.growth_rate_ensemble_average">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.growth_rate_ensemble_average">[docs]</a>
     <span class="k">def</span> <span class="nf">growth_rate_ensemble_average</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the ensemble average of the growth rates of the process.</span>
@@ -2074,7 +2080,7 @@
 
 
 <div class="viewcode-block" id="Process.growth_rate_time_average">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.growth_rate_time_average">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.growth_rate_time_average">[docs]</a>
     <span class="k">def</span> <span class="nf">growth_rate_time_average</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the time average of the growth rates of the process in a direct way (using one process instance and long simulation time).</span>
@@ -2109,8 +2115,8 @@
 
 
 <div class="viewcode-block" id="Process.plot_growth_rate_of_average_3d">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.plot_growth_rate_of_average_3d">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot_growth_rate_of_average_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_range</span><span class="p">,</span> <span class="n">time_range</span><span class="p">,</span> <span class="n">instance_step</span><span class="p">,</span> <span class="n">time_step</span><span class="p">,</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.plot_growth_rate_of_average_3d">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_growth_rate_of_average_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_range</span><span class="p">,</span> <span class="n">time_range</span><span class="p">,</span> <span class="n">instance_step</span><span class="p">,</span> <span class="n">time_step</span><span class="p">,</span> <span class="n">simulation_timestep</span><span class="o">=</span><span class="n">timestep_default</span><span class="p">,</span>
                                     <span class="n">step_type</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;growth_rate_of_average_function&#39;</span><span class="p">,</span> <span class="n">save_html</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Draw a 3D graph of average growth rate as a function of number of instances and time.</span>
@@ -2123,6 +2129,8 @@
 <span class="sd">        :type instance_step: float</span>
 <span class="sd">        :param time_step: Step size for time</span>
 <span class="sd">        :type time_step: float</span>
+<span class="sd">        :param simulation_timestep: Time step for the simulation (used in the simulate method)</span>
+<span class="sd">        :type simulation_timestep: float</span>
 <span class="sd">        :param step_type: &#39;linear&#39; or &#39;logarithmic&#39;</span>
 <span class="sd">        :type step_type: str</span>
 <span class="sd">        :param filename: Path to save the results (if None, results won&#39;t be saved)</span>
@@ -2147,7 +2155,8 @@
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">num_instances</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">instances</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">times</span><span class="p">):</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">num_instances</span><span class="p">))</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">simulation_timestep</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">num_instances</span><span class="p">))</span>
+                <span class="c1"># print(&#39;simulation finished&#39;)</span>
                 <span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">growth_rate_of_average_per_time</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
         <span class="c1"># Create the 3D plot</span>
@@ -2186,7 +2195,7 @@
 
 
 <div class="viewcode-block" id="Process.simulate_distribution">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_distribution">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.simulate_distribution">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the probability distribution corresponding to the process.</span>
@@ -2235,7 +2244,7 @@
 
 
 <div class="viewcode-block" id="Process.relative_variance_pea">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.relative_variance_pea">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.relative_variance_pea">[docs]</a>
     <span class="k">def</span> <span class="nf">relative_variance_pea</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the relative variance of the process using the PEA method.</span>
@@ -2271,13 +2280,14 @@
 
 
 <div class="viewcode-block" id="Process.self_averaging_time">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.self_averaging_time">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.self_averaging_time">[docs]</a>
     <span class="k">def</span> <span class="nf">self_averaging_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the self-averaging time of the process.</span>
 <span class="sd">        Self-averaging time is the time after which the process ensemble starts to behave as a time average and stops behave as an ensemble average (so stops self-averaging).</span>
 <span class="sd">        This method will work properly only if you select t that is long enough.</span>
 <span class="sd">        We do not know any formal method to select t that is long enough for arbitrary process, so you have to check it by yourself.</span>
+<span class="sd">        The method works only for multiplicative processes.</span>
 
 <span class="sd">        :param num_instances: The number of instances of the process to use in the pea estimation</span>
 <span class="sd">        :type num_instances: int</span>
@@ -2292,68 +2302,63 @@
 <span class="sd">        :return: The empirical estimation of self-averaging time of the process</span>
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">timestep</span><span class="p">)</span>
-        <span class="c1"># times = times[:-1]</span>
-        <span class="n">ensemble</span><span class="p">,</span> <span class="n">total_average</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_ensembles</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span>
-        <span class="n">num_instances</span><span class="o">=</span><span class="n">num_instances</span><span class="p">,</span> <span class="n">num_ensembles</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
-        <span class="n">ensemble_average_simulation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
-        <span class="n">ensemble_average</span> <span class="o">=</span> <span class="n">ensemble_average_simulation</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">ensemble_average</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ensemble_average</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplicative</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The self-averaging time can now only be calculated for multiplicative processes.&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplicative</span><span class="p">:</span>
-            <span class="n">ensemble_average</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ensemble_average</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">timestep</span><span class="p">)</span>
+            <span class="n">ensemble</span><span class="p">,</span> <span class="n">total_average</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_ensembles</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="n">num_instances</span><span class="p">,</span>
+                                                              <span class="n">num_ensembles</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shape of total_average: </span><span class="si">{</span><span class="n">total_average</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shape of times: </span><span class="si">{</span><span class="n">times</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">total_average</span><span class="p">)</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">timestep</span><span class="p">)</span>
+            <span class="n">ensemble_average</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplicative</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">total_average</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Ensemble average: </span><span class="si">{</span><span class="n">ensemble_average</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-        <span class="c1"># calculate time average growth rate of data - last - first element divided by t</span>
-        <span class="n">time_average_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">t</span>
+            <span class="n">time_average_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">t</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time average rate: </span><span class="si">{</span><span class="n">time_average_rate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c1"># Ensure data and times have the same length</span>
+            <span class="n">min_length</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">))</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="n">min_length</span><span class="p">]</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">times</span><span class="p">[:</span><span class="n">min_length</span><span class="p">]</span>
 
-        <span class="c1"># find the first element that is smaller than increment[0] - 0.5*difference</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
-            <span class="n">current_time</span> <span class="o">=</span> <span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">time_average_rate</span><span class="o">*</span><span class="n">current_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">ensemble_average</span><span class="o">*</span><span class="n">current_time</span><span class="p">):</span>
-                <span class="n">index</span> <span class="o">=</span> <span class="n">i</span>
-                <span class="k">break</span>
+            <span class="n">time_avg_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">time_average_rate</span> <span class="o">*</span> <span class="n">times</span><span class="p">))</span>
+            <span class="n">ensemble_avg_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">ensemble_average</span> <span class="o">*</span> <span class="n">times</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The self-averaging time could not be calculated. The time t may be too short for the process or the process is not subject to self-averaging breaking.&quot;</span><span class="p">)</span>
+            <span class="n">self_averaging_time</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="c1"># merge times and increments and find time corresponding to the index (self-averaging time)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">times</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
-        <span class="n">self_averaging_time</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">time_avg_diff</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">ensemble_avg_diff</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">self_averaging_time</span> <span class="o">=</span> <span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="k">break</span>
 
-        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
-            <span class="c1"># plot the increments with vertical line at the self-averaging time</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Increments&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Self-averaging time: </span><span class="si">{</span><span class="n">self_averaging_time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-            <span class="c1"># Ensure the self_averaging_time is within the data range</span>
-            <span class="n">min_time</span><span class="p">,</span> <span class="n">max_time</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">max</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">min_time</span> <span class="o">&lt;=</span> <span class="n">self_averaging_time</span> <span class="o">&lt;=</span> <span class="n">max_time</span><span class="p">:</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">self_averaging_time</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Self-averaging time&#39;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: self_averaging_time (</span><span class="si">{</span><span class="n">self_averaging_time</span><span class="si">}</span><span class="s2">) is outside the data time range.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Process&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">time_average_rate</span> <span class="o">*</span> <span class="n">times</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Time Average Projection&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">ensemble_average</span> <span class="o">*</span> <span class="n">times</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Ensemble Average Projection&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+                <span class="n">nearest_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">times</span> <span class="o">-</span> <span class="n">self_averaging_time</span><span class="p">))</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">self_averaging_time</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">nearest_index</span><span class="p">],</span> <span class="s1">&#39;ro&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Self-averaging point&#39;</span><span class="p">)</span>
 
-            <span class="c1"># Set x-axis limits to ensure the vertical line is within the visible range</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="n">min_time</span><span class="p">,</span> <span class="n">max_time</span><span class="p">])</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Self-averaging Analysis of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Value&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Increments of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Increment&#39;</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-        <span class="k">return</span> <span class="n">self_averaging_time</span></div>
+            <span class="k">return</span> <span class="n">self_averaging_time</span></div>
 
 
 <div class="viewcode-block" id="Process.empirical_properties">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.empirical_properties">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.empirical_properties">[docs]</a>
     <span class="k">def</span> <span class="nf">empirical_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the empirical statistical properties of the process and compare them with the theoretical properties (parameters).</span>
@@ -2366,7 +2371,7 @@
 
 
 <div class="viewcode-block" id="Process.differential">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.differential">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.differential">[docs]</a>
     <span class="k">def</span> <span class="nf">differential</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the differential of the process.</span>
@@ -2378,7 +2383,7 @@
 
 
 <div class="viewcode-block" id="Process.closed_formula">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.closed_formula">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.closed_formula">[docs]</a>
     <span class="k">def</span> <span class="nf">closed_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the closed formula for the process using symbolic calculations and Ito calculus when possible.</span>
@@ -2390,28 +2395,8 @@
         <span class="k">pass</span></div>
 
 
-<div class="viewcode-block" id="Process.simulate_ensemble">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.simulate_ensemble">[docs]</a>
-    <span class="k">def</span> <span class="nf">simulate_ensemble</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">num_instances_default</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Simulate the process ensemble for a given time and return the ensemble of instances using analytical approximation when possible.</span>
-
-<span class="sd">        :param t: The time to simulate</span>
-<span class="sd">        :type t: float</span>
-<span class="sd">        :param timestep: The time step for the simulation</span>
-<span class="sd">        :type timestep: float</span>
-<span class="sd">        :param num_instances: The number of instances to simulate</span>
-<span class="sd">        :type num_instances: int</span>
-<span class="sd">        :param save: Whether to save the results to a file</span>
-<span class="sd">        :type save: bool</span>
-<span class="sd">        :return: The ensemble of instances of the process</span>
-<span class="sd">        :rtype: np.ndarray</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-
 <div class="viewcode-block" id="Process.pdf_evolution">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.pdf_evolution">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.pdf_evolution">[docs]</a>
     <span class="k">def</span> <span class="nf">pdf_evolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t_default</span><span class="p">,</span> <span class="n">timestep</span><span class="o">=</span><span class="n">timestep_default</span><span class="p">,</span> <span class="n">num_instances</span><span class="o">=</span><span class="n">num_instances_default</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the evolution of the probability density function of the process.</span>
@@ -2429,7 +2414,7 @@
 
 
 <div class="viewcode-block" id="Process.p_measure">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.p_measure">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.p_measure">[docs]</a>
     <span class="k">def</span> <span class="nf">p_measure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the probability density function corresponding to the objective probability measure used in the given process.</span>
@@ -2441,7 +2426,7 @@
 
 
 <div class="viewcode-block" id="Process.time_average_expression">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.time_average_expression">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.time_average_expression">[docs]</a>
     <span class="k">def</span> <span class="nf">time_average_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the symbolic expression for the time average of the process if possible.</span>
@@ -2453,7 +2438,7 @@
 
 
 <div class="viewcode-block" id="Process.eternal_simulator">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.Process.eternal_simulator">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.Process.eternal_simulator">[docs]</a>
     <span class="k">def</span> <span class="nf">eternal_simulator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save the simulated images for the process indefinitely every k steps.</span>
@@ -2551,12 +2536,11 @@
 </div>
 
 
-<span class="kn">from</span> <span class="nn">ergodicity.tools.solve</span> <span class="kn">import</span> <span class="n">solve</span>
-<span class="kn">from</span> <span class="nn">ergodicity.tools.solve</span> <span class="kn">import</span> <span class="n">solve_fokker_planck</span>
+<span class="kn">from</span> <span class="nn">ergodicity.tools.solve</span> <span class="kn">import</span> <span class="n">solve</span><span class="p">,</span> <span class="n">time_average</span><span class="p">,</span> <span class="n">ergodicity_transform</span>
 <span class="kn">from</span> <span class="nn">ergodicity.tools.compute</span> <span class="kn">import</span> <span class="n">solve_fokker_planck_numerically</span>
 
 <div class="viewcode-block" id="ItoProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.ItoProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.ItoProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">ItoProcess</span><span class="p">(</span><span class="n">Process</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract class representing an Ito process.</span>
@@ -2589,6 +2573,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term</span> <span class="o">=</span> <span class="n">stochastic_term</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The stochastic term must be greater than or equal to zero.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_drift_term_sympy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term_sympy</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">drift_term</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -2633,9 +2619,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The stochastic term must be greater than or equal to zero.&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ItoProcess.solve">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.ItoProcess.solve">[docs]</a>
-    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ItoProcess.closed_formula">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.ItoProcess.closed_formula">[docs]</a>
+    <span class="k">def</span> <span class="nf">closed_formula</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find the analytical solution for the given Ito process using Ito calculus.</span>
 
@@ -2644,12 +2630,26 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
-        <span class="n">solution</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_drift_term</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_drift_term_sympy</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term_sympy</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The closed formula for the process is: </span><span class="si">{</span><span class="n">solution</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">solution</span></div>
 
 
+<div class="viewcode-block" id="ItoProcess.ergodicity_transform">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.ItoProcess.ergodicity_transform">[docs]</a>
+    <span class="k">def</span> <span class="nf">ergodicity_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find the ergodicity transformation for the given Ito process using Ito calculus.</span>
+
+<span class="sd">        :return: The ergodicity transformation for the Ito process</span>
+<span class="sd">        :rtype: Sympy expression</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="n">ergodicity_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drift_term_sympy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term_sympy</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">),</span> <span class="n">t</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">transform</span></div>
+
+
 <div class="viewcode-block" id="ItoProcess.differential">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.ItoProcess.differential">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.ItoProcess.differential">[docs]</a>
     <span class="k">def</span> <span class="nf">differential</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the differential of the process.</span>
@@ -2657,13 +2657,66 @@
 <span class="sd">        :return: The differential of the process</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;dX = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_drift_term</span><span class="si">}</span><span class="s2"> * dt + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term</span><span class="si">}</span><span class="s2"> * dW&quot;</span></div>
+        <span class="c1"># print(f&#39;dX = {self._drift_term_sympy} * dt + {self._stochastic_term_sympy} * dW&#39;)</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;dt&#39;</span><span class="p">)</span>
+        <span class="n">dW</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;dW(t)&#39;</span><span class="p">)</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drift_term_sympy</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term_sympy</span> <span class="o">*</span> <span class="n">dW</span>
+        <span class="k">return</span> <span class="n">dx</span></div>
+
+
+<div class="viewcode-block" id="ItoProcess.time_average_expression">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.ItoProcess.time_average_expression">[docs]</a>
+    <span class="k">def</span> <span class="nf">time_average_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the symbolic expression for the time average of the process if possible using Ito calculus.</span>
+
+<span class="sd">        :return: The symbolic expression for the time average of the process</span>
+<span class="sd">        :rtype: Sympy expression</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
+
+        <span class="n">solution</span> <span class="o">=</span> <span class="n">time_average</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_drift_term_sympy</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stochastic_term_sympy</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">solution</span></div>
+
+
+<div class="viewcode-block" id="ItoProcess.expected_value_expression">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.ItoProcess.expected_value_expression">[docs]</a>
+    <span class="k">def</span> <span class="nf">expected_value_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_condition</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the symbolic expression for the expected value of the process if possible using conventional calculus.</span>
+
+<span class="sd">        :return: The symbolic expression for the expected value of the process</span>
+<span class="sd">        :rtype: Sympy expression</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)(</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drift_term_sympy</span>
+
+        <span class="c1"># replace x symbol with x function in mu:</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">),</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Define the differential equation</span>
+        <span class="n">diffeq</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Eq</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">),</span> <span class="n">mu</span><span class="p">)</span>
+
+        <span class="c1"># Solve the differential equation</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">dsolve</span><span class="p">(</span><span class="n">diffeq</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Substitute the initial condition C1</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="n">solution</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">(</span><span class="s1">&#39;C1&#39;</span><span class="p">),</span> <span class="n">initial_condition</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Differential equation:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">diffeq</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Solution:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">solution</span></div>
 </div>
 
 
-
 <div class="viewcode-block" id="NonItoProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.NonItoProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.NonItoProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">NonItoProcess</span><span class="p">(</span><span class="n">Process</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract class representing a non-Ito process.</span>
@@ -2681,7 +2734,7 @@
 
 
 <div class="viewcode-block" id="CustomProcess">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.CustomProcess">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.CustomProcess">[docs]</a>
 <span class="k">class</span> <span class="nc">CustomProcess</span><span class="p">(</span><span class="n">Process</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract class representing a custom process.</span>
@@ -2700,7 +2753,7 @@
 
 
 <div class="viewcode-block" id="simulation_decorator">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.simulation_decorator">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.simulation_decorator">[docs]</a>
 <span class="k">def</span> <span class="nf">simulation_decorator</span><span class="p">(</span><span class="n">simulate_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decorator for simulation methods to add verbose option.</span>
@@ -2743,7 +2796,7 @@
 
 
 <div class="viewcode-block" id="check_simulate_with_differential">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.check_simulate_with_differential">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.check_simulate_with_differential">[docs]</a>
 <span class="k">def</span> <span class="nf">check_simulate_with_differential</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check if the simulate method uses the differential method.</span>
@@ -2758,7 +2811,7 @@
 
 
 <div class="viewcode-block" id="create_correlation_matrix">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.create_correlation_matrix">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.create_correlation_matrix">[docs]</a>
 <span class="k">def</span> <span class="nf">create_correlation_matrix</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">correlation</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a correlation matrix with given correlations between all elements.</span>
@@ -2783,7 +2836,7 @@
 
 
 <div class="viewcode-block" id="correlation_to_covariance">
-<a class="viewcode-back" href="../../../ergodicity.process.html#ergodicity.process.definitions.correlation_to_covariance">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.process.html#ergodicity.process.definitions.correlation_to_covariance">[docs]</a>
 <span class="k">def</span> <span class="nf">correlation_to_covariance</span><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">std_devs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transform a correlation matrix into a variance-covariance matrix.</span>

@@ -127,7 +127,6 @@
 
 <span class="sd">print(f&quot;Best agent accumulated wealth: {best_agent.accumulated_wealth}&quot;)</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -207,7 +206,7 @@
 
 
 <div class="viewcode-block" id="DynamicBatchNorm1d">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.DynamicBatchNorm1d">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.DynamicBatchNorm1d">[docs]</a>
 <span class="k">class</span> <span class="nc">DynamicBatchNorm1d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    DynamicBatchNorm1d Class</span>
@@ -265,7 +264,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">running_var</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_features</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DynamicBatchNorm1d.forward">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.DynamicBatchNorm1d.forward">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.DynamicBatchNorm1d.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass of the dynamic Batch Normalization layer.</span>
@@ -283,7 +282,7 @@
 
 
 <div class="viewcode-block" id="NeuralNetwork">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork">[docs]</a>
 <span class="k">class</span> <span class="nc">NeuralNetwork</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NeuralNetwork Class</span>
@@ -436,7 +435,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_optimizer</span><span class="p">()</span>
 
 <div class="viewcode-block" id="NeuralNetwork.forward">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.forward">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass through the neural network.</span>
@@ -488,7 +487,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported optimizer: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="NeuralNetwork.mutate">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.mutate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.mutate">[docs]</a>
     <span class="k">def</span> <span class="nf">mutate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mutation_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">mutation_scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply random mutations to the network parameters.</span>
@@ -509,7 +508,7 @@
 
 
 <div class="viewcode-block" id="NeuralNetwork.get_num_parameters">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.get_num_parameters">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.get_num_parameters">[docs]</a>
     <span class="k">def</span> <span class="nf">get_num_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the total number of trainable parameters in the network.</span>
@@ -521,7 +520,7 @@
 
 
 <div class="viewcode-block" id="NeuralNetwork.clone">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.clone">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.clone">[docs]</a>
     <span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a deep copy of the network.</span>
@@ -547,7 +546,7 @@
 
 
 <div class="viewcode-block" id="NeuralNetwork.save">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.save">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.save">[docs]</a>
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save the model state and hyperparameters to a file.</span>
@@ -577,7 +576,7 @@
 
 
 <div class="viewcode-block" id="NeuralNetwork.load">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.load">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetwork.load">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -598,7 +597,7 @@
 
 
 <div class="viewcode-block" id="NeuralNetworkAgent">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent">[docs]</a>
 <span class="k">class</span> <span class="nc">NeuralNetworkAgent</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NeuralNetworkAgent Class</span>
@@ -673,7 +672,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">=</span> <span class="mf">0.0</span>
 
 <div class="viewcode-block" id="NeuralNetworkAgent.select_process">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.select_process">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.select_process">[docs]</a>
     <span class="k">def</span> <span class="nf">select_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoded_processes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Select a process based on the neural network&#39;s output.</span>
@@ -696,7 +695,7 @@
 
 
 <div class="viewcode-block" id="NeuralNetworkAgent.update_wealth">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.update_wealth">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.update_wealth">[docs]</a>
     <span class="k">def</span> <span class="nf">update_wealth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_return</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the agent&#39;s wealth based on the process return.</span>
@@ -709,28 +708,28 @@
 
 
 <div class="viewcode-block" id="NeuralNetworkAgent.reset_wealth">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.reset_wealth">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.reset_wealth">[docs]</a>
     <span class="k">def</span> <span class="nf">reset_wealth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the agent&#39;s wealth to the initial value.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wealth</span> <span class="o">=</span> <span class="mf">1.0</span></div>
 
 
 <div class="viewcode-block" id="NeuralNetworkAgent.calculate_fitness">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.calculate_fitness">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.calculate_fitness">[docs]</a>
     <span class="k">def</span> <span class="nf">calculate_fitness</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the fitness of the agent based on accumulated wealth.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fitness</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">accumulated_wealth</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="NeuralNetworkAgent.mutate">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.mutate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.mutate">[docs]</a>
     <span class="k">def</span> <span class="nf">mutate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mutation_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">mutation_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Mutate the agent&#39;s neural network.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="n">mutation_rate</span><span class="p">,</span> <span class="n">mutation_scale</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="NeuralNetworkAgent.clone">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.clone">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.clone">[docs]</a>
     <span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a clone of the agent with the same network structure but newly initialized weights.&quot;&quot;&quot;</span>
         <span class="n">cloned_network</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
@@ -742,7 +741,7 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;NeuralNetworkAgent(wealth=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">wealth</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, accumulated_wealth=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">accumulated_wealth</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, fitness=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fitness</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span>
 
 <div class="viewcode-block" id="NeuralNetworkAgent.save">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.save">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.save">[docs]</a>
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save the agent&#39;s state to a file.</span>
@@ -776,7 +775,7 @@
 
 
 <div class="viewcode-block" id="NeuralNetworkAgent.load">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.load">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.NeuralNetworkAgent.load">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -807,7 +806,7 @@
 
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer">[docs]</a>
 <span class="k">class</span> <span class="nc">EvolutionaryNeuralNetworkTrainer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    EvolutionaryNeuralNetworkTrainer Class</span>
@@ -891,12 +890,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">population_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">input_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">hidden_sizes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
-                 <span class="n">output_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">processes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">object</span><span class="p">]],</span>
                  <span class="n">process_encoder</span><span class="p">:</span> <span class="n">ProcessEncoder</span><span class="p">,</span>
                  <span class="n">process_times</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+                 <span class="n">input_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
+                 <span class="n">output_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                  <span class="n">mutation_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
                  <span class="n">mutation_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
                  <span class="n">with_exchange</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -975,7 +974,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">performance_history</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.log">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.log">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.log">[docs]</a>
     <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Log a message to the log file.</span>
@@ -991,7 +990,7 @@
 
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.save_performance_metrics">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.save_performance_metrics">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.save_performance_metrics">[docs]</a>
     <span class="k">def</span> <span class="nf">save_performance_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save performance metrics to a CSV file.</span>
@@ -1006,7 +1005,7 @@
 
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.save_best_weights">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.save_best_weights">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.save_best_weights">[docs]</a>
     <span class="k">def</span> <span class="nf">save_best_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">best_agent</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save the weights of the best performing agent.</span>
@@ -1020,7 +1019,7 @@
 
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.visualize_performance">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.visualize_performance">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.visualize_performance">[docs]</a>
     <span class="k">def</span> <span class="nf">visualize_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create separate visualizations for average and max wealth during training.</span>
@@ -1042,6 +1041,7 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="c1"># Create and save average wealth graph</span>
@@ -1064,8 +1064,8 @@
 
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.visualize_neural_network_evolution">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.visualize_neural_network_evolution">[docs]</a>
-    <span class="k">def</span> <span class="nf">visualize_neural_network_evolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_video_path</span><span class="p">,</span> <span class="n">output_csv_path</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.visualize_neural_network_evolution">[docs]</a>
+    <span class="k">def</span> <span class="nf">visualize_neural_network_evolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_video_path</span><span class="o">=</span><span class="s1">&#39;neural_network_evolution.mp4&#39;</span><span class="p">,</span> <span class="n">output_csv_path</span><span class="o">=</span><span class="s1">&#39;best_agent_params.csv&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a video visualization of the neural network evolution and save best agent parameters to CSV.</span>
 
@@ -1131,7 +1131,7 @@
 
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.initialize_population">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.initialize_population">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.initialize_population">[docs]</a>
     <span class="k">def</span> <span class="nf">initialize_population</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">NeuralNetworkAgent</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the population of neural network agents.</span>
@@ -1149,7 +1149,7 @@
     <span class="c1">#     return [encoded_process[0]] + [time] + encoded_process[1:]</span>
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.select_top_agents">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.select_top_agents">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.select_top_agents">[docs]</a>
     <span class="k">def</span> <span class="nf">select_top_agents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">NeuralNetworkAgent</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Select the top k agents based on accumulated wealth.</span>
@@ -1164,7 +1164,7 @@
 
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.reproduce_with_exchange">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.reproduce_with_exchange">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.reproduce_with_exchange">[docs]</a>
     <span class="k">def</span> <span class="nf">reproduce_with_exchange</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reproduce agents with population-wide information exchange.</span>
@@ -1197,7 +1197,7 @@
 
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.reproduce_without_exchange">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.reproduce_without_exchange">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.reproduce_without_exchange">[docs]</a>
     <span class="k">def</span> <span class="nf">reproduce_without_exchange</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">new_agents</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">:</span>
@@ -1213,7 +1213,7 @@
 
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.train">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.train">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.train">[docs]</a>
     <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">save_interval</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run the main training loop for the specified number of steps to train the evolutionary neural network.</span>
@@ -1340,7 +1340,7 @@
 
 
 <div class="viewcode-block" id="EvolutionaryNeuralNetworkTrainer.load_best_weights">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.load_best_weights">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.EvolutionaryNeuralNetworkTrainer.load_best_weights">[docs]</a>
     <span class="k">def</span> <span class="nf">load_best_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load the best weights into an agent&#39;s network.</span>
@@ -1478,7 +1478,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Best agent accumulated wealth: </span><span class="si">{</span><span class="n">best_agent</span><span class="o">.</span><span class="n">accumulated_wealth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ReinforcementEvolutionaryTrainer">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer">[docs]</a>
 <span class="k">class</span> <span class="nc">ReinforcementEvolutionaryTrainer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ReinforcementEvolutionaryTrainer Class</span>
@@ -1569,37 +1569,39 @@
         <span class="n">mutation_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
         <span class="n">mutation_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
         <span class="n">rl_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-        <span class="n">elite_percentage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span>
+        <span class="n">elite_percentage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;output_nn&#39;</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the ReinforcementEvolutionaryTrainer.</span>
 
-<span class="sd">        :param population_size:     Number of agents in the population</span>
+<span class="sd">        :param population_size: Number of agents in the population</span>
 <span class="sd">        :type population_size: int</span>
-<span class="sd">        :param input_size:      Size of the input layer</span>
+<span class="sd">        :param input_size: Size of the input layer</span>
 <span class="sd">        :type input_size: int</span>
-<span class="sd">        :param hidden_sizes:    List of hidden layer sizes</span>
+<span class="sd">        :param hidden_sizes: List of hidden layer sizes</span>
 <span class="sd">        :type hidden_sizes: List[int]</span>
-<span class="sd">        :param output_size:     Size of the output layer</span>
+<span class="sd">        :param output_size: Size of the output layer</span>
 <span class="sd">        :type output_size: int</span>
-<span class="sd">        :param processes:       List of stochastic processes</span>
+<span class="sd">        :param processes: List of stochastic processes</span>
 <span class="sd">        :type processes: List[Union[dict, object]]</span>
-<span class="sd">        :param process_encoder:     ProcessEncoder instance</span>
+<span class="sd">        :param process_encoder: ProcessEncoder instance</span>
 <span class="sd">        :type process_encoder: ProcessEncoder</span>
-<span class="sd">        :param process_times:   List of time values for process encoding</span>
+<span class="sd">        :param process_times: List of time values for process encoding</span>
 <span class="sd">        :type process_times: List[float]</span>
-<span class="sd">        :param learning_rate:   Learning rate for the neural networks</span>
+<span class="sd">        :param learning_rate: Learning rate for the neural networks</span>
 <span class="sd">        :type learning_rate: float</span>
-<span class="sd">        :param mutation_rate:   Probability of mutating each parameter</span>
+<span class="sd">        :param mutation_rate: Probability of mutating each parameter</span>
 <span class="sd">        :type mutation_rate: float</span>
-<span class="sd">        :param mutation_scale:  Scale of the mutation (standard deviation of the Gaussian noise)</span>
+<span class="sd">        :param mutation_scale: Scale of the mutation (standard deviation of the Gaussian noise)</span>
 <span class="sd">        :type mutation_scale: float</span>
-<span class="sd">        :param rl_interval:     Interval for reinforcement learning updates</span>
+<span class="sd">        :param rl_interval: Interval for reinforcement learning updates</span>
 <span class="sd">        :type rl_interval: int</span>
-<span class="sd">        :param elite_percentage:    Percentage of elite agents to keep in each generation</span>
+<span class="sd">        :param elite_percentage: Percentage of elite agents to keep in each generation</span>
 <span class="sd">        :type elite_percentage: float</span>
+<span class="sd">        :param output_dir: Directory for saving output files</span>
+<span class="sd">        :type output_dir: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">population_size</span> <span class="o">=</span> <span class="n">population_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_size</span> <span class="o">=</span> <span class="n">input_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_sizes</span> <span class="o">=</span> <span class="n">hidden_sizes</span>
@@ -1616,8 +1618,170 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">population</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_population</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizers</span> <span class="o">=</span> <span class="p">[</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">)</span> <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">]</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">performance_history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;training_log.txt&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">performance_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;performance_metrics.csv&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_weights_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;best_weights.pth&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.log">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.log">[docs]</a>
+    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log a message to the log file.</span>
+
+<span class="sd">        :param message: Message to log</span>
+<span class="sd">        :type message: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_file</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.save_performance_metrics">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.save_performance_metrics">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_performance_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save performance metrics to a CSV file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance_history</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">performance_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">performance_history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">performance_history</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.save_best_weights">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.save_best_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_best_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">best_agent</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save the weights of the best-performing agent.</span>
+
+<span class="sd">        :param best_agent: Best-performing agent</span>
+<span class="sd">        :type best_agent: NeuralNetworkAgent</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">best_agent</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_weights_file</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.visualize_performance">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.visualize_performance">[docs]</a>
+    <span class="k">def</span> <span class="nf">visualize_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create visualizations for average and maximum fitness during training.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="p">[</span><span class="n">metric</span><span class="p">[</span><span class="s1">&#39;step&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance_history</span><span class="p">]</span>
+        <span class="n">avg_fitness</span> <span class="o">=</span> <span class="p">[</span><span class="n">metric</span><span class="p">[</span><span class="s1">&#39;avg_fitness&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance_history</span><span class="p">]</span>
+        <span class="n">max_fitness</span> <span class="o">=</span> <span class="p">[</span><span class="n">metric</span><span class="p">[</span><span class="s1">&#39;max_fitness&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">performance_history</span><span class="p">]</span>
+
+        <span class="c1"># Function to create and save a single graph</span>
+        <span class="k">def</span> <span class="nf">create_fitness_graph</span><span class="p">(</span><span class="n">fitness_data</span><span class="p">,</span> <span class="n">ylabel</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">fitness_data</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Step&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c1"># Create and save average fitness graph</span>
+        <span class="n">create_fitness_graph</span><span class="p">(</span>
+            <span class="n">avg_fitness</span><span class="p">,</span>
+            <span class="s1">&#39;Average Fitness&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Average Fitness Evolution During Training&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;average_fitness_evolution.png&#39;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Create and save maximum fitness graph</span>
+        <span class="n">create_fitness_graph</span><span class="p">(</span>
+            <span class="n">max_fitness</span><span class="p">,</span>
+            <span class="s1">&#39;Maximum Fitness&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Maximum Fitness Evolution During Training&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;max_fitness_evolution.png&#39;</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;Performance visualization graphs have been created and saved.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.visualize_neural_network_evolution">
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.visualize_neural_network_evolution">[docs]</a>
+    <span class="k">def</span> <span class="nf">visualize_neural_network_evolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_video_path</span><span class="o">=</span><span class="s1">&#39;neural_network_evolution.mp4&#39;</span><span class="p">,</span>
+                                           <span class="n">output_csv_path</span><span class="o">=</span><span class="s1">&#39;best_agent_params.csv&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a video visualization of the neural network evolution and save best agent parameters to CSV.</span>
+
+<span class="sd">        :param output_video_path: Path to save the output video</span>
+<span class="sd">        :type output_video_path: str</span>
+<span class="sd">        :param output_csv_path: Path to save the CSV file with best agent parameters</span>
+<span class="sd">        :type output_csv_path: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Extract data from history</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="s1">&#39;step&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]</span>
+        <span class="n">best_params_history</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="s1">&#39;best_params&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">best_params_history</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;No history data available for visualization.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Prepare data for visualization</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">best_params_history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">param_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">[</span><span class="n">params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">best_params_history</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span>
+                        <span class="n">param_names</span><span class="p">}</span>
+
+        <span class="c1"># Create figure and axes for animation</span>
+        <span class="n">num_params</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_names</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">num_params</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">num_params</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">num_params</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">axes</span><span class="p">]</span>
+
+        <span class="c1"># Initialize plots</span>
+        <span class="n">plots</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">param_names</span><span class="p">):</span>
+            <span class="n">plot</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([],</span> <span class="p">[],</span> <span class="s1">&#39;b-&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_values</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">all_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">param_values</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">all_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">all_values</span><span class="p">))</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Evolution of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Parameter Index&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Parameter Value&#39;</span><span class="p">)</span>
+            <span class="n">plots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plot</span><span class="p">)</span>
+
+        <span class="c1"># Animation update function</span>
+        <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">plot</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">plots</span><span class="p">,</span> <span class="n">param_names</span><span class="p">):</span>
+                <span class="n">plot</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">param_values</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">frame</span><span class="p">])),</span> <span class="n">param_values</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">frame</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">plots</span>
+
+        <span class="c1"># Create animation</span>
+        <span class="n">anim</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">update</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">),</span> <span class="n">interval</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">blit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Save animation as video</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">FFMpegWriter</span><span class="p">(</span><span class="n">fps</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">artist</span><span class="o">=</span><span class="s1">&#39;ReinforcementEvolutionaryTrainer&#39;</span><span class="p">),</span> <span class="n">bitrate</span><span class="o">=</span><span class="mi">1800</span><span class="p">)</span>
+        <span class="n">anim</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">output_video_path</span><span class="p">),</span> <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">)</span>
+
+        <span class="c1"># Save best agent parameters to CSV</span>
+        <span class="n">best_agent_params</span> <span class="o">=</span> <span class="n">best_params_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">param_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">best_agent_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">param_names</span><span class="p">}</span>
+        <span class="n">max_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">param_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)),</span> <span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                      <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">param_dict</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">output_csv_path</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Neural network evolution video saved to </span><span class="si">{</span><span class="n">output_video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Best agent parameters saved to </span><span class="si">{</span><span class="n">output_csv_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.initialize_population">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.initialize_population">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.initialize_population">[docs]</a>
     <span class="k">def</span> <span class="nf">initialize_population</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">NeuralNetworkAgent</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the population of neural network agents.</span>
@@ -1630,7 +1794,7 @@
 
 
 <div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.select_process">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.select_process">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.select_process">[docs]</a>
     <span class="k">def</span> <span class="nf">select_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">object</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Select a process and time horizon for an agent to interact with.</span>
@@ -1650,7 +1814,7 @@
 
 
 <div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.simulate_process">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.simulate_process">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.simulate_process">[docs]</a>
     <span class="k">def</span> <span class="nf">simulate_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simulate the selected process for the given time horizon.</span>
@@ -1672,7 +1836,7 @@
 
 
 <div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.calculate_reward">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.calculate_reward">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.calculate_reward">[docs]</a>
     <span class="k">def</span> <span class="nf">calculate_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_wealth</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">final_wealth</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the reward based on the change in wealth.</span>
@@ -1688,7 +1852,7 @@
 
 
 <div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.reinforce">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.reinforce">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.reinforce">[docs]</a>
     <span class="k">def</span> <span class="nf">reinforce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply reinforcement learning update to an agent.</span>
@@ -1709,7 +1873,7 @@
 
 
 <div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.mutate">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.mutate">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.mutate">[docs]</a>
     <span class="k">def</span> <span class="nf">mutate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply mutation to an agent&#39;s neural network.</span>
@@ -1724,7 +1888,7 @@
 
 
 <div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.select_elite">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.select_elite">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.select_elite">[docs]</a>
     <span class="k">def</span> <span class="nf">select_elite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">population</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">NeuralNetworkAgent</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">NeuralNetworkAgent</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Select the elite agents from the population.</span>
@@ -1740,7 +1904,7 @@
 
 
 <div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.crossover">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.crossover">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.crossover">[docs]</a>
     <span class="k">def</span> <span class="nf">crossover</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent1</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">,</span> <span class="n">parent2</span><span class="p">:</span> <span class="n">NeuralNetworkAgent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NeuralNetworkAgent</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform crossover between two parent agents to create a child agent.</span>
@@ -1761,7 +1925,7 @@
 
 
 <div class="viewcode-block" id="ReinforcementEvolutionaryTrainer.train">
-<a class="viewcode-back" href="../../../ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.train">[docs]</a>
+<a class="viewcode-back" href="../../../ergodicity/docs/source/ergodicity.agents.html#ergodicity.agents.evolutionary_nn.ReinforcementEvolutionaryTrainer.train">[docs]</a>
     <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run the main training loop for the specified number of steps.</span>
