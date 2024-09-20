@@ -1,0 +1,10 @@
+{
+  "t_default": 15,
+  "timestep_default": 0.005,
+  "num_instances_default": 10,
+  "drift_term_default": 0.1,
+  "stochastic_term_default": 1.2,
+  "dim_default": 20,
+  "X_default": 5,
+  "output_dir_default": "custom_process_output"
+}

@@ -5,8 +5,6 @@ The user can change the values of these variables to customize the behavior of t
 Initially, the parameters are set to enable explanatory command line outputs and conduct
 analysis pipelines with parameters optimized for Levy processes and computational power of a personal computer.
 """
-import os
-import json
 
 default_comments = True # This parameter is used to enable or disable notifications about what is happenning when running the code. They may be informative for some, but annoying for others. Select what you prefer.
 use_external_simulators = False # Not recommended to set True. This parameter is used to enable or disable the use of external simulators, such as for example the simulators provided by the stochastic library.
@@ -21,32 +19,3 @@ pipeline_parameters = {'t': 1, 'timestep': 0.1, 'num_instances': 3, 'time_averag
 optimize_with_language = 'c' # This parameter is used to set the language for the optimization of the code.
 # This is an experimental feature and not yet operational. We plan to implement the optimization of the code with the use of the C, Rust, and Wolfram language in the future.
 lib_plot = False # Controls whether the plots are build automatically for the functions in the process.lib.py submodule.
-
-# Path to the user's config file (located in the working directory)
-user_config_path = os.path.join(os.getcwd(), 'user_config.json')
-
-# Function to update default config with user-provided values
-def load_user_config():
-    if os.path.exists(user_config_path):
-        try:
-            with open(user_config_path, 'r') as file:
-                user_config = json.load(file)
-
-                # Update global variables if keys are present in user config
-                globals().update({
-                    key: value
-                    for key, value in user_config.items()
-                    if key in globals()  # Only update known config keys
-                })
-
-                # If the pipeline_parameters exists in the user config, update it separately
-                if 'pipeline_parameters' in user_config:
-                    pipeline_parameters.update(user_config['pipeline_parameters'])
-
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON format in user_config.json. Using default settings.")
-    else:
-        print(f"No user configuration file found at {user_config_path}. Using default settings.")
-
-# Load the user config if it exists
-load_user_config()

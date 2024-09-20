@@ -3,8 +3,6 @@ This file contains the default values for the parameters of the process initiali
 The parameters are optimized here for the balance between speed and precision.
 """
 import numpy as np
-import os
-import json
 
 t_default = 10 # time horizon. It is the time at which the process stops
 timestep_default = 0.01 # time step. It is the time increment
@@ -36,27 +34,3 @@ hurst_default = 0.5 # default Hurst exponent for the fractional Brownian motion
 output_dir_default = "output"   # default output directory for the process
 variances_default = np.array([1, 1, 1])  # default variances for a multivariate correlated process
 
-# Path to the user's config file
-user_config_path = os.path.join(os.getcwd(), 'default_values.json')
-
-# Function to update default config with user-provided values
-def load_user_config():
-    if os.path.exists(user_config_path):
-        try:
-            with open(user_config_path, 'r') as file:
-                user_config = json.load(file)
-
-                # Update global variables if keys are present in user config
-                globals().update({
-                    key: value
-                    for key, value in user_config.items()
-                    if key in globals()  # Only update known config keys
-                })
-
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON format in default_values.json. Using default settings.")
-    else:
-        print(f"No user configuration file found at {user_config_path}. Using default settings.")
-
-# Load the user config if it exists
-load_user_config()

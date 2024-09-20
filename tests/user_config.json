@@ -1,0 +1,18 @@
+{
+  "default_comments": false,
+  "use_external_simulators": true,
+  "verbose": false,
+  "pipeline_parameters": {
+    "t": 2,
+    "timestep": 0.05,
+    "num_instances": 5,
+    "time_average_time": 10,
+    "ensemble_average_num_instances": 10,
+    "save": true,
+    "plot": true,
+    "output_dir": "output_new",
+    "print_debug": false
+  },
+  "optimize_with_language": "c",
+  "lib_plot": false
+}

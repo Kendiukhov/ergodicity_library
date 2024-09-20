@@ -31,10 +31,10 @@ Customizable configurations and default parameters
 
 The library is suitable for researchers, students, and practitioners in fields such as economics, finance, physics, and applied mathematics. It aims to bridge the gap between theoretical concepts in ergodicity economics and practical computational tools.
 For more information, visit: www.ergodicitylibrary.com
-Version: 0.3.2
+Version: 0.3.0
 """
 
-version = "0.3.2"
+version = "0.3.0"
 
 from .process.default_values import *
 from .configurations import *

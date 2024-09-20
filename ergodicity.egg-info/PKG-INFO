@@ -1,3 +1,104 @@
+Metadata-Version: 2.1
+Name: ergodicity
+Version: 0.3.19
+Summary: A Python library for ergodicity economics and time-average analysis.
+Home-page: https://github.com/Kendiukhov/ergodicity_library/
+Author: Ihor Kendiukhov
+Author-email: kendiukhov@gmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: absl-py==2.1.0
+Requires-Dist: aiohttp==3.9.5
+Requires-Dist: aiosignal==1.3.1
+Requires-Dist: attrs==23.2.0
+Requires-Dist: Babel==2.14.0
+Requires-Dist: backports.tarfile==1.2.0
+Requires-Dist: Brotli==1.1.0
+Requires-Dist: certifi==2024.8.30
+Requires-Dist: contourpy==1.2.1
+Requires-Dist: cycler==0.12.1
+Requires-Dist: docutils==0.21.2
+Requires-Dist: filelock==3.15.4
+Requires-Dist: flatbuffers==24.3.25
+Requires-Dist: fonttools==4.53.0
+Requires-Dist: fpdf==1.7.2
+Requires-Dist: frozenlist==1.4.1
+Requires-Dist: fsspec==2024.6.1
+Requires-Dist: gast==0.6.0
+Requires-Dist: gmpy2==2.1.5
+Requires-Dist: google-pasta==0.2.0
+Requires-Dist: grpcio==1.65.4
+Requires-Dist: h5py==3.11.0
+Requires-Dist: imagesize==1.4.1
+Requires-Dist: jaraco.classes==3.4.0
+Requires-Dist: jaraco.context==6.0.1
+Requires-Dist: jaraco.functools==4.0.2
+Requires-Dist: Jinja2==3.1.4
+Requires-Dist: joblib==1.4.2
+Requires-Dist: keras==3.4.1
+Requires-Dist: keyring==25.4.0
+Requires-Dist: kiwisolver==1.4.5
+Requires-Dist: loguru==0.7.2
+Requires-Dist: Markdown==3.6
+Requires-Dist: MarkupSafe==2.1.5
+Requires-Dist: matplotlib==3.9.0
+Requires-Dist: mdurl==0.1.2
+Requires-Dist: ml-dtypes==0.4.0
+Requires-Dist: more-itertools==10.5.0
+Requires-Dist: mpld3==0.5.10
+Requires-Dist: mpmath==1.3.0
+Requires-Dist: msgpack==1.0.8
+Requires-Dist: multidict==6.0.5
+Requires-Dist: namex==0.0.8
+Requires-Dist: numpy==1.26.4
+Requires-Dist: opt-einsum==3.3.0
+Requires-Dist: optree==0.12.1
+Requires-Dist: pandas==2.2.2
+Requires-Dist: patsy==0.5.6
+Requires-Dist: pillow==10.3.0
+Requires-Dist: pip==24.0
+Requires-Dist: pkginfo==1.10.0
+Requires-Dist: platformdirs==4.2.2
+Requires-Dist: plotly==5.22.0
+Requires-Dist: protobuf==4.25.4
+Requires-Dist: PySocks==1.7.1
+Requires-Dist: python-dateutil==2.9.0
+Requires-Dist: pytz==2024.1
+Requires-Dist: pyvista==0.43.10
+Requires-Dist: PyWavelets==1.6.0
+Requires-Dist: requests==2.32.3
+Requires-Dist: requests-toolbelt==1.0.0
+Requires-Dist: rfc3986==2.0.0
+Requires-Dist: rich==13.7.1
+Requires-Dist: scikit-learn==1.5.1
+Requires-Dist: scipy==1.13.1
+Requires-Dist: scooby==0.10.0
+Requires-Dist: seaborn==0.13.2
+Requires-Dist: setuptools==70.0.0
+Requires-Dist: six==1.16.0
+Requires-Dist: statsmodels==0.14.2
+Requires-Dist: stochastic==0.6.0
+Requires-Dist: sympy==1.12.1
+Requires-Dist: tenacity==8.4.2
+Requires-Dist: tensorboard==2.17.0
+Requires-Dist: tensorboard-data-server==0.7.2
+Requires-Dist: tensorflow==2.17.0
+Requires-Dist: termcolor==2.4.0
+Requires-Dist: threadpoolctl==3.5.0
+Requires-Dist: tomli==2.0.1
+Requires-Dist: torch==2.3.1
+Requires-Dist: typing_extensions==4.12.2
+Requires-Dist: tzdata==2024.1
+Requires-Dist: urllib3==2.2.1
+Requires-Dist: vtk==9.2.6
+Requires-Dist: Werkzeug==3.0.3
+Requires-Dist: wrapt==1.16.0
+Requires-Dist: wslink==2.1.1
+
 # Ergodicity Library
 
 ## Overview
@@ -104,16 +205,6 @@ Extensive documentation, examples, and tutorials are available at the Ergodicity
 The documentation is also available on GitHub: [https://kendiukhov.github.io/ergodicity_library](https://kendiukhov.github.io/ergodicity_library).
 
 The Pypi page for the library can be found here: [https://pypi.org/project/ergodicity/](https://pypi.org/project/ergodicity/).
-
-## ErgodicityGPT
-
-The Ergodicity Library is also integrated with the [ErgodicityGPT](https://chatgpt.com/g/g-6a3y1kBrK-ergodicitygpt) - 
-a custom GPT, which can help you with questions, examples, and explanations related to the library.
-It is useful for getting answers regarding the functionality of the library, accessing its documentation,
-and providing the description of the library's classes, methods, functions and modules.
-However, it may make mistake when asked to generate custom code snippets which rely on the library's functionality.
-If you still want to it to assist you directly in code generation, it is highly recommended to always provide it with the
-names of the classes, methods, functions and modules you want to use in the code snippet.
 
 ## Structure
 
