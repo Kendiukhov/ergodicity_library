@@ -852,8 +852,11 @@ class Process(ABC):
             else:
                 raise ValueError("The process must be simulated using either an external simulator or a custom simulation method. For this process, neither is available.")
 
+        params = self.get_params()
+        # Convert dictionary to string without curly braces
+        params_str = ','.join([f'{key}={value}' for key, value in params.items()])
         self.save_to_file(data_full,
-                          f"process_simulation_{self.get_params()}, t:{t}, timestep:{timestep}, num_instances:{num_instances}.csv",
+                          f"process_simulation_{params_str}, t:{t}, timestep:{timestep}, num_instances:{num_instances}.csv",
                           save)
 
         self.plot(data_full, num_instances, save, plot, average_and_max=average_and_max, plotlog=plotlog)

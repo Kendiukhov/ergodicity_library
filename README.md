@@ -111,8 +111,8 @@ The Ergodicity Library is also integrated with the [ErgodicityGPT](https://chatg
 a custom GPT, which can help you with questions, examples, and explanations related to the library.
 It is useful for getting answers regarding the functionality of the library, accessing its documentation,
 and providing the description of the library's classes, methods, functions and modules.
-However, it may make mistake when asked to generate custom code snippets which rely on the library's functionality.
-If you still want to it to assist you directly in code generation, it is highly recommended to always provide it with the
+However, it may make mistakes when asked to generate custom code snippets which rely on the library's functionality.
+If you still want it to assist you directly in code generation, it is highly recommended to always provide it with the
 names of the classes, methods, functions and modules you want to use in the code snippet.
 
 ## Structure
