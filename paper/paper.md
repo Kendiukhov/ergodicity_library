@@ -1,5 +1,5 @@
 ---
-title: 'Ergodicity Library: Integrated stochastic-process simulation, ergodicity analysis, and agent-based experimentation in Python'
+title: 'Ergodicity Library: Integrated stochastic-process simulation, ergodicity diagnostics, and agent-based experimentation in Python'
 tags:
   - Python
   - stochastic processes
@@ -19,61 +19,88 @@ bibliography: paper.bib
 
 # Summary
 
-`ergodicity_library` is an open-source Python package for computational research on stochastic systems, with emphasis on non-ergodicity, multiplicative dynamics, and decision-making under uncertainty [@kendiukhov2025repo; @peters2016evaluating; @peters2019ergodicity]. The package combines three capabilities that are often split across unrelated scripts: (1) simulation of stochastic processes, including heavy-tailed and memory-dependent variants, (2) diagnostics and analytical tooling for time-vs-ensemble behavior, and (3) agent-oriented experimentation where decisions are coupled to stochastic environments.
+`ergodicity_library` is an open-source Python package for research workflows centered on stochastic dynamics, especially settings where time-average behavior and ensemble-average behavior can diverge [@peters2016evaluating; @peters2019ergodicity]. The package integrates three layers that are often handled separately in ad hoc scripts: process simulation, diagnostics/analysis tools, and agent-based decision experiments.
 
-For non-specialist readers, the core goal is practical: reduce the amount of custom glue code needed to move from a stochastic hypothesis to an interpretable computational result. In many projects, researchers switch repeatedly between process simulation, distributional checks, growth diagnostics, and adaptive decision logic. This software provides these stages in a shared environment instead of forcing users to build each transition manually.
+In practice, many projects require repeated transitions between model definition, trajectory generation, fitting/diagnostic checks, and decision evaluation. The core contribution of this software is to make these transitions operationally coherent in one environment, reducing glue-code overhead and improving reproducibility [@kendiukhov2025repo; @kendiukhov2024book].
+
+The package supports both baseline and advanced use-cases: Brownian and related processes, heavy-tailed families (including Lévy-stable variants), multiplicative growth settings, memory-dependent dynamics, and selected stochastic field simulations. This functionality is designed for researchers who need to compare assumptions quickly and inspect consequences with consistent interfaces.
 
 # Statement of need
 
-Many research questions in finance, economics, physics-inspired modeling, and quantitative social simulation require analyzing systems where typical trajectory outcomes differ from ensemble expectations. Standard expected-value pipelines are often insufficient for these settings, especially under multiplicative or heavy-tailed dynamics [@peters2016evaluating; @peters2019ergodicity]. Researchers therefore need workflows that can compare process families, inspect transient behavior, evaluate fitting assumptions, and test decision rules against the same underlying simulations.
+Research questions in quantitative finance, economics, physics-inspired modeling, and computational social science frequently involve nontrivial stochastic assumptions. Typical workflows are fragmented: one code path for simulation, another for diagnostics, another for fitting, and often a separate implementation for decision logic. This fragmentation increases implementation time and makes it harder to compare model variants under consistent conditions.
 
-The need addressed by `ergodicity_library` is an integrated, research-oriented workflow for these tasks. The intended users are applied researchers, graduate-level users, and research software practitioners who need to:
+The specific need addressed by `ergodicity_library` is an integrated software framework for studies where process assumptions, transient diagnostics, and downstream decisions should be tested together. The intended users include applied researchers, graduate-level users, and research software practitioners who need to:
 
-- simulate heterogeneous stochastic process families with a consistent interface,
-- compute diagnostics that explicitly separate time-average and ensemble perspectives,
-- fit and evaluate distribution/process assumptions before downstream decisions,
-- test agent or portfolio logic under nontrivial stochastic drivers.
+- simulate heterogeneous process families using a shared API,
+- compare additive versus multiplicative dynamics,
+- evaluate Gaussian versus heavy-tailed assumptions,
+- inspect transient/preasymptotic behavior before asymptotic claims,
+- couple stochastic dynamics to utility/portfolio/agent rules.
 
-This package is not presented as a new stochastic theory. Its contribution is software integration: making these steps operationally coherent in one codebase so that cross-method studies are easier to implement, audit, and reproduce.
+This package is not framed as a new mathematical theory. It is a research software contribution that operationalizes existing theory and methods into reusable computational workflows.
 
 # State of the field
 
-The scientific Python ecosystem already provides essential numerical foundations, especially for array programming, optimization/statistics, symbolic math, and plotting [@harris2020numpy; @virtanen2020scipy; @meurer2017sympy; @hunter2007matplotlib]. These tools are robust and widely adopted, but they are intentionally general-purpose.
+The scientific Python ecosystem provides high-quality numerical building blocks, notably NumPy, SciPy, SymPy, and Matplotlib [@harris2020numpy; @virtanen2020scipy; @meurer2017sympy; @hunter2007matplotlib]. These tools are foundational and intentionally general.
 
-There are also focused Python packages for stochastic simulation (for example `stochastic`, `sdeint`, and `sdepy`) that support process sampling or numerical SDE integration [@stochastic_pkg; @sdeint_pkg; @sdepy_pkg]. These tools are useful for specific simulation tasks, but typically do not aim to provide one integrated environment spanning process abstraction, ergodicity-oriented diagnostics, fitting workflows, and agent-based decision experiments.
+For stochastic simulation specifically, packages such as `stochastic`, `sdeint`, and `sdepy` provide useful focused capabilities [@stochastic_pkg; @sdeint_pkg; @sdepy_pkg]. They are valuable for generating paths or integrating SDEs, but generally do not aim to unify process abstraction, ergodicity-oriented diagnostics, fitting workflows, and agent-based experimentation under one research workflow model.
 
-`ergodicity_library` was developed as a separate package, rather than a thin wrapper, because its primary research use-case depends on coupling these stages through a shared object model. The package addresses a gap between (a) low-level scientific primitives and (b) isolated simulation utilities by offering a workflow-centered architecture for stochastic research questions where process choice, diagnostics, and decisions must be evaluated together.
+`ergodicity_library` was developed as a standalone package rather than a thin wrapper because its primary use-case depends on this cross-layer integration. The project targets a gap between low-level numerical primitives and narrowly scoped simulation utilities: comparative stochastic research where model choice, diagnostics, and decisions must be iterated jointly.
 
 # Software design
 
-The package is structured in three main layers:
+The software is organized into three primary modules:
 
-- **Processes**: class-based abstractions for stochastic dynamics, including Ito and non-Ito variants, heavy-tailed models, multiplicative constructions, and memory-dependent processes.
-- **Tools**: numerical and symbolic helpers for diagnostics, fitting, preasymptotic analysis, multiprocessing/automation, and partial stochastic differential equation experiments.
-- **Agents**: utility-oriented agent logic, portfolio/pool interactions, and optimization-oriented components for decision experiments under uncertainty.
+- **Processes**: Ito and non-Ito process classes, including heavy-tailed, multiplicative, and memory-dependent variants.
+- **Tools**: symbolic/numerical helpers for fitting, diagnostics, preasymptotic analysis, automation, and selected partial stochastic differential equation experiments.
+- **Agents**: utility-based decision logic, portfolio/pool experiments, and optimization-oriented workflows.
 
-A central design choice is a common process abstraction that allows users to switch model families without rewriting surrounding workflow code. This helps maintain comparability when changing assumptions (for example Gaussian to heavy-tailed increments, or memoryless to memory-dependent dynamics).
+A central design choice is a common process abstraction that allows users to swap process families without rewriting surrounding diagnostics and experiment code. This improves comparability across assumptions and lowers the cost of model stress testing.
 
-The implementation emphasizes extensibility through reusable interfaces and experiment scripting. In addition to repository code and examples [@kendiukhov2025repo], the project is accompanied by a long-form book with worked examples and corresponding code contexts [@kendiukhov2024book].
+Figure-based examples below illustrate the workflow span.
 
-Current limitations are explicit. Some API surfaces remain partial, automated pytest-style coverage is currently sparse relative to package breadth, and optional machine-learning-heavy paths in the agents layer can be environment-sensitive. These constraints are documented so users can adopt the software appropriately and focus on the better-supported workflow paths first.
+### Heavy-tailed spread geometry
+
+![Quantile fan charts for Brownian and Lévy-stable ensembles. The heavy-tailed model shows broader and less regular spread dynamics over the same horizon. \label{fig:heavytail}](figures/fig_heavy_tail_fancharts.png){ width=95% }
+
+\autoref{fig:heavytail} shows why Gaussian assumptions can understate dispersion in heavy-tailed settings: quantile bands widen asymmetrically and nonlinearly.
+
+### Multiplicative heavy-tailed growth diagnostics
+
+![Geometric Lévy growth-rate map as a function of time horizon and number of instances. \label{fig:geolevygrowth}](figures/fig_book_geometric_levy_growth.png){ width=90% }
+
+\autoref{fig:geolevygrowth} demonstrates finite-sample variability of estimated growth rates under multiplicative heavy-tailed dynamics. This is directly relevant when practitioners compare expected outcomes to path-typical behavior.
+
+### Memory-dependent process dynamics
+
+![Adaptive-rate Ornstein--Uhlenbeck trajectories (book-derived example output). \label{fig:adaptiveou}](figures/fig_book_adaptive_ou.png){ width=90% }
+
+\autoref{fig:adaptiveou} illustrates how adaptive-rate memory effects produce heterogeneous mean-reverting trajectories across realizations.
+
+### Stochastic field simulation support
+
+![SPDE visualization with space-time contour (left) and final-time slice (right), from documented examples. \label{fig:spde}](figures/fig_book_spde_surface_slice.png){ width=95% }
+
+\autoref{fig:spde} shows that the package is not limited to scalar path simulation; it also supports stochastic field-style diagnostics in space-time settings.
+
+The project is accompanied by a long-form book with worked examples and code context [@kendiukhov2024book]. At the same time, maturity constraints are explicit: selected API surfaces remain incomplete, automated pytest-style coverage is currently sparse relative to breadth, and optional ML-heavy agent paths can be environment-sensitive.
 
 # Research impact statement
 
-The immediate impact of `ergodicity_library` is methodological and infrastructural: it reduces setup overhead for studies that combine stochastic simulation, diagnostics, and decision layers in one workflow. The package already supports reproducible demonstrations of heavy-tailed spread behavior, multiplicative growth diagnostics, adaptive-memory processes, distribution-fitting checks, and stochastic field visualization [@kendiukhov2024book; @kendiukhov2025repo].
+The current impact is primarily infrastructural and methodological. `ergodicity_library` reduces setup time for experiments that combine stochastic simulation, diagnostics, and decision logic in one workflow [@kendiukhov2025repo]. The package already enables reproducible demonstrations for heavy-tailed spread behavior, multiplicative growth diagnostics, adaptive-memory dynamics, and stochastic field visualization [@kendiukhov2024book].
 
-At its current maturity stage, the strongest evidence is implementation breadth plus reproducible artifact support, not large-scale adoption metrics. The software is publicly available under an OSI-approved license, and the package documentation and example corpus provide a practical base for extension in domain-specific projects.
+At this stage, the strongest evidence is implemented breadth plus reproducible artifacts rather than large-scale adoption metrics. The software is publicly available under an OSI-approved license and can serve as a base for domain-specific extensions.
 
-A realistic near-term impact pathway is as a research platform for rapid hypothesis iteration: users can define process assumptions, generate trajectories, test diagnostics, and evaluate decision rules without repeatedly rebuilding scaffolding around each experiment. This can improve reproducibility and shorten iteration time in cross-method stochastic studies.
+A realistic near-term impact path is improved reproducibility and faster iteration in cross-method stochastic studies, where users can move from hypothesis definition to comparative diagnostics without rebuilding experiment scaffolding repeatedly.
 
 # AI usage disclosure
 
-Generative AI assistance was used in preparing the JOSS submission materials (manuscript drafting/editing, submission packaging, and figure-selection workflow scripting). The tools used were GPT-5-class coding assistants in an interactive development workflow.
+Generative AI assistance was used in preparing JOSS submission materials (manuscript drafting/editing, submission packaging, and figure-selection workflow scripting). The tools used were GPT-5-class coding assistants in an interactive development workflow.
 
-All AI-assisted outputs were reviewed, edited, and validated by the human author. The author made the core scientific/software decisions and is responsible for the accuracy, originality, licensing compliance, and final submitted content.
+All AI-assisted outputs were reviewed, edited, and validated by the human author. The author made the core scientific and software decisions and remains responsible for accuracy, originality, licensing compliance, and final submitted content.
 
 # Acknowledgements
 
-No external funding is declared for this submission. The author thanks contributors and users of the open scientific Python ecosystem that this project builds upon [@harris2020numpy; @virtanen2020scipy; @meurer2017sympy; @hunter2007matplotlib].
+No external funding is declared for this submission. The author acknowledges the open scientific Python ecosystem that this project builds upon [@harris2020numpy; @virtanen2020scipy; @meurer2017sympy; @hunter2007matplotlib].
 
 # References
