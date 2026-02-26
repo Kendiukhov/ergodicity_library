@@ -97,6 +97,36 @@ bm = BrownianMotion()
 realization = bm.simulate(t=10, timestep=0.1 num_instance=1000, plot=True)
 ```
 
+### Multidimensional Langevin Example
+
+You can also simulate multidimensional Langevin equations with a custom drift field:
+
+```python
+import numpy as np
+from ergodicity.process.basic import MultivariateLangevinProcess
+
+# Mean-reverting linear drift: dX = (-A X) dt + G dW
+A = np.array([[1.2, -0.3],
+              [0.4,  0.9]])
+G = np.array([[0.35, 0.0],
+              [0.0,  0.25]])
+
+def drift(x, t):
+    return -A @ x
+
+langevin = MultivariateLangevinProcess(
+    dims=2,
+    drift=drift,
+    diffusion=G,
+    initial_state=np.array([1.0, -0.5])
+)
+
+times, values = langevin.simulate(t=50.0, timestep=0.01, num_instances=200, plot=False)
+
+# values shape: (num_instances, dims, num_steps)
+ensemble_mean = values.mean(axis=0)  # shape: (dims, num_steps)
+```
+
 ## Documentation
 
 Extensive documentation, examples, and tutorials are available at the Ergodicity Library website: [https://ergodicitylibrary.com](https://ergodicitylibrary.com).

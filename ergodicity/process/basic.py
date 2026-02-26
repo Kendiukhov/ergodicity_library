@@ -44,6 +44,8 @@ Classes:
 
     - LevyStableStandardProcess: A standardized version of the Lévy stable process.
 
+    - MultivariateLangevinProcess: Simulates multidimensional Langevin equations with user-defined drift and diffusion.
+
     - MultivariateBrownianMotion: Models correlated Brownian motion in multiple dimensions.
 
     - MultivariateLevy: Extends the Lévy stable process to multiple dimensions, allowing for complex, correlated phenomena.
@@ -1319,6 +1321,255 @@ class LevyStableStandardProcess(LevyStableProcess):
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+
+class MultivariateLangevinProcess(ItoProcess):
+    """
+    Multivariate Langevin process simulated with Euler-Maruyama.
+
+    The process follows:
+
+        dX_t = b(X_t, t) dt + G dW_t
+
+    where:
+        - X_t is a vector in R^d,
+        - b is a user-defined drift callable,
+        - G is a diffusion matrix,
+        - W_t is d-dimensional Brownian motion.
+
+    This class is intended for practical simulation of multidimensional Langevin
+    equations (including mean-reverting and nonlinear drifts) and for
+    ergodicity-oriented experiments with ensemble trajectories.
+    """
+
+    def __init__(
+            self,
+            name: str = "Multivariate Langevin Process",
+            process_class: Type[Any] = None,
+            dims: int = 2,
+            drift: Callable[[np.ndarray, float], np.ndarray] = None,
+            diffusion: Union[float, List[float], List[List[float]], np.ndarray] = 1.0,
+            initial_state: Union[List[float], np.ndarray] = None
+    ):
+        """
+        Initialize a multivariate Langevin process.
+
+        :param name: Name of the process.
+        :type name: str
+        :param process_class: Unused external simulator placeholder (kept for API consistency).
+        :type process_class: Type[Any]
+        :param dims: State-space dimension.
+        :type dims: int
+        :param drift: Drift callable b(x, t) -> vector of shape (dims,).
+                      If None, uses Ornstein-Uhlenbeck drift b(x, t) = -x.
+        :type drift: Callable[[np.ndarray, float], np.ndarray]
+        :param diffusion: Diffusion specification:
+                          scalar -> sigma * I,
+                          vector -> diagonal matrix,
+                          matrix -> full diffusion matrix G.
+        :type diffusion: Union[float, List[float], List[List[float]], np.ndarray]
+        :param initial_state: Initial condition. Defaults to zero vector.
+        :type initial_state: Union[List[float], np.ndarray]
+        """
+        self.types = ["langevin", "multivariate"]
+        super().__init__(name, process_class, drift_term=0, stochastic_term=0)
+
+        if not isinstance(dims, int) or dims < 1:
+            raise ValueError("dims must be a positive integer.")
+
+        self._dims = dims
+        self._drift = drift if drift is not None else (lambda x, t: -x)
+        self._diffusion = self._normalize_diffusion(diffusion)
+        self._initial_state = self._normalize_state(initial_state) if initial_state is not None else np.zeros(self._dims)
+        self._external_simulator = False
+
+    def _normalize_state(self, state: Union[List[float], np.ndarray]) -> np.ndarray:
+        """
+        Normalize and validate a state vector.
+
+        :param state: Candidate state vector.
+        :type state: Union[List[float], np.ndarray]
+        :return: Normalized state of shape (dims,).
+        :rtype: np.ndarray
+        """
+        vector = np.asarray(state, dtype=float).reshape(-1)
+        if vector.shape[0] != self._dims:
+            raise ValueError(f"State must have shape ({self._dims},), got {vector.shape}.")
+        return vector
+
+    def _normalize_diffusion(self, diffusion: Union[float, List[float], List[List[float]], np.ndarray]) -> np.ndarray:
+        """
+        Normalize diffusion input to a matrix G of shape (dims, dims).
+
+        :param diffusion: Scalar, diagonal vector, or full matrix.
+        :type diffusion: Union[float, List[float], List[List[float]], np.ndarray]
+        :return: Diffusion matrix.
+        :rtype: np.ndarray
+        """
+        if np.isscalar(diffusion):
+            scalar = float(diffusion)
+            if scalar < 0:
+                raise ValueError("Scalar diffusion must be non-negative.")
+            return scalar * np.eye(self._dims)
+
+        matrix_like = np.asarray(diffusion, dtype=float)
+        if matrix_like.ndim == 1:
+            if matrix_like.shape[0] != self._dims:
+                raise ValueError(f"Diffusion vector must have length {self._dims}.")
+            if np.any(matrix_like < 0):
+                raise ValueError("Diffusion vector entries must be non-negative.")
+            return np.diag(matrix_like)
+
+        if matrix_like.ndim == 2 and matrix_like.shape == (self._dims, self._dims):
+            return matrix_like
+
+        raise ValueError(
+            f"Diffusion must be scalar, length-{self._dims} vector, "
+            f"or matrix of shape ({self._dims}, {self._dims})."
+        )
+
+    def custom_increment(self, X: Union[List[float], np.ndarray], timestep: float = timestep_default, t: float = 0.0) -> np.ndarray:
+        """
+        Compute one Euler-Maruyama increment.
+
+        :param X: Current state.
+        :type X: Union[List[float], np.ndarray]
+        :param timestep: Time step dt.
+        :type timestep: float
+        :param t: Current time.
+        :type t: float
+        :return: State increment dX.
+        :rtype: np.ndarray
+        """
+        state = self._normalize_state(X)
+        drift_value = np.asarray(self._drift(state, t), dtype=float).reshape(-1)
+        if drift_value.shape[0] != self._dims:
+            raise ValueError(
+                f"Drift callable must return shape ({self._dims},), got {drift_value.shape}."
+            )
+
+        gaussian_noise = np.random.normal(size=self._dims)
+        diffusion_noise = self._diffusion @ gaussian_noise
+        return drift_value * timestep + np.sqrt(timestep) * diffusion_noise
+
+    def simulate(
+            self,
+            t: float = t_default,
+            timestep: float = timestep_default,
+            num_instances: int = 1,
+            save: bool = False,
+            plot: bool = False,
+            X0: Union[List[float], np.ndarray] = None
+    ) -> Any:
+        """
+        Simulate one or many trajectories of a multivariate Langevin process.
+
+        :param t: Total simulation horizon.
+        :type t: float
+        :param timestep: Time step dt.
+        :type timestep: float
+        :param num_instances: Number of trajectories.
+        :type num_instances: int
+        :param save: Whether to save simulation results as CSV.
+        :type save: bool
+        :param plot: Whether to plot trajectories over time.
+        :type plot: bool
+        :param X0: Optional initial state overriding the constructor value.
+        :type X0: Union[List[float], np.ndarray]
+        :return: Tuple (times, values), where values has shape
+                 (num_instances, dims, num_steps).
+        :rtype: Any
+        """
+        if t <= 0:
+            raise ValueError("t must be positive.")
+        if timestep <= 0:
+            raise ValueError("timestep must be positive.")
+        if not isinstance(num_instances, int) or num_instances < 1:
+            raise ValueError("num_instances must be a positive integer.")
+
+        num_steps = max(int(t / timestep), 2)
+        times = np.linspace(0.0, t, num_steps)
+        data = np.zeros((num_instances, self._dims, num_steps), dtype=float)
+
+        for instance in range(num_instances):
+            state = self._normalize_state(X0) if X0 is not None else self._initial_state.copy()
+            for step, current_time in enumerate(times):
+                data[instance, :, step] = state
+                state = state + self.custom_increment(state, timestep=timestep, t=current_time)
+                if verbose and step % 1000 == 0:
+                    print(f"Simulating instance {instance}, step {step}, X = {state}")
+
+        if save:
+            self._save_multivariate_data(times=times, data=data, t=t, timestep=timestep, num_instances=num_instances)
+
+        if plot:
+            self.plot(times=times, data=data, save=save, plot=plot)
+
+        return times, data
+
+    def _save_multivariate_data(self, times: np.ndarray, data: np.ndarray, t: float, timestep: float, num_instances: int) -> None:
+        """
+        Save multivariate trajectory data to CSV in long, tabular form.
+
+        :param times: Time grid.
+        :type times: np.ndarray
+        :param data: Simulated values of shape (num_instances, dims, num_steps).
+        :type data: np.ndarray
+        :param t: Total simulation horizon.
+        :type t: float
+        :param timestep: Time step dt.
+        :type timestep: float
+        :param num_instances: Number of trajectories.
+        :type num_instances: int
+        """
+        rows = []
+        for step, current_time in enumerate(times):
+            for instance in range(num_instances):
+                row = [current_time, instance]
+                row.extend(data[instance, :, step].tolist())
+                rows.append(row)
+
+        header = ["time", "instance"] + [f"x_{d}" for d in range(self._dims)]
+        output_array = np.asarray(rows, dtype=float)
+        params = self.get_params()
+        params_str = ','.join([f'{key}={value}' for key, value in params.items()])
+        file_name = f"langevin_process_simulation_{params_str}, t:{t}, timestep:{timestep}, num_instances:{num_instances}.csv"
+        full_path = os.path.join(self._output_dir, f"{self._name}_{file_name}")
+        np.savetxt(full_path, output_array, delimiter=",", header=",".join(header), comments="")
+
+    def plot(self, times: np.ndarray, data: np.ndarray, save: bool = False, plot: bool = False):
+        """
+        Plot all simulated dimensions over time.
+
+        :param times: Time grid.
+        :type times: np.ndarray
+        :param data: Simulated values of shape (num_instances, dims, num_steps).
+        :type data: np.ndarray
+        :param save: Whether to save the figure.
+        :type save: bool
+        :param plot: Whether to display the figure.
+        :type plot: bool
+        """
+        if not plot:
+            return
+
+        plt.figure(figsize=(12, 8))
+        num_instances, dimension, _ = data.shape
+        for d in range(dimension):
+            for i in range(num_instances):
+                label = f"dim {d + 1}, inst {i + 1}" if (dimension * num_instances) <= 20 else None
+                plt.plot(times, data[i, d, :], lw=0.8, alpha=0.8, label=label)
+
+        plt.title(f"Simulation of {self.name}")
+        plt.xlabel("Time")
+        plt.ylabel("Value")
+        plt.grid(True)
+        if (dimension * num_instances) <= 20:
+            plt.legend()
+
+        if save:
+            plt.savefig(os.path.join(self._output_dir, f"{self.name}_langevin_simulation.png"))
+        plt.show()
+
 class MultivariateBrownianMotion(ItoProcess):
     """
     MultivariateBrownianMotion represents a generalization of the standard Brownian motion to multiple dimensions,
