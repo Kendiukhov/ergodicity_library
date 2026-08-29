@@ -802,7 +802,15 @@ class PoissonProcess(NonItoProcess):
 
         process = self._process_class(**self.get_params())
         for i in range(num_instances):
-            data[i, :] = process.sample(num_steps - 1)
+            if hasattr(process, 'sample_at'):
+                data[i, :] = process.sample_at(times)
+            elif np.allclose(np.diff(times), timestep):
+                data[i, :] = process.sample(num_steps - 1)
+            else:
+                raise ValueError(
+                    f"{self._process_class.__name__} does not support sampling at explicit times. "
+                    "Choose a timestep that divides t exactly."
+                )
 
         data_full = np.concatenate((times.reshape(1, -1), data), axis=0)
 
@@ -1486,15 +1494,23 @@ class MultivariateLangevinProcess(ItoProcess):
         if not isinstance(num_instances, int) or num_instances < 1:
             raise ValueError("num_instances must be a positive integer.")
 
-        num_steps = max(int(t / timestep), 2)
-        times = np.linspace(0.0, t, num_steps)
+        num_full_steps = int(np.floor(t / timestep))
+        times = np.arange(num_full_steps + 1, dtype=float) * timestep
+        if not np.isclose(times[-1], t):
+            times = np.append(times, t)
+        else:
+            times[-1] = t
+
+        num_steps = len(times)
         data = np.zeros((num_instances, self._dims, num_steps), dtype=float)
 
         for instance in range(num_instances):
             state = self._normalize_state(X0) if X0 is not None else self._initial_state.copy()
             for step, current_time in enumerate(times):
                 data[instance, :, step] = state
-                state = state + self.custom_increment(state, timestep=timestep, t=current_time)
+                if step < num_steps - 1:
+                    step_size = times[step + 1] - current_time
+                    state = state + self.custom_increment(state, timestep=step_size, t=current_time)
                 if verbose and step % 1000 == 0:
                     print(f"Simulating instance {instance}, step {step}, X = {state}")
 
@@ -1652,11 +1668,13 @@ class MultivariateBrownianMotion(ItoProcess):
         num_instances = self._dims
         num_steps, times, data = self.data_for_simulation(t, timestep, num_instances)
         data = np.zeros((num_instances, num_steps))
-        X = self._X
-        for step in range(num_steps):
-            data[:, step] = X
-            dX = self.custom_increment(X, timestep)
+        X = self._X.copy()
+        data[:, 0] = X
+        for step in range(1, num_steps):
+            step_size = times[step] - times[step - 1]
+            dX = self.custom_increment(X, step_size)
             X = X + dX
+            data[:, step] = X
             if verbose and step % 1000 == 0:
                 print(f"Simulating step {step}, X = {X}")
 

@@ -602,7 +602,9 @@ if __name__=="__main__":
     print("Matrix A:\n", A)
 
 
-def solve_fokker_planck_numerically(mu_func, sigma_func, P0_func, x_range, t_range, Nx, Nt, boundary_conditions):
+def solve_fokker_planck_numerically(
+        mu_func, sigma_func, P0_func, x_range, t_range, Nx, Nt,
+        boundary_conditions, plot=True):
     """
     Solve the Fokker-Planck equation numerically using finite differences and visualize the result in 3D.
 
@@ -622,6 +624,8 @@ def solve_fokker_planck_numerically(mu_func, sigma_func, P0_func, x_range, t_ran
     :type Nt: int
     :param boundary_conditions: Tuple specifying Dirichlet boundary conditions as (P(x_min, t), P(x_max, t)).
     :type boundary_conditions: Tuple[float, float]
+    :param plot: Whether to display a 3D plot of the numerical solution.
+    :type plot: bool
     :return: Arrays for the solution P(x, t) at each time step and the spatial grid points.
     :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray]
     """
@@ -644,34 +648,45 @@ def solve_fokker_planck_numerically(mu_func, sigma_func, P0_func, x_range, t_ran
     P[:, 0] = boundary_conditions[0]  # P(x_min, t)
     P[:, -1] = boundary_conditions[1]  # P(x_max, t)
 
-    # Finite difference loop
+    # Finite difference loop for the Itô Fokker-Planck operator
+    # -d(mu * P)/dx + (1/2)d^2(sigma^2 * P)/dx^2.  Differentiating
+    # the coefficient-weighted density is essential when either coefficient
+    # varies with space.
     for n in range(0, Nt - 1):
-        for i in range(1, Nx - 1):  # Skip the boundary points
-            mu = mu_func(x[i], t[n])
-            sigma = sigma_func(x[i], t[n])
+        drift_density = np.asarray(
+            [mu_func(x_value, t[n]) for x_value in x]
+        ) * P[n, :]
+        diffusion_density = np.asarray(
+            [sigma_func(x_value, t[n]) ** 2 for x_value in x]
+        ) * P[n, :]
 
-            # Central difference for second derivative (diffusion term)
-            d2P_dx2 = (P[n, i + 1] - 2 * P[n, i] + P[n, i - 1]) / dx ** 2
+        drift_derivative = (
+            drift_density[2:] - drift_density[:-2]
+        ) / (2 * dx)
+        diffusion_second_derivative = (
+            diffusion_density[2:]
+            - 2 * diffusion_density[1:-1]
+            + diffusion_density[:-2]
+        ) / dx ** 2
 
-            # Central difference for first derivative (drift term)
-            dP_dx = (P[n, i + 1] - P[n, i - 1]) / (2 * dx)
+        P[n + 1, 1:-1] = P[n, 1:-1] + dt * (
+            -drift_derivative + 0.5 * diffusion_second_derivative
+        )
 
-            # Update P using finite differences
-            P[n + 1, i] = P[n, i] + dt * (-mu * dP_dx + 0.5 * sigma ** 2 * d2P_dx2)
+    if plot:
+        # Plot the result in 3D
+        X, T = np.meshgrid(x, t)
 
-    # Plot the result in 3D
-    X, T = np.meshgrid(x, t)
+        fig = plt.figure(figsize=(12, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_surface(X, T, P, cmap='viridis')
 
-    fig = plt.figure(figsize=(12, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_surface(X, T, P, cmap='viridis')
+        ax.set_xlabel('Space (x)')
+        ax.set_ylabel('Time (t)')
+        ax.set_zlabel('P(x, t)')
+        ax.set_title('Numerical Solution of Fokker-Planck Equation')
 
-    ax.set_xlabel('Space (x)')
-    ax.set_ylabel('Time (t)')
-    ax.set_zlabel('P(x, t)')
-    ax.set_title('Numerical Solution of Fokker-Planck Equation')
-
-    plt.show()
+        plt.show()
 
     return x, t, P
 

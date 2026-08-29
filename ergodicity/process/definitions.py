@@ -493,11 +493,28 @@ class Process(ABC):
         :type timestep: float
         :param num_instances: Number of instances to simulate
         :type num_instances: int
-        :return: The number of steps, the times, and the data
+        When ``t`` is not divisible by ``timestep``, the grid ends with one
+        shorter interval so that the requested horizon is represented exactly.
+
+        :return: The number of sampled time points, the times, and the data
         :rtype: Any
         """
-        num_steps = int(t / timestep)
-        times = np.linspace(0, t, num_steps)
+        if t <= 0:
+            raise ValueError("Simulation time t must be positive.")
+        if timestep <= 0:
+            raise ValueError("Simulation timestep must be positive.")
+
+        full_steps = int(np.floor(t / timestep))
+        times = np.arange(full_steps + 1, dtype=float) * timestep
+
+        # Floating-point division can place an exact multiple just below its
+        # mathematical value. In that case, append/replace the endpoint once.
+        if np.isclose(times[-1], t, rtol=1e-12, atol=1e-15):
+            times[-1] = t
+        else:
+            times = np.append(times, t)
+
+        num_steps = len(times)
         data = np.zeros((num_instances, num_steps))
 
         return num_steps, times, data
@@ -562,35 +579,36 @@ class Process(ABC):
         """
 
         num_steps, times, data = self.data_for_simulation(t, timestep, num_instances)
-        X = 0
-        if self.custom_increment(X, timestep) is None:
-            return None
-        else:
-            for i in range(num_instances):
-                if X0 is None:
-                    if self._multiplicative is False:
-                        X = 0
-                    else:
-                        X = 1
+        for i in range(num_instances):
+            if X0 is None:
+                if self._multiplicative is False:
+                    X = 0
                 else:
-                    X = X0
-                    if self._multiplicative and X0<=0:
-                        warnings.warn("You have selected a negative or zero initial value for a multiplicative process. It is likely that it is done by mistake. We recommend to change the initial value to a positive value.", KnowWhatYouDoWarning)
-                for step in range(num_steps):
-                    data[i, step] = X
-                    dX = self.custom_increment(X, timestep)
-                    self._memory = self.memory_update(step)
-                    X = X + dX
-                    if self._multiplicative is True:
-                        if X < 0:
-                            X = 2**(-1000)
-                            warnings.warn("The process has reached a negative value. The simulation will continue with a very small positive value. It may impact the results of the simulation in an unexpected or unintended way. We recommend to decrease the timestep to avoid this issue.", UserWarning)
-                    if verbose and step % 1000 == 0:
-                        print(f"Simulating instance {i}, step {step}, X = {X}")
+                    X = 1
+            else:
+                X = X0
+                if self._multiplicative and X0<=0:
+                    warnings.warn("You have selected a negative or zero initial value for a multiplicative process. It is likely that it is done by mistake. We recommend to change the initial value to a positive value.", KnowWhatYouDoWarning)
 
-            data = np.concatenate((times.reshape(1, -1), data), axis=0)
+            data[i, 0] = X
+            for step in range(1, num_steps):
+                step_timestep = times[step] - times[step - 1]
+                dX = self.custom_increment(X, step_timestep)
+                if dX is None:
+                    return None
+                self._memory = self.memory_update(step - 1)
+                X = X + dX
+                if self._multiplicative is True:
+                    if X < 0:
+                        X = 2**(-1000)
+                        warnings.warn("The process has reached a negative value. The simulation will continue with a very small positive value. It may impact the results of the simulation in an unexpected or unintended way. We recommend to decrease the timestep to avoid this issue.", UserWarning)
+                data[i, step] = X
+                if verbose and step % 1000 == 0:
+                    print(f"Simulating instance {i}, step {step}, X = {X}")
 
-            return data
+        data = np.concatenate((times.reshape(1, -1), data), axis=0)
+
+        return data
 
     def simulate_until(self, timestep: float = timestep_default, num_instances: float = num_instances_default, X0: float = None, condition: Callable[..., bool] = None, save=False, plot=True) -> Any:
         """
@@ -834,7 +852,15 @@ class Process(ABC):
 
             process = self._process_class(t=t, **params)
             for i in range(num_instances):
-                data[i, :] = process.sample(num_steps - 1)
+                if hasattr(process, 'sample_at'):
+                    data[i, :] = process.sample_at(times)
+                elif np.allclose(np.diff(times), timestep):
+                    data[i, :] = process.sample(num_steps - 1)
+                else:
+                    raise ValueError(
+                        f"{self._process_class.__name__} does not support sampling at explicit times. "
+                        "Choose a timestep that divides t exactly."
+                    )
                 if verbose == True and i % 1000000 == 0:
                     print(f"Simulating instance {i + 1} of {num_instances}...")
 
@@ -888,9 +914,8 @@ class Process(ABC):
         :return: The ensemble simulation data and the total average
         :rtype: Any
         """
-        num_steps = int(t / timestep)
+        num_steps, times, _ = self.data_for_simulation(t, timestep, 1)
         ensemble = np.empty((num_ensembles + 1, num_steps))
-        times = np.linspace(0, t, num_steps)
         ensemble[0, :] = times
 
         for i in range(num_ensembles):
@@ -1892,7 +1917,15 @@ class Process(ABC):
         data = self.simulate(t=t, timestep=timestep, num_instances=1)
         times, data = self.separate(data)
 
-        time_average = (np.mean(data))/timestep
+        if len(times) < 2 or times[-1] <= times[0]:
+            raise ValueError("A time average requires at least two increasing time points.")
+        if data.shape[-1] != len(times):
+            raise ValueError("Simulation values and timestamps must have matching lengths.")
+
+        # Integrate the piecewise-linear sampled path, then normalize by the
+        # elapsed time. This also handles a shorter final simulation interval.
+        path_averages = np.trapz(data, x=times, axis=-1) / (times[-1] - times[0])
+        time_average = np.mean(path_averages)
 
         self.save_to_file(time_average,
                           f"time_average_simulation_{self.get_params()}, t:{t}, timestep:{timestep}.csv",
@@ -2576,10 +2609,12 @@ def simulation_decorator(simulate_func: Callable) -> Callable:
             X=1
             if verbose == True and num_instances % 100 == 0:
                 print(f"Simulating instance {i}...")
-            for step in range(num_steps):
-                data[i, step] = X
-                dX = simulate_func(self, X, timestep)
+            data[i, 0] = X
+            for step in range(1, num_steps):
+                step_size = times[step] - times[step - 1]
+                dX = simulate_func(self, X, step_size)
                 X = X + dX
+                data[i, step] = X
                 if verbose == True and num_steps>1000000 and step % 1000000 == 0 and step != 0:
                     print(f"Simulating instance {i}, step {step}, X = {X}")
 
@@ -2637,5 +2672,3 @@ def correlation_to_covariance(correlation_matrix, std_devs):
     std_devs = np.array(std_devs)
     covariance_matrix = correlation_matrix * np.outer(std_devs, std_devs)
     return covariance_matrix
-
-

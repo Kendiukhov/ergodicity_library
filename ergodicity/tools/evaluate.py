@@ -64,23 +64,36 @@ def test_ergodicity_increments(data, relative_increments=False):
     """
     Test the ergodicity of a stochastic process based on its increments.
 
-    :param data: Array of shape (num_time_steps, num_instances + 1) where the first row is time reprsenting the time steps and subsequent rows are instances of the process
+    :param data: Array of shape (num_instances + 1, num_time_steps) where the first row represents time and subsequent rows are instances of the process
     :type data: numpy.ndarray
-    :param dt:vTime step size (1/number of steps in a time unit)
-    :type dt: float
+    :param relative_increments: Whether to evaluate relative rather than absolute increments
+    :type relative_increments: bool
     :return: Dictionary containing test results and metrics
     :rtype: dict
     """
     times, process_data = separate(data)
+    times = np.asarray(times, dtype=float)
+
+    if times.size < 2:
+        raise ValueError("The time grid must contain at least two points")
+    if not np.all(np.isfinite(times)):
+        raise ValueError("The time grid must contain only finite values")
+
+    time_steps = np.diff(times)
+    if np.any(time_steps <= 0):
+        raise ValueError("The time grid must be strictly increasing")
+
+    dt = float(np.mean(time_steps))
+    if not np.allclose(time_steps, dt, rtol=1e-7, atol=abs(dt) * 1e-12):
+        raise ValueError("The time grid must be evenly spaced")
+
     if not relative_increments:
         increments = np.diff(process_data, axis=1)
 
     else:
-        increments = ri(data)
-        times, increments = separate(increments)
+        _, increments = separate(ri(data, visualize=False))
 
     num_instances, num_time_steps = process_data.shape
-    dt = len(times) / (num_time_steps - 1)
 
     results = {}
 
@@ -176,7 +189,7 @@ if __name__ == "__main__":
     data = np.vstack((times, process_data))
 
     # Test ergodicity
-    results = test_ergodicity_increments(data, dt)
+    results = test_ergodicity_increments(data)
 
     # Print results
     print("Ergodicity Test Results:")
